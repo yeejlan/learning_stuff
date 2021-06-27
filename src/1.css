@@ -1,0 +1,78 @@
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+.top_menu {
+    height: 3rem;
+    line-height: 3rem;
+    background-color: burlywood;
+    color: #fff;
+}
+
+.logo_box {
+    width: 200px;;
+    margin: 0 10px;
+}
+.logo_text {
+    font-size: 1.5rem;
+}
+
+.logo_icon {
+    position: relative;
+    margin: auto 8px;
+    top: 0.125rem;
+}
+.top_menu li {
+    margin: 0 5px;;
+}
+
+.top_menu li a{
+    display: block;
+}
+
+.search_logo {
+    margin: auto 5px;
+}
+
+.search_tips {
+    font-size: 1rem;
+}
+
+.top_menu .right {
+    padding: 0 10px;
+    background-color: chocolate;
+}
+
+.main {
+    min-height: calc(100vh - 3rem);
+}
+
+.main .left{
+    background-color: #eeeeee;
+    flex-direction: column;
+}
+
+.main li {
+    min-width: 16rem;
+    min-height: 2.5em;
+    line-height: 2.5em;
+    border-bottom: 1px solid #dfdfdf;
+    color: #3f4142;
+}
+
+.main li.opened {
+    background-color: #dfdfdf;
+}
+
+.nav_bar .arrow{
+    margin: auto 15px;
+    stroke: #3f4142;
+}
+
+.nav_bar li.opened .arrow{
+    stroke: #3178c6;
+}
+
+.nav_bar li span{
+    margin: auto 15px;
+}
