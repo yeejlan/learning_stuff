@@ -24,6 +24,7 @@ body {
     line-height: 3rem;
     background-color: burlywood;
     color: #fff;
+    font-weight: 600;
 }
 
 .logo_box {
@@ -140,6 +141,10 @@ code {
 }
 .mid .right li:hover {
     border-left: 2px solid #3178c6;
+}
+
+.mid .right li {
+   padding-left: 10px;
 }
 
 h5 {
