@@ -5,12 +5,9 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>T01</title>
-    <link rel="stylesheet" href="src/normalize.css">
-    <link rel="stylesheet" href="src/base.css">
-    <link rel="stylesheet" href="src/1.css">
 </head>
 <body> 
-    <div class="top_menu flex justify-between">
+    <div class="top_menu flex justify-between bg-yellow-700 h-12 leading-12">
         <div class="left flex">
             <div class="logo_box">
             <a href="#" class="flex">
@@ -60,46 +57,9 @@
                 </li>
             </ul>
         </div>
-        <div class="mid flex-grow">
-            <h2>The Basics</h2>
-            <div class="introduce">Welcome to the first page of the handbook, if this is your first experience with TypeScript - you may want to start at one of the 'Getting Started' guides</div>
-            <div class="col2_box flex">
-            <article class="content">
-                
-Each and every value in JavaScript has a set of behaviors you can observe from running different operations. That sounds abstract, but as a quick example, consider some operations we might run on a variable named message.
-<pre><code>
-// Accessing the property 'toLowerCase'
-// on 'message' and then calling it
-message.toLowerCase();
-// Calling 'message'
-message();
-</code></pre>
-If we break this down, the first runnable line of code accesses a property called toLowerCase and then calls it. The second one tries to call message directly.                
-
-But assuming we don’t know the value of message - and that’s pretty common - we can’t reliably say what results we’ll get from trying to run any of this code. The behavior of each operation depends entirely on what value we had in the first place.
-
-Is message callable?
-Does it have a property called toLowerCase on it?
-If it does, is toLowerCase even callable?
-If both of these values are callable, what do they return?   
-            </pre>             
-            </article>
-            <div class="right">
-            <h5>On this page</h5>
-            <ul>
-                <li>Static type-checking</li>
-                <li>Non-exception Failures</li>
-                <li>Types for Tooling</li>
-                <li>tsc, the TypeScript compiler</li>
-                <li>Emitting with Errors</li>
-            </ul>
-            <h5>Is this page helpful?</h5>    
-
-            <span>Yes</span>
-            <span>No</span>              
-            </div>      
-            </div>      
-        </div>
+        <div class="mid flex-grow">2</div>
+        <div class="right">3</div>
     </main>
+    <script src="dist/2.js"></script>
 </body>
 </html>
