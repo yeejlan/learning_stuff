@@ -1,5 +1,6 @@
-import './style.css'
 import 'virtual:windi.css'
+import './style.css'
+import 'virtual:windi-devtools'
 import { spline } from '@georgedoescode/spline';
 import { SVG } from '@svgdotjs/svg.js';
 
