@@ -21,11 +21,23 @@ let parseQueryString = function( queryString ) {
 window['__page_user'] = function() {
   return {
     user_id: -1,
-    hello: function() {
+    hello() {
       alert('hello~~~');
     }
   }
 };
+
+let _app_x_init = function(page) {
+  let page_idx = "__page_" + page;
+  let page_func = window[page_idx] || function() {return {}};
+  let page_data = page_func();
+  for (let key in page_data){
+    let value = page_data[key];
+    if(typeof value === 'function'){
+      params[key] = value;
+    }
+  }
+}
 
 let app = function() {
     return {
