@@ -1,29 +1,64 @@
-<script defer src="https://unpkg.com/alpinejs@3.2.3/dist/cdn.min.js"></script>
 <script type="module">
   import Mustache from "/js/mustache.js";
   window.Mustache = Mustache;
 </script>
+<script defer src="https://unpkg.com/alpinejs@3.2.3/dist/cdn.min.js"></script>
 
 <script>
-function app() {
+let parseQueryString = function( queryString ) {
+    let params = {}, queries, temp, i, l;
+
+    queries = queryString.split("&");
+
+    for ( i = 0, l = queries.length; i < l; i++ ) {
+        temp = queries[i].split('=');
+        params[temp[0]] = decodeURIComponent(temp[1]);
+    }
+
+    return params;
+};
+
+let app = function() {
     return {
-        app_content: "loading...",
+        page: 'index',
+        uri: '#',
+        params: {},
+        content: "loading...",
         load_page(page, data) {
           fetch('/page/'+page+'.html')
             .then((response) => response.text())
             .then((template) => {
               let dataStr = JSON.stringify(data)
-              this.app_content = Mustache.render(template, {data:dataStr});
+              this.content = Mustache.render(template, {data:dataStr});
             });
         },
+        updatePageAndParams() {
+            let hash = new URL(document.URL).hash;
+            hash = hash.substring(1);
+            let page = '';
+            let params = {};
+            let pos = hash.indexOf('?');
+            if(pos == -1) {
+              page = hash;
+            }else{
+              page = hash.substring(0, pos);
+              let query_str = hash.substring(pos+ 1);
+              params = parseQueryString(query_str);
+            }
+            page = page || 'index';
+            this.params = params;
+            this.page = page;
+            this.uri = hash;
+        },
         init(){
-          this.load_page('index');
+          this.load_page(this.page);
         }
     };
 }
+
 </script>
 
-<body x-data="app()">
-<div x-html="app_content"></div>
+<body x-data="app()" @hashchange.window="updatePageAndParams()" >
+<div x-html="content" x-init="$watch('uri', value => load_page(page, params))"></div>
 <button @click="load_page('user', {user_id: 123})">Load user page</button>
 </body>
