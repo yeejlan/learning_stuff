@@ -21,7 +21,7 @@ let parseQueryString = function( queryString ) {
 window['__page_user'] = function() {
   return {
     user_id: -1,
-    hello() {
+    hello: function() {
       alert('hello~~~');
     }
   }
@@ -39,7 +39,11 @@ let app = function() {
           let page_func = window[page_idx] || function() {return {}};
           let page_data = page_func();
           for (let key in page_data){
-            params[key] = params[key] || page_data[key];
+            let value = params[key] || page_data[key];
+            // if(typeof value === 'function'){
+            //   value = value.toString();
+            // }
+            params[key] = value;
           }
           this.load_page(this.page, params);
         },
