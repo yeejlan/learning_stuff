@@ -24,7 +24,10 @@ let app = function() {
         uri: '#',
         params: {},
         content: "loading...",
-        load_page(page, data) {
+        load_page() {
+          this._load_page(this.page, this.params);
+        },
+        _load_page(page, data) {
           fetch('/page/'+page+'.html')
             .then((response) => response.text())
             .then((template) => {
@@ -51,7 +54,8 @@ let app = function() {
             this.uri = hash;
         },
         init(){
-          this.load_page(this.page);
+          this.updatePageAndParams();
+          this.load_page();
         }
     };
 }
@@ -59,6 +63,5 @@ let app = function() {
 </script>
 
 <body x-data="app()" @hashchange.window="updatePageAndParams()" >
-<div x-html="content" x-init="$watch('uri', value => load_page(page, params))"></div>
-<button @click="load_page('user', {user_id: 123})">Load user page</button>
+<div x-html="content" x-init="$watch('uri', value => load_page())"></div>
 </body>
