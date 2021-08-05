@@ -18,6 +18,15 @@ let parseQueryString = function( queryString ) {
     return params;
 };
 
+window['__page_user'] = function() {
+  return {
+    user_id: -1,
+    hello() {
+      alert('hello~~~');
+    }
+  }
+};
+
 let app = function() {
     return {
         page: 'index',
@@ -25,14 +34,23 @@ let app = function() {
         params: {},
         content: "loading...",
         loadPage() {
-          this.load_page(this.page, this.params);
+          let params = this.params;
+          let page_idx = "__page_" + this.page;
+          let page_func = window[page_idx] || function() {return {}};
+          let page_data = page_func();
+          for (let key in page_data){
+            params[key] = params[key] || page_data[key];
+          }
+          this.load_page(this.page, params);
         },
         load_page(page, data) {
           fetch('/page/'+page+'.html')
             .then((response) => response.text())
             .then((template) => {
               let dataStr = JSON.stringify(data)
-              this.content = Mustache.render(template, {data:dataStr});
+              let content = Mustache.render(template, {data:dataStr});
+              console.log(content);
+              this.content = content;
             });
         },
         updatePageAndParams() {
