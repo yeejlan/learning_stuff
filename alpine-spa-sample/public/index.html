@@ -1,0 +1,29 @@
+<script defer src="https://unpkg.com/alpinejs@3.2.3/dist/cdn.min.js"></script>
+<script type="module">
+  import Mustache from "/js/mustache.js";
+  window.Mustache = Mustache;
+</script>
+
+<script>
+function app() {
+    return {
+        app_content: "loading...",
+        load_page(page, data) {
+          fetch('/page/'+page+'.html')
+            .then((response) => response.text())
+            .then((template) => {
+              let dataStr = JSON.stringify(data)
+              this.app_content = Mustache.render(template, {data:dataStr});
+            });
+        },
+        init(){
+          this.load_page('index');
+        }
+    };
+}
+</script>
+
+<body x-data="app()">
+<div x-html="app_content"></div>
+<button @click="load_page('user', {user_id: 123})">Load user page</button>
+</body>
