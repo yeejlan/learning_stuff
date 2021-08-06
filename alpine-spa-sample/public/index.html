@@ -94,8 +94,12 @@ let app = function() {
     };
 }
 
+let mytest = function(){
+  alert(document.querySelector('#app')._x_dataStack[0]['content']);
+}
 </script>
 
-<body x-data="app()" @hashchange.window="updatePageAndParams()" >
+<body id="app" x-data="app()" @hashchange.window="updatePageAndParams()" >
 <div x-html="content" x-init="$watch('uri', value => loadPage())"></div>
+<button @click="mytest()">hi~~~</button>
 </body>
