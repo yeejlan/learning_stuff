@@ -7,6 +7,8 @@
     "serve": "vite preview"
   },
   "devDependencies": {
+    "@fullhuman/postcss-purgecss": "^4.0.3",
+    "postcss": "^8.3.6",
     "vite": "^2.4.4"
   },
   "dependencies": {
