@@ -3,7 +3,7 @@ const purgecss = require('@fullhuman/postcss-purgecss')
 module.exports = {
   plugins: [
     purgecss({
-      content: ['index.html'],
+      content: ['*.html'],
       safelist: [/^tooltip-/,/^popover-/]
     })
   ]
