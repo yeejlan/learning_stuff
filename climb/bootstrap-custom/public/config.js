@@ -1,0 +1,1 @@
+globalThis.API_BASE_URL='//my_api_base';

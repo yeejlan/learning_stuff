@@ -72,3 +72,4 @@
     window.addEventListener('hashchange', setActiveItem)
   })()
   
+console.log(API_BASE_URL);
