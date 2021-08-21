@@ -1,4 +1,15 @@
 
-// $blue: #06b9d1;
-$blue: #0cbcdf;
+ $blue: #0085dd;
+// $blue: #00a1d6;
 @import "../node_modules/bootstrap/scss/bootstrap";
+.btn-primary {
+    color: #fff;
+}
+
+.btn-primary:hover {
+    color: #fff;
+}
+
+.btn-primary:focus {
+    color: #fff;
+}
