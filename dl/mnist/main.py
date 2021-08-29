@@ -2,14 +2,15 @@ import torch
 import torchvision
 from torch.utils.data import DataLoader
 
-n_epochs = 3
+n_epochs = 15
 batch_size_train = 64
 batch_size_test = 1000
 learning_rate = 0.01
 momentum = 0.5
-log_interval = 10
+log_interval = 50
 random_seed = 1
 torch.manual_seed(random_seed)
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 train_loader = torch.utils.data.DataLoader(
   torchvision.datasets.MNIST('./data/', train=True, download=True,
@@ -67,9 +68,12 @@ class Net(nn.Module):
         return F.log_softmax(x)
 
 network = Net()
+
 # optimizer = optim.Adam(network.parameters(), lr=learning_rate)
-optimizer = optim.SGD(network.parameters(), lr=learning_rate,
-                      momentum=momentum)
+# optimizer = optim.SGD(network.parameters(), lr=learning_rate, momentum=momentum)
+
+import adabound
+optimizer = adabound.AdaBound(network.parameters(), lr=0.01, final_lr=0.1)
 
 train_losses = []
 train_counter = []
@@ -106,7 +110,7 @@ def test():
       correct += pred.eq(target.data.view_as(pred)).sum()
   test_loss /= len(test_loader.dataset)
   test_losses.append(test_loss)
-  print('\nTest set: Avg. loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
+  print('\nTest set: Avg. loss: {:.4f}, Accuracy: {}/{} ({:.2f}%)\n'.format(
     test_loss, correct, len(test_loader.dataset),
     100. * correct / len(test_loader.dataset)))
 
@@ -121,10 +125,6 @@ for epoch in range(1, n_epochs + 1):
 # optimizer_state_dict = torch.load()
 # continued_optimizer.load_state_dict(optimizer_state_dict)
 
-for i in range(4,9):
-  test_counter.append(i*len(train_loader.dataset))
-  train(i)
-  test()
 
 fig = plt.figure()
 plt.plot(train_counter, train_losses, color='blue')

@@ -87,13 +87,15 @@ class LitNet(Net, LightningModule):
         train_acc = 100*self.train_acc(logits, target)
         self.log('train_acc', train_acc, on_step=True, on_epoch=False)
         self.samples += 1
-        if(self.samples % 500 == 0):
+        if(self.samples % 100 == 0):
           print("samples: {}, train_loss: {}, train_acc: {}".format(self.samples, loss, train_acc))
         return {'loss': loss}
     
     def configure_optimizers(self):
+        return adabound.AdaBound(self.parameters(), lr=0.01, final_lr=0.1)
         # return torch.optim.Adam(self.parameters(), lr=0.02)
-        return optim.SGD(self.parameters(), lr=learning_rate, momentum=momentum) 
+        # return optim.SGD(self.parameters(), lr=learning_rate,
+        #               momentum=momentum) 
 
     def test_step(self, batch, batch_idx):
         data, target = batch
