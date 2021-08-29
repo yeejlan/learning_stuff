@@ -1,5 +1,6 @@
 import torch
 import torchvision
+import torchmetrics as tm
 from torch.utils.data import DataLoader
 
 n_epochs = 3
@@ -26,7 +27,7 @@ test_loader = torch.utils.data.DataLoader(
                                torchvision.transforms.Normalize(
                                  (0.1307,), (0.3081,))
                              ])),
-  batch_size=batch_size_test, shuffle=True)
+  batch_size=batch_size_test, shuffle=False)
 
 examples = enumerate(test_loader)
 batch_idx, (example_data, example_targets) = next(examples)
@@ -64,7 +65,7 @@ class Net(nn.Module):
         x = F.relu(self.fc1(x))
         x = F.dropout(x, training=self.training)
         x = self.fc2(x)
-        return F.log_softmax(x)
+        return F.log_softmax(x, dim=1)
 
 import pytorch_lightning as pl
 from pytorch_lightning import Trainer
@@ -73,21 +74,32 @@ from pytorch_lightning.core.lightning import LightningModule
 class LitNet(Net, LightningModule):
     def __init__(self):
         super().__init__()  
+        self.train_acc = tm.Accuracy()
+        self.test_acc = tm.Accuracy()        
     
     def training_step(self, batch, batch_idx):
         data, target = batch
         logits = self.forward(data)
         loss = F.nll_loss(logits, target)
+        self.log('train_loss', loss)
+        self.log('train_acc', self.train_acc(logits, target), on_step=True, on_epoch=False)
         return {'loss': loss}
     
     def configure_optimizers(self):
         return optim.SGD(self.parameters(), lr=learning_rate,
-                      momentum=momentum)
+                      momentum=momentum) 
+
+    def test_step(self, batch, batch_idx):
+        data, target = batch
+        logits = self.forward(data)
+        loss = F.nll_loss(logits, target)
+        self.log('test_loss', loss)
+        self.log('test_acc', self.test_acc(logits, target), on_step=False, on_epoch=True)
+
 
 from pytorch_lightning import loggers as pl_loggers
 
-tb_logger = pl_loggers.TensorBoardLogger("logs/")
-
 model = LitNet()
-trainer = Trainer(max_epochs=3, gpus=1, logger=tb_logger)
+trainer = Trainer(max_epochs=15, gpus=1)
 trainer.fit(model, train_loader)
+trainer.test(model, test_dataloaders=test_loader)

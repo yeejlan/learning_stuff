@@ -1,3 +1,7 @@
+logs
+lightning_logs
+*.pth
+data
 # Test output
 test/fixtures/*.actual.css
 
