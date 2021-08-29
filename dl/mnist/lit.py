@@ -70,6 +70,7 @@ class Net(nn.Module):
 import pytorch_lightning as pl
 from pytorch_lightning import Trainer
 from pytorch_lightning.core.lightning import LightningModule
+import adabound
 
 class LitNet(Net, LightningModule):
     def __init__(self):
@@ -82,24 +83,26 @@ class LitNet(Net, LightningModule):
         logits = self.forward(data)
         loss = F.nll_loss(logits, target)
         self.log('train_loss', loss)
-        self.log('train_acc', self.train_acc(logits, target), on_step=True, on_epoch=False)
+        self.log('train_acc', 100*self.train_acc(logits, target), on_step=True, on_epoch=False)
         return {'loss': loss}
     
     def configure_optimizers(self):
-        return optim.SGD(self.parameters(), lr=learning_rate,
-                      momentum=momentum) 
+        return adabound.AdaBound(self.parameters(), lr=0.01, final_lr=0.1)
+        # return torch.optim.Adam(self.parameters(), lr=0.02)
+        # return optim.SGD(self.parameters(), lr=learning_rate,
+        #               momentum=momentum) 
 
     def test_step(self, batch, batch_idx):
         data, target = batch
         logits = self.forward(data)
         loss = F.nll_loss(logits, target)
         self.log('test_loss', loss)
-        self.log('test_acc', self.test_acc(logits, target), on_step=False, on_epoch=True)
+        self.log('test_acc', 100*self.test_acc(logits, target), on_step=False, on_epoch=True)
 
 
 from pytorch_lightning import loggers as pl_loggers
 
 model = LitNet()
-trainer = Trainer(max_epochs=15, gpus=1)
+trainer = Trainer(max_epochs=10, gpus=1)
 trainer.fit(model, train_loader)
 trainer.test(model, test_dataloaders=test_loader)
