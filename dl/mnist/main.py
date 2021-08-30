@@ -2,11 +2,11 @@ import torch
 import torchvision
 from torch.utils.data import DataLoader
 
-n_epochs = 15
+n_epochs = 10
 batch_size_train = 64
 batch_size_test = 1000
 learning_rate = 0.01
-momentum = 0.5
+momentum = 0.9
 log_interval = 50
 random_seed = 1
 torch.manual_seed(random_seed)
@@ -70,15 +70,16 @@ class Net(nn.Module):
 network = Net()
 
 # optimizer = optim.Adam(network.parameters(), lr=learning_rate)
-# optimizer = optim.SGD(network.parameters(), lr=learning_rate, momentum=momentum)
+optimizer = optim.SGD(network.parameters(), lr=learning_rate, momentum=momentum)
 
-import adabound
-optimizer = adabound.AdaBound(network.parameters(), lr=0.01, final_lr=0.1)
+# import adabound
+# optimizer = adabound.AdaBound(network.parameters(), lr=0.01, final_lr=0.1)
 
 train_losses = []
 train_counter = []
 test_losses = []
 test_counter = [i*len(train_loader.dataset) for i in range(n_epochs + 1)]
+
 
 def train(epoch):
   network.train()
