@@ -7,7 +7,7 @@ n_epochs = 3
 batch_size_train = 64
 batch_size_test = 1000
 learning_rate = 0.01
-momentum = 0.5
+momentum = 0.9
 log_interval = 10
 random_seed = 1
 torch.manual_seed(random_seed)
@@ -92,10 +92,9 @@ class LitNet(Net, LightningModule):
         return {'loss': loss}
     
     def configure_optimizers(self):
-        return adabound.AdaBound(self.parameters(), lr=0.01, final_lr=0.1)
+        # return adabound.AdaBound(self.parameters(), lr=0.01, final_lr=0.1)
         # return torch.optim.Adam(self.parameters(), lr=0.02)
-        # return optim.SGD(self.parameters(), lr=learning_rate,
-        #               momentum=momentum) 
+        return optim.SGD(self.parameters(), lr=learning_rate, momentum=momentum) 
 
     def test_step(self, batch, batch_idx):
         data, target = batch

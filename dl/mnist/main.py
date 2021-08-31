@@ -11,6 +11,7 @@ log_interval = 50
 random_seed = 1
 torch.manual_seed(random_seed)
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+use_gpu = True
 
 train_loader = torch.utils.data.DataLoader(
   torchvision.datasets.MNIST('./data/', train=True, download=True,
@@ -68,6 +69,8 @@ class Net(nn.Module):
         return F.log_softmax(x)
 
 network = Net()
+if use_gpu:
+    network = network.cuda()
 
 # optimizer = optim.Adam(network.parameters(), lr=learning_rate)
 optimizer = optim.SGD(network.parameters(), lr=learning_rate, momentum=momentum)
@@ -84,6 +87,8 @@ test_counter = [i*len(train_loader.dataset) for i in range(n_epochs + 1)]
 def train(epoch):
   network.train()
   for batch_idx, (data, target) in enumerate(train_loader):
+    if use_gpu:
+      data, target = data.cuda(non_blocking=True), target.cuda(non_blocking=True)
     optimizer.zero_grad()
     output = network(data)
     loss = F.nll_loss(output, target)
@@ -105,6 +110,8 @@ def test():
   correct = 0
   with torch.no_grad():
     for data, target in test_loader:
+      if use_gpu:
+        data, target = data.cuda(non_blocking=True), target.cuda(non_blocking=True)      
       output = network(data)
       test_loss += F.nll_loss(output, target, size_average=False).item()
       pred = output.data.max(1, keepdim=True)[1]
