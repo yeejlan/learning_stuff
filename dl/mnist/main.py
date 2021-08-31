@@ -69,6 +69,12 @@ class Net(nn.Module):
         return F.log_softmax(x)
 
 network = Net()
+
+# import torch.onnx
+# d = torch.rand(1, 1, 28, 28)
+# torch.onnx.export(network, d, 'a.onnx')
+# quit()
+
 if use_gpu:
     network = network.cuda()
 
