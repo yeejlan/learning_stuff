@@ -8,6 +8,10 @@ batch_size_test = 1000
 
 network = Net()
 
+import tensorwatch as tw
+tw.draw_model(network, [1, 1, 28, 28])
+quit()
+
 network_state_dict = torch.load('model_0.pth')
 network.load_state_dict(network_state_dict)
 
