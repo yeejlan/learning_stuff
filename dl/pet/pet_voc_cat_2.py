@@ -20,7 +20,7 @@ CLASS_NAMES = (
 # fmt: on
 
 
-def load_pet_voc_instances(dirname: str, split: str, class_names: Union[List[str], Tuple[str, ...]]):
+def load_pet_voc_instances(dirname: str, split: str, class_names: Union[List[str], Tuple[str, ...]], with_bbox = True):
     """
     Load Pascal VOC detection annotations to Detectron2 format.
 
@@ -35,6 +35,22 @@ def load_pet_voc_instances(dirname: str, split: str, class_names: Union[List[str
     # Needs to read many small annotation files. Makes sense at local
     annotation_dirname = PathManager.get_local_path(os.path.join(dirname, "Annotations/"))
     dicts = []
+
+    if with_bbox == False:
+        for fileid in fileids:
+            jpeg_file = os.path.join(dirname, "JPEGImages", fileid[0] + ".jpg")
+            r = {
+                "file_name": jpeg_file,
+                "image_id": fileid[0],
+            }
+            instances = []
+            instances.append(
+                {"category_id": int(fileid[2])-1}
+            )
+            r["annotations"] = instances
+            dicts.append(r)            
+            continue
+
     for fileid in fileids:
         anno_file = os.path.join(annotation_dirname, fileid[0] + ".xml")
         jpeg_file = os.path.join(dirname, "JPEGImages", fileid[0] + ".jpg")
@@ -76,8 +92,8 @@ def load_pet_voc_instances(dirname: str, split: str, class_names: Union[List[str
     return dicts
 
 
-def register_pet_voc(name, dirname, split, year, class_names=CLASS_NAMES):
-    DatasetCatalog.register(name, lambda: load_pet_voc_instances(dirname, split, class_names))
+def register_pet_voc(name, dirname, split, year, with_bbox = True, class_names=CLASS_NAMES):
+    DatasetCatalog.register(name, lambda: load_pet_voc_instances(dirname, split, class_names, with_bbox))
     MetadataCatalog.get(name).set(
         thing_classes=list(class_names), dirname=dirname, year=year, split=split
     )
