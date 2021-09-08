@@ -7,8 +7,9 @@ MODEL:
 
 DATASETS:
   TRAIN: ('pet_voc_cat_2_trainval', )
+  TEST:  ('pet_voc_cat_2_trainval', )
 
 SOLVER:
   STEPS: (12000, 16000)
   MAX_ITER: 18000
-  IMS_PER_BATCH: 4
+  IMS_PER_BATCH: 2
