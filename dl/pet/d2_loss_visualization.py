@@ -42,6 +42,8 @@ with open('./output/metrics.json') as f:
     _loss = [j['total_loss'] for j in parsed]
     _loss_bbox = [j['loss_box_reg'] for j in parsed]
     _loss_cls = [j['loss_cls'] for j in parsed]
+    _loss_rpn_cls = [j['loss_rpn_cls'] for j in parsed]
+    _loss_rpn_loc = [j['loss_rpn_loc'] for j in parsed]
     try:
          _accuracy_cls = [j['fast_rcnn/cls_accuracy'] for j in parsed]
     except:
@@ -55,13 +57,14 @@ with open('./output/metrics.json') as f:
     y1.plot(_iter, _loss_bbox, color="green", linewidth=0.3,linestyle="-",label='loss_box_reg')
 
     y1.plot(_iter, _loss, color="blue", linewidth=0.3, linestyle="-",label='total_loss')
-    y1.plot(_iter, _loss_cls, color="black", linewidth=0.3, linestyle="-",label='loss_cls')
-    #y1.plot(_iter, _accuracy_cls, color="red", linewidth=0.3, linestyle="-",label='cls_accuracy')
+    y1.plot(_iter, _loss_cls, color="purple", linewidth=0.3, linestyle="-",label='loss_cls')
+    y1.plot(_iter, _loss_rpn_cls, color="green", linewidth=0.3, linestyle="-",label='loss_rpn_cls')
+    y1.plot(_iter, _loss_rpn_loc, color="red", linewidth=0.3, linestyle="-",label='loss_rpn_loc')
     if _mask_loss is not None:
          y1.plot(_iter, _mask_loss, color="grey", linewidth=0.3, linestyle="-",label='mask_loss')
 
-    y2.set_ylim(0,max(_lr)/0.8)
-    y2.plot(_iter, _lr, color="purple", linewidth=1.0, linestyle="-",label='lr')
+    #y2.set_ylim(0,max(_lr)/0.8)
+    #y2.plot(_iter, _lr, color="purple", linewidth=1.0, linestyle="-",label='lr')
     y2.set_ylabel('lr')
 
     #可以选择开启网格
