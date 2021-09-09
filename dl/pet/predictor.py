@@ -10,7 +10,8 @@ from detectron2.data import MetadataCatalog
 from detectron2.engine.defaults import DefaultPredictor
 from detectron2.utils.video_visualizer import VideoVisualizer
 from detectron2.utils.visualizer import ColorMode, Visualizer
-
+from torchvision.ops import boxes as box_ops
+from detectron2.structures import Boxes
 
 class VisualizationDemo(object):
     def __init__(self, cfg, instance_mode=ColorMode.IMAGE, parallel=False):
@@ -61,6 +62,17 @@ class VisualizationDemo(object):
                 )
             if "instances" in predictions:
                 instances = predictions["instances"].to(self.cpu_device)
+                #nms begin
+                #print(instances)
+                keep = box_ops.batched_nms(instances.pred_boxes.tensor, instances.scores, instances.pred_classes, 0.3)
+                instances._fields['pred_boxes'] = Boxes(instances.pred_boxes.tensor[keep])
+                instances._fields['scores'] = instances.scores[keep]
+                instances._fields['pred_classes'] = instances.pred_classes[keep]
+                instances._num_instances = len(keep)
+                print(instances)
+                print(keep)
+                # quit()
+                #nms end
                 vis_output = visualizer.draw_instance_predictions(predictions=instances)
 
         return predictions, vis_output

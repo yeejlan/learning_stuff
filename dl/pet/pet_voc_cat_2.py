@@ -95,5 +95,5 @@ def load_pet_voc_instances(dirname: str, split: str, class_names: Union[List[str
 def register_pet_voc(name, dirname, split, year, with_bbox = True, class_names=CLASS_NAMES):
     DatasetCatalog.register(name, lambda: load_pet_voc_instances(dirname, split, class_names, with_bbox))
     MetadataCatalog.get(name).set(
-        thing_classes=list(class_names), dirname=dirname, year=year, split=split
+        thing_classes=list(class_names), dirname=dirname, year=year, split=split, evaluator_type="pascal_voc",
     )

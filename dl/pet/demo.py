@@ -94,8 +94,8 @@ from detectron2.data import DatasetCatalog
 if __name__ == "__main__":
     base_dataset = os.getenv('DETECTRON2_DATASETS')
     train_dir=os.path.join(base_dataset, 'pet')
-    register_pet_voc('pet_voc_cat_2_trainval',train_dir,'trainval','2007')
-    register_pet_voc('pet_voc_cat_2_test',train_dir,'test','2007')
+    register_pet_voc('pet_voc_cat_2_trainval',train_dir,'trainval',2007)
+    register_pet_voc('pet_voc_cat_2_test',train_dir,'test',2007)
     
     mp.set_start_method("spawn", force=True)
     args = get_parser().parse_args()
