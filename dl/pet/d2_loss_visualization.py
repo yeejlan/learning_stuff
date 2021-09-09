@@ -54,9 +54,9 @@ with open('./output/metrics.json') as f:
     except:
         _mask_loss = None
 
-    y1.plot(_iter, _loss_bbox, color="green", linewidth=0.3,linestyle="-",label='loss_box_reg')
-
     y1.plot(_iter, _loss, color="blue", linewidth=0.3, linestyle="-",label='total_loss')
+    y1.plot(_iter, _loss_bbox, color="green", linewidth=0.3,linestyle="-",label='loss_box_reg')
+ 
     y1.plot(_iter, _loss_cls, color="purple", linewidth=0.3, linestyle="-",label='loss_cls')
     y1.plot(_iter, _loss_rpn_cls, color="green", linewidth=0.3, linestyle="-",label='loss_rpn_cls')
     y1.plot(_iter, _loss_rpn_loc, color="red", linewidth=0.3, linestyle="-",label='loss_rpn_loc')
