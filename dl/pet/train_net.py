@@ -167,6 +167,8 @@ if __name__ == "__main__":
     register_pet_voc('pet_voc_cat_2_test',train_dir,'test',2007)
     
     args = default_argument_parser().parse_args()
+    if args.config_file == '':
+        args.config_file = 'pet_faster_rcnn_R_50_FPN_1x.yaml'
     print("Command Line Args:", args)
     launch(
         main,

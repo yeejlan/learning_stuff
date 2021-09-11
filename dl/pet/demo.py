@@ -40,7 +40,7 @@ def get_parser():
     parser = argparse.ArgumentParser(description="Detectron2 demo for builtin configs")
     parser.add_argument(
         "--config-file",
-        default="configs/quick_schedules/mask_rcnn_R_50_FPN_inference_acc_test.yaml",
+        default="",
         metavar="FILE",
         help="path to config file",
     )
@@ -95,7 +95,6 @@ if __name__ == "__main__":
     base_dataset = os.getenv('DETECTRON2_DATASETS')
     train_dir=os.path.join(base_dataset, 'pet')
     register_pet_voc('pet_voc_cat_2_trainval',train_dir,'trainval',2007)
-    register_pet_voc('pet_voc_cat_2_test',train_dir,'test',2007)
     
     mp.set_start_method("spawn", force=True)
     args = get_parser().parse_args()
@@ -103,8 +102,9 @@ if __name__ == "__main__":
     logger = setup_logger()
     logger.info("Arguments: " + str(args))
 
+    if args.config_file == '':
+        args.config_file = 'pet_faster_rcnn_R_50_FPN_1x.yaml'
     cfg = setup_cfg(args)
-
     demo = VisualizationDemo(cfg)
 
     if args.input:

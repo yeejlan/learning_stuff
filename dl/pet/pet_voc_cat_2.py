@@ -94,12 +94,12 @@ def load_pet_voc_instances(dirname: str, split: str, class_names: Union[List[str
 
     for i in range(69):
         jpeg_file = os.path.join(dirname, "neg", str(i+1) + ".jpg")
-        im = Image.open(jpeg_file)
+        #im = Image.open(jpeg_file)
         r = {
             "file_name": jpeg_file,
             "image_id": str(i+1),
-            "height": im.size[1],
-            "width": im.size[0],
+            #"height": im.size[1],
+            #"width": im.size[0],
         }          
         r["annotations"] = []  
         dicts.append(r)
