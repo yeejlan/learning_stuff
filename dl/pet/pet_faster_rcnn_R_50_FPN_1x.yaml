@@ -9,6 +9,9 @@ DATASETS:
   TRAIN: ('pet_voc_cat_2_trainval', )
   TEST:  ('pet_voc_cat_2_trainval', )
 
+DATALOADER:
+  FILTER_EMPTY_ANNOTATIONS: False
+
 SOLVER:
   STEPS: (12000, 16000)
   MAX_ITER: 18000
