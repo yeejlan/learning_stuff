@@ -65,12 +65,12 @@ class VisualizationDemo(object):
                 #nms begin
                 #print(instances)
                 keep = box_ops.batched_nms(instances.pred_boxes.tensor, instances.scores, instances.pred_classes, 0.3)
-                instances._fields['pred_boxes'] = Boxes(instances.pred_boxes.tensor[keep])
-                instances._fields['scores'] = instances.scores[keep]
-                instances._fields['pred_classes'] = instances.pred_classes[keep]
-                instances._num_instances = len(keep)
-                print(instances)
-                print(keep)
+                # instances._fields['pred_boxes'] = Boxes(instances.pred_boxes.tensor[keep])
+                # instances._fields['scores'] = instances.scores[keep]
+                # instances._fields['pred_classes'] = instances.pred_classes[keep]
+                # instances._num_instances = len(keep)
+                # print(instances)
+                # print(keep)
                 # quit()
                 #nms end
                 vis_output = visualizer.draw_instance_predictions(predictions=instances)

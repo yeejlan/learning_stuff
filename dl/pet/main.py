@@ -1,6 +1,6 @@
 from pet_voc_cat_2 import register_pet_voc
 #from pet37 import register_pet_voc
-from detectron2.data import DatasetCatalog
+from detectron2.data import DatasetCatalog, MetadataCatalog
 import os
 
 base_dataset = os.getenv('DETECTRON2_DATASETS')
@@ -21,3 +21,17 @@ print(trainval_data[0])
 # trainval_data = DatasetCatalog.get("pet37")
 # print("data loaded, trainval total={}".format(len(trainval_data)))
 # print(trainval_data[2289])
+
+import random
+import cv2
+from detectron2.utils.visualizer import Visualizer
+
+meta = MetadataCatalog.get('pet_voc_cat_2_trainval')
+dataset_dicts = trainval_data
+for d in random.sample(dataset_dicts, 10):
+	img = cv2.imread(d["file_name"])
+	visualizer = Visualizer(img[:, :, ::-1], metadata=meta)
+	visualized_output = visualizer.draw_dataset_dict(d)
+	cv2.imshow('imshow', visualized_output.get_image()[:, :, ::-1])
+	if cv2.waitKey(0) == 27:
+		break;
