@@ -4,6 +4,8 @@ MODEL:
   MASK_ON: False
   RESNETS:
     DEPTH: 50
+  ROI_HEADS:
+    NUM_CLASSES: 37
 
 DATASETS:
   TRAIN: ('pet37', )
