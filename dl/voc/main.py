@@ -22,3 +22,8 @@ for d in random.sample(dataset_dicts, 10):
 	cv2.imshow('imshow', visualized_output.get_image()[:, :, ::-1])
 	if cv2.waitKey(0) == 27:
 		break;
+
+
+# from detectron2.utils.events import get_event_storage
+# storage = get_event_storage()
+# storage.put_image('01', images[1])
