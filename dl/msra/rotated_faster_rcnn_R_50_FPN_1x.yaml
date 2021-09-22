@@ -1,0 +1,38 @@
+_BASE_: "Base-RCNN-FPN.yaml"
+MODEL:
+  WEIGHTS: "detectron2://ImageNetPretrained/MSRA/R-50.pkl"
+  MASK_ON: False
+  RESNETS:
+    DEPTH: 50
+  ROI_HEADS:
+    NAME: "RROIHeads"
+    NUM_CLASSES: 1
+  ROI_BOX_HEAD:
+    NAME: "FastRCNNConvFCHead"
+    NUM_FC: 2
+    POOLER_TYPE: "ROIAlignRotated"
+    BBOX_REG_WEIGHTS: (10, 10, 5, 5, 1)
+    #CLS_AGNOSTIC_BBOX_REG: True
+  PROPOSAL_GENERATOR:
+    NAME: "RRPN"
+  ANCHOR_GENERATOR:
+    NAME: "RotatedAnchorGenerator"
+    SIZES: (8,16,32)
+    ASPECT_RATIOS: (0.125,0.2,0.5)
+    ANGLES: (-30,0,30,60,90,120)
+  RPN:
+    HEAD_NAME: "StandardRPNHead"
+
+
+DATASETS:
+  TRAIN: ('voc_2007_trainval', )
+  TEST:  ('voc_2007_test', )
+
+DATALOADER:
+  FILTER_EMPTY_ANNOTATIONS: False
+
+SOLVER:
+  BASE_LR: 0.02
+  STEPS: (12000, 16000)
+  MAX_ITER: 18000
+  IMS_PER_BATCH: 2
