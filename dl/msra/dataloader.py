@@ -3,6 +3,7 @@
 
 import numpy as np
 import os
+import math
 import xml.etree.ElementTree as ET
 from typing import List, Tuple, Union
 
@@ -63,7 +64,7 @@ def load_msra_instances(dirname: str, split: str, class_names: Union[List[str], 
                 bbox = vals[2:]
                 bbox[0] = bbox[0]+bbox[2]*0.5
                 bbox[1] = bbox[1]+bbox[3]*0.5
-                bbox[4] = 0-bbox[4]*180/3.1415926
+                bbox[4] = 0-bbox[4]*180/math.pi
                 instances.append(
                     {"category_id": 0, "bbox": bbox, "bbox_mode": BoxMode.XYWHA_ABS}
                 )

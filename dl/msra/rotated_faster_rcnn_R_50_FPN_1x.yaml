@@ -25,8 +25,8 @@ MODEL:
 
 
 DATASETS:
-  TRAIN: ('voc_2007_trainval', )
-  TEST:  ('voc_2007_test', )
+  TRAIN: ('msra_train', )
+  TEST:  ('msra_test', )
 
 DATALOADER:
   FILTER_EMPTY_ANNOTATIONS: False
