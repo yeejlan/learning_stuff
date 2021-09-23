@@ -52,7 +52,7 @@ class TinyResult
 
     public function cause(): string
     {
-        return join(';', $this->cause);
+        return join('; ', $this->cause);
     }
 
     public function getCause(): array
