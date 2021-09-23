@@ -4,6 +4,9 @@ MODEL:
   MASK_ON: False
   RESNETS:
     DEPTH: 50
+  RPN:
+    HEAD_NAME: "StandardRPNHead"
+    BBOX_REG_WEIGHTS: (1.0, 1.0, 1.0, 1.0, 1.0)
   ROI_HEADS:
     NAME: "RROIHeads"
     NUM_CLASSES: 1
