@@ -62,7 +62,7 @@ class TinyResult
 
     private function _addCause($cause)
     {
-        $e = new Exception;
+        $e = new \Exception;
         $traceArr = $e->getTrace();
         foreach ($traceArr as $trace){
             if(isset($trace['function'], $trace['class'])) {
