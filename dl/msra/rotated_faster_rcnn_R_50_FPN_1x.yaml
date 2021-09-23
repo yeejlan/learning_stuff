@@ -21,6 +21,9 @@ MODEL:
     ASPECT_RATIOS: (0.125,0.2,0.5)
     ANGLES: (-30,0,30,60,90,120)
 
+DATASETS:
+  TRAIN: ('msra_train', )
+  TEST:  ('msra_test', )
 
 DATALOADER:
   FILTER_EMPTY_ANNOTATIONS: False

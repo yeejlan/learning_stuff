@@ -6,9 +6,13 @@ import os
 base_dataset = os.getenv('DETECTRON2_DATASETS')
 base_dir=os.path.join(base_dataset, 'MSRA-TD500')
 
-dataset = 'msra_test'
-register_msra(dataset ,base_dir,'test','2007')
+dataset = 'msra_train'
 #register_msra(dataset ,base_dir,'test','2007')
+#register_msra(dataset ,base_dir,'test','2007')
+
+from detectron2.data.datasets import register_coco_instances
+register_coco_instances(dataset, {}, os.path.join(base_dir, 'train.json'), os.path.join(base_dir, 'JPEGImages'))
+# register_coco_instances(dataset, {}, os.path.join(base_dir, 'test.json'), os.path.join(base_dir, 'JPEGImages'))
 
 meta = MetadataCatalog.get(dataset)
 dataset_dicts = DatasetCatalog.get(dataset)

@@ -119,11 +119,11 @@ def main(args):
 
 if __name__ == "__main__":
 
-    from dataloader import register_msra
+    from detectron2.data.datasets import register_coco_instances
     base_dataset = os.getenv('DETECTRON2_DATASETS')
     train_dir=os.path.join(base_dataset, 'MSRA-TD500')
-    register_msra('msra_train',train_dir,'train',2007)
-    register_msra('msra_test',train_dir,'test',2007)
+    register_coco_instances('msra_train', {}, os.path.join(train_dir, 'train.json'), os.path.join(train_dir, 'JPEGImages'))
+    register_coco_instances('msra_test', {}, os.path.join(train_dir, 'test.json'), os.path.join(train_dir, 'JPEGImages'))
     
     args = default_argument_parser().parse_args()
     if args.config_file == '':
