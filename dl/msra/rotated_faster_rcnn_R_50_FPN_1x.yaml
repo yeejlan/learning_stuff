@@ -20,13 +20,7 @@ MODEL:
     SIZES: (8,16,32)
     ASPECT_RATIOS: (0.125,0.2,0.5)
     ANGLES: (-30,0,30,60,90,120)
-  RPN:
-    HEAD_NAME: "StandardRPNHead"
 
-
-DATASETS:
-  TRAIN: ('msra_train', )
-  TEST:  ('msra_test', )
 
 DATALOADER:
   FILTER_EMPTY_ANNOTATIONS: False
