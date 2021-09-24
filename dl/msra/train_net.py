@@ -37,11 +37,20 @@ from detectron2.evaluation import (
     SemSegEvaluator,
     verify_results,
 )
+from detectron2.data import (
+    DatasetMapper,
+    build_detection_test_loader,
+    build_detection_train_loader,
+    get_detection_dataset_dicts,
+)
+from my_dataset_mapper import MyDatasetMapper
 
 from detectron2.modeling import GeneralizedRCNNWithTTA
 
 from detectron2.data import DatasetCatalog
 #from pet_voc_evaluation import PetVOCDetectionEvaluator
+import detectron2.data.transforms as T
+from detectron2.config import LazyCall as L
 
 def build_evaluator(cfg, dataset_name, output_folder=None):
     pass
@@ -59,6 +68,24 @@ class Trainer(DefaultTrainer):
     @classmethod
     def build_evaluator(cls, cfg, dataset_name, output_folder=None):
         return build_evaluator(cfg, dataset_name, output_folder)
+
+    @classmethod
+    def build_train_loader(cls, cfg):
+        return build_detection_train_loader(cfg, 
+            mapper=MyDatasetMapper(cfg,
+                is_train=True,
+                augmentations=[
+                    #T.Resize((800, 800))
+                ],
+            image_format="BGR"
+        ))
+
+    @classmethod
+    def build_test_loader(cls, cfg, dataset_name):
+        return build_detection_test_loader(cfg, dataset_name,
+            mapper=MyDatasetMapper(cfg, is_train=True, augmentations=[
+                #T.Resize((800, 800))
+        ]))
 
     @classmethod
     def test_with_TTA(cls, cfg, model):

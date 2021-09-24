@@ -9,7 +9,7 @@ base_dataset = os.getenv('DETECTRON2_DATASETS')
 base_dir=os.path.join(base_dataset, 'MSRA-TD500')
 
 dataset = 'msra_train'
-register_msra(dataset ,base_dir,'test','2007')
+register_msra(dataset ,base_dir,'train','2007')
 meta = MetadataCatalog.get(dataset)
 dataset_dicts = DatasetCatalog.get(dataset)
 print("data loaded, total={}".format(len(dataset_dicts)))
@@ -43,7 +43,7 @@ attrDict["type"] = "instances"
 attrDict["categories"]=[{"supercategory":"none","id":1,"name":"t"}
                   ]
 jsonString = json.dumps(attrDict)
-with open("test.json", "w+") as f:
+with open("train.json", "w+") as f:
     f.write(jsonString)
 
 print('done.')

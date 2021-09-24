@@ -15,6 +15,8 @@ register_coco_instances(dataset, {}, os.path.join(base_dir, 'train.json'), os.pa
 # register_coco_instances(dataset, {}, os.path.join(base_dir, 'test.json'), os.path.join(base_dir, 'JPEGImages'))
 
 meta = MetadataCatalog.get(dataset)
+print(meta)
+quit()
 dataset_dicts = DatasetCatalog.get(dataset)
 print("data loaded, total={}".format(len(dataset_dicts)))
 print(dataset_dicts[0])
