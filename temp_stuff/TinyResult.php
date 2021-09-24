@@ -21,9 +21,6 @@ class TinyResult
                 }
 			}
 		}
-        if(!$this->cause){
-            $this->cause = [];
-        }
     }
 
     public static function setLogger($logger)
