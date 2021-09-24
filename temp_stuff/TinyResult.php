@@ -13,14 +13,14 @@ class TinyResult
         $this->data = $data;
         if($error){
             $this->_addCause($error);
-			if($data){
-			    if($data instanceof self){
+            if($data){
+                if($data instanceof self){
                     $this->cause = array_merge($this->cause, $data->getCause());
                 }else{
                     $this->cause[] = $data.'';
                 }
-			}
-		}
+            }
+        }
     }
 
     public static function setLogger($logger)
