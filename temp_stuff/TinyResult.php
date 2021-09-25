@@ -42,7 +42,7 @@ class TinyResult
     {
         if($this->error){
             if(self::$logger){
-                self::$logger->log($this->error.': '.$this->cause());
+                self::$logger->log($this->cause());
             }
             throw new TinyResultException('Bad result: '.$this->cause());
         }
