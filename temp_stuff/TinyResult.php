@@ -59,6 +59,11 @@ class TinyResult
         return $this->cause;
     }
 
+    public function __toString(): string
+    {
+        return $this->cause();
+    }
+
     private function _addCause($cause)
     {
         $e = new \Exception;
