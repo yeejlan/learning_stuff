@@ -19,7 +19,7 @@ function foo(){
         print_r($tr->getCause());
     }
     echo '~~~~~~',PHP_EOL;
-    $tr = new TinyResult('error chain', 'my error description');
+    $tr = new TinyResult('error chain', ['my error description','more detail']);
     $tr2 = new TinyResult('error chain 2',  $tr);
     print_r($tr2->getCause());
 }

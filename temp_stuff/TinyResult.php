@@ -16,6 +16,8 @@ class TinyResult
             if($data){
                 if($data instanceof self){
                     $this->cause = array_merge($this->cause, $data->getCause());
+                }else if(is_array($data)){
+                    $this->cause = array_merge($this->cause, $data);
                 }else{
                     $this->cause[] = $data.'';
                 }
