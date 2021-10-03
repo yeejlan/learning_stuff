@@ -6,7 +6,7 @@ import {
   Link
 } from "react-router-dom";
 
-import {Home, About, Dashboard} from 'pages';
+import {Home, About, Dashboard} from 'page';
 
 console.log(process.env.REACT_APP_BASE_URL)
 // This site has 3 pages, all of which are rendered
