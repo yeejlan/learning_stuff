@@ -6,7 +6,7 @@ import {
   Link
 } from "react-router-dom";
 
-import {Home, About, Dashboard} from 'page';
+import {Home, About, Dashboard, Counter} from 'page';
 
 console.log(process.env.REACT_APP_BASE_URL)
 // This site has 3 pages, all of which are rendered
@@ -32,6 +32,9 @@ export default function BasicExample() {
           <li>
             <Link to="/dashboard">Dashboard</Link>
           </li>
+          <li>
+            <Link to="/counter">Counter</Link>
+          </li>          
         </ul>
 
         <hr />
@@ -53,6 +56,9 @@ export default function BasicExample() {
           <Route path="/dashboard">
             <Dashboard />
           </Route>
+          <Route path="/counter">
+            <Counter />
+          </Route>          
         </Switch>
       </div>
     </Router>
