@@ -5,7 +5,6 @@ import {
   Route,
   Link
 } from "react-router-dom";
-import { connect } from 'react-redux'
 
 import routers from 'router';
 
@@ -35,4 +34,4 @@ function App() {
   );
 }
 
-export default connect()(App)
+export default App

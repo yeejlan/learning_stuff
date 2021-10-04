@@ -1,6 +1,4 @@
-import {Provider} from 'react-redux'
 import { useSelector, useDispatch } from 'react-redux'
-import { connect } from 'react-redux'
 
 function Counter(props){
 
@@ -23,6 +21,5 @@ function Counter(props){
       </div>
   );
 }
-
 
 export default Counter
