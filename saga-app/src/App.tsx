@@ -14,8 +14,8 @@ function App() {
     <Router basename={process.env.REACT_APP_BASE_URL}>
       <div>
         <ul>
-          {routers.map((one, index) => (
-            <React.Fragment key={index}>
+          {routers.map((one, i) => (
+            <React.Fragment key={i}>
               <li>
                 <Link to={one.path}>{one.name}</Link>
               </li>
@@ -26,8 +26,8 @@ function App() {
         <hr />
 
         <Switch>
-        {routers.map((one, index) => (
-          <Route key={index} {...one} />
+        {routers.map((one, i) => (
+          <Route key={i} {...one} />
         ))}
         </Switch>
       </div>
