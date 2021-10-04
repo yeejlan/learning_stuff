@@ -9,7 +9,6 @@ function* login(username, password) {
 export function* loginFlow() {
     while (true) {
         let request = yield take('user.login');
-        console.log(request);
         let response = yield call(login, request.username, request.password);
         console.log(response);
         if(response&&response.code === 0){
