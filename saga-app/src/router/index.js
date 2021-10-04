@@ -1,4 +1,4 @@
-import {Home, About, Dashboard, Counter} from 'page';
+import {Home, About, Dashboard, Counter} from 'view';
 
 const routers = [
   { path: "/", name: "Home", component: Home, exact: true, permission: {'a':1}},
