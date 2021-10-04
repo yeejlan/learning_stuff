@@ -14,28 +14,21 @@ function App() {
     <Router basename={process.env.REACT_APP_BASE_URL}>
       <div>
         <ul>
-          {routers.map((one, index) => {
-            return (<React.Fragment key={index}>
+          {routers.map((one, index) => (
+            <React.Fragment key={index}>
               <li>
                 <Link to={one.path}>{one.name}</Link>
               </li>
-            </React.Fragment>)
-          })}
+            </React.Fragment>
+          ))}
         </ul>
 
         <hr />
 
-        {/*
-          A <Switch> looks through all its children <Route>
-          elements and renders the first one whose path
-          matches the current URL. Use a <Switch> any time
-          you have multiple routes, but you want only one
-          of them to render at a time
-        */}
         <Switch>
-        {routers.map((one, index) => {
-          return (<Route key={index} {...one} />)
-        })}
+        {routers.map((one, index) => (
+          <Route key={index} {...one} />
+        ))}
         </Switch>
       </div>
     </Router>
