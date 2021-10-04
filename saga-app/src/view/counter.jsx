@@ -1,6 +1,6 @@
 import { useSelector, useDispatch } from 'react-redux'
 
-function Counter(props){
+function Counter(){
 
   const dispatch = useDispatch()
   const count = useSelector((state) => state.counter.value)

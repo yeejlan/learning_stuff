@@ -1,13 +1,8 @@
 import {put, take, call, fork} from 'redux-saga/effects'
 import client from 'api/client'
 
-interface AuthData{
-  username: string,
-  password: string,
-}
 
-
-function* login(username, password) :Generator<any, any, any>{
+function* login(username, password) {
   yield {code:0, data: {userid:123, token:12345}}
 }
 
