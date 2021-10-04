@@ -5,6 +5,7 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { createStore, applyMiddleware } from 'redux'
 import createSagaMiddleware from 'redux-saga'
+import {Provider} from 'react-redux'
 import myReducer from 'reducer'
 import mySaga from 'saga'
 
@@ -16,11 +17,10 @@ const store = createStore(
 sagaMiddleware.run(mySaga)
 
 ReactDOM.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-  document.getElementById('root')
-);
+    <Provider store={store}>
+        <App/>
+    </Provider>
+, document.getElementById('root'));
 
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))
