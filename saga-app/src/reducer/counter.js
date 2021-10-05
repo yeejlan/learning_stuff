@@ -7,17 +7,22 @@ export default function reducer(state = initialState, action){
 		case 'counter.increment':
 			return {
 				...state,
-				value: state.value + 1
+				value: state.value + 1,
 			};
 		case 'counter.decrement':
 			return {
 				...state,
-				value: state.value - 1
+				value: state.value - 1,
 			};
 		case 'counter.incrementByAmount':
 			return {
 				...state,
-				value: state.value + action.amount
+				value: state.value + action.amount,
+			};
+		case 'counter.setFixedValue':
+			return {
+				...state,
+				value: state.value = 112233,
 			};
 		default:
 			return state

@@ -33,13 +33,22 @@ axios.interceptors.response.use(function(res) {
   return res.data;
 });
 
-// axios.defaults.headers.authorization = localStorage.getItem("jwttoken") || '';
+//axios.defaults.headers.authorization = localStorage.getItem("jwttoken") || '';
 
-export default {
+const client = {
 	get: (url) => {
-		axios.get(url, config);
+		axios.get(url, config)
+    .catch(function (error) {
+      console.log(error)
+    });
 	},
 	post: (url, data) => {
-		axios.post(url, data, config);
+		axios.post(url, data, config)
+    .catch(function (error) {
+      console.log(error)
+      Promise.reject(error)
+    });
 	}
 }
+
+export default client;
