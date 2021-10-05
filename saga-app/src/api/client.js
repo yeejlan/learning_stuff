@@ -1,54 +1,36 @@
-import axios from "axios";
+import axios from 'axios'
+import NProgress from 'nprogress'
+import 'nprogress/nprogress.css' 
+// NProgress.configure({showSpinner: false})
 
-const config = {
-  baseURL: process.env.REACT_APP_API_URL,
-  transformRequest: [
-    function(data) {
-      if (data) {
-        let ret = "";
-        Object.keys(data).forEach(function(key) {
-          ret +=
-            encodeURIComponent(key) + "=" + encodeURIComponent(data[key]) + "&";
-        });
-        return ret;
-      }
-      return data;
-    }
-  ],
+const instance = axios.create({
+  baseURL: process.env.REACT_APP_API_URL, 
+  timeout: 5000,
+  headers: {},
+  withCredentials: false,
+})
 
-  transformResponse: [
-    function(data) {
-      return data;
-    }
-  ],
-  headers: {
-    "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8"
+instance.interceptors.request.use(
+  (config) => {
+    NProgress.start()
+    return config
   },
-  timeout: 10000,
-  responseType: "json"
-};
+  (err) => {
+    NProgress.done()
+    console.log(err)
+    return err
+  }
+)
+instance.interceptors.response.use(
+  (res) => {
+    NProgress.done()
+    return res.data
+  },
+  (err) => {
+    NProgress.done()
+    console.log(err)
+    return err
+  }
+)
 
-axios.interceptors.response.use(function(res) {
-  //corresponding interceptor
-  return res.data;
-});
-
-//axios.defaults.headers.authorization = localStorage.getItem("jwttoken") || '';
-
-const client = {
-	get: (url) => {
-		axios.get(url, config)
-    .catch(function (error) {
-      console.log(error)
-    });
-	},
-	post: (url, data) => {
-		axios.post(url, data, config)
-    .catch(function (error) {
-      console.log(error)
-      Promise.reject(error)
-    });
-	}
-}
-
-export default client;
+export default instance
