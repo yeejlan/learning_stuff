@@ -1,5 +1,5 @@
 import { useSelector, useDispatch } from 'react-redux'
-import deepEqual from 'fast-deep-equal'
+//import deepEqual from 'fast-deep-equal'
 import { shallowEqual } from 'react-redux'
 
 function Home() {

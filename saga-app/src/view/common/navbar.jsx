@@ -1,37 +1,35 @@
-import { Tabs, Tab } from 'react-bootstrap';
+import { Container, Nav } from 'react-bootstrap';
 import {
-  BrowserRouter as Router,
   Switch,
   Route,
-  Link
+  useLocation,
+  Link,
 } from "react-router-dom";
+import routers from 'router';
+import classnames from 'classnames';
 
 function Navbar() {
+
+  const location = useLocation();
   return (
 <>
-<Tabs id="navbar-tab-menu" className="mb-3">
-{routers.map((one, i) => (
-  <Tab title={one.name}>
-    <li>
-      <Link to={one.path}>{one.name}</Link>
-    </li>
-  </React.Fragment>
-))}
-  <Tab eventKey="home" title="Home">
-    <Button style={{marginLeft: '10px'}} variant="primary">Primary</Button>
-  </Tab>
-  <Tab eventKey="profile" title="Profile">
-    bbb
-  </Tab>
-  <Tab eventKey="contact" title="Contact">
-    ccc
-  </Tab>
-</Tabs>
-<Switch>
-{routers.map((one, i) => (
-  <Route key={i} {...one} />
-))}
-</Switch>
+  <Container className="mt-2" >
+      <Nav variant="tabs" defaultActiveKey="/">
+        {routers.map((one, i) => (
+          <Nav.Item key={i}>
+            <Link role="button" 
+              className={classnames('nav-link', location.pathname === one.path ? 'active' : '')} 
+              to={one.path}>{one.name}
+            </Link>
+          </Nav.Item>
+        ))}
+      </Nav>
+      <Switch>
+        {routers.map((one, i) => (
+          <Route key={i} exact={one.exact} path={one.path} component={one.component} />  
+        ))}
+      </Switch>
+  </Container>
 </>
   );
 }
