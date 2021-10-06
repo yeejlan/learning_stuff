@@ -22,7 +22,7 @@ export default function reducer(state = initialState, action){
 		case 'counter.setFixedValue':
 			return {
 				...state,
-				value: state.value = 112233,
+				value: state.value = 100,
 			};
 		default:
 			return state
