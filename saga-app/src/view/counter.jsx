@@ -1,4 +1,5 @@
 import { useSelector, useDispatch } from 'react-redux'
+import { Button } from 'react-bootstrap';
 
 function Counter(){
   console.log('render counter')
@@ -20,9 +21,9 @@ function Counter(){
   return (
       <div>
         <h2>counter: {count}</h2>
-        <button onClick={counterIncrement}>add</button>
-        <button onClick={counterDecrement} style={ {marginLeft: '8px'} }>sub</button>
-        <button onClick={counterSetFixedValue} style={ {marginLeft: '8px'} }>set fixed value</button>
+        <Button variant="outline-primary" onClick={counterIncrement}>add</Button>
+        <Button variant="outline-primary" onClick={counterDecrement} style={ {marginLeft: '8px'} }>sub</Button>
+        <Button variant="outline-primary" onClick={counterSetFixedValue} style={ {marginLeft: '8px'} }>set fixed value</Button>
       </div>
   );
 }

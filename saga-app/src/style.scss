@@ -5,10 +5,12 @@ $blue: rgb(0, 128, 192);
     color: #fff;
 }
 
-.btn-primary:hover {
+.btn-primary:hover, .btn-outline-primary:hover {
     color: #fff;
 }
 
-.btn-primary:focus {
+.btn-primary:focus-wintin, .btn-outline-primary:focus-wintin {
     color: #fff;
 }
+
+

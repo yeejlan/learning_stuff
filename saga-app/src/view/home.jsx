@@ -1,6 +1,7 @@
 import { useSelector, useDispatch } from 'react-redux'
 //import deepEqual from 'fast-deep-equal'
 import { shallowEqual } from 'react-redux'
+import { Button } from 'react-bootstrap';
 
 function Home() {
   console.log("render home");
@@ -14,7 +15,7 @@ function Home() {
   return (
     <div>
       <h2>Current user id: {user.userid}</h2>
-      <button onClick={login}>login</button>
+      <Button variant="outline-primary" onClick={login}>login</Button>
     </div>
   );
 }
