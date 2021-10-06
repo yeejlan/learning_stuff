@@ -8,6 +8,8 @@ import {Provider} from 'react-redux'
 import myReducer from 'reducer'
 import mySaga from 'saga'
 
+import 'style.scss'
+
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 
 const sagaMiddleware = createSagaMiddleware()
