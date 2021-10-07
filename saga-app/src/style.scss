@@ -13,10 +13,17 @@ $blue: rgb(0, 128, 192);
     color: #fff;
 }
 
+* {
+    box-sizing:border-box;
+}
+
+.app_container {
+    width: 100%;    
+}
 
 .sidebar_left_panel {
-    min-width: 240px;
-    height: 100vh;
+    min-width: 12rem;
+    height: calc(100vh - 3.5rem);
 }
 .sidebar_left_panel > li:hover{
     background-color: rgba(130, 212, 245, 0.548);
