@@ -14,3 +14,13 @@ $blue: rgb(0, 128, 192);
 }
 
 
+.sidebar_left_panel {
+    min-width: 240px;
+    height: 100vh;
+}
+.sidebar_left_panel > li:hover{
+    background-color: rgba(130, 212, 245, 0.548);
+}
+.sidebar_left_panel {
+    padding: .5rem;
+}

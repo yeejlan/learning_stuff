@@ -1,9 +1,10 @@
+import Sidebar from './common/sidebar';
 
 function About() {
   return (
-    <div>
-      <h2>About2</h2>
-    </div>
+    <>
+      <Sidebar />
+    </>
   );
 }
 
