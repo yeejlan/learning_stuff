@@ -1,0 +1,12 @@
+version: '3.2'
+
+services:
+
+  snapshot-weichaishi-api:
+    build: .
+    image: snapshot-weichaishi-api:v1.0
+    ports:
+      - 8017:80
+      - 28017:28017
+    volumes:
+      - ./:/app
