@@ -35,6 +35,24 @@ services:
   #   deploy:
   #     restart_policy:
   #       condition: on-failure
+  # konga-init:
+  #   image: 'pantsel/konga:latest'
+  #   command: -c prepare -a postgres -u postgresql://kong:kong@db:5432/kong
+  #   environment:
+  #     DB_ADAPTER: postgres
+  #     DB_HOST: db
+  #     DB_PORT: 5432
+  #     DB_USER: kong
+  #     DB_PASSWORD: kong
+  #     DB_DATABASE: kong
+  #   depends_on:
+  #     - db
+  #   networks:
+  #     - database
+  #   restart: on-failure
+  #   deploy:
+  #     restart_policy:
+  #       condition: on-failure
 
   kong:
     image: "${KONG_DOCKER_TAG:-kong:latest}"
@@ -61,13 +79,8 @@ services:
     ports:
       - 8000:8000
       - 8001:8001
-      - 8443:8443
-      - 8444:8444
-    expose:
-      - 8000
-      - 8001
-      - 8443
-      - 8444
+#      - 8443:8443
+#      - 8444:8444
     healthcheck:
       test: ["CMD", "kong", "health"]
       interval: 10s
@@ -96,6 +109,8 @@ services:
         condition: on-failure
     stdin_open: true
     tty: true
+    ports:
+      - 5432:5432    
     networks:
       - database
     volumes:
@@ -106,9 +121,15 @@ services:
     container_name: konga
     restart: always
     environment:
-      - NODE_ENV=development
-      - NODE_TLS_REJECT_UNAUTHORIZED=0
-      - KONG_ADMIN_URL=http://kong:8001
+      DB_ADAPTER: postgres
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: kong
+      DB_PASSWORD: kong
+      DB_DATABASE: kong      
+      NODE_ENV: production
+      NODE_TLS_REJECT_UNAUTHORIZED: 0
+      KONG_ADMIN_URL: http://kong:8001
     depends_on:
       - kong
     ports:
@@ -116,6 +137,7 @@ services:
     expose:
       - 1337
     networks:
+      - database
       - backend
       - frontend
 
