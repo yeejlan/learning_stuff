@@ -47,8 +47,16 @@ a {
     margin-right: .3rem;
 }
 
+.sidebar_item a {
+    color: $dark;
+}
+
 .sidebar_item a:hover {
-    color: #933;
+    color: $blue;
+}
+
+.sidebar_item_active {
+    font-weight: bold;
 }
 
 .sidebar_item_parent:before {

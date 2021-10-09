@@ -56,12 +56,12 @@ function Sidebar(props) {
                   fill="#175d96">
                 <path d="M9.2 4.5l4.5 4.7c.2.2.3.5.3.8s-.1.6-.3.8l-4.5 4.7c-.5.4-1.2.4-1.7 0-.4-.5-.4-1 0-1.6l3.8-3.9-3.8-4c-.4-.4-.4-1 0-1.5.5-.4 1.2-.4 1.7 0z"></path>
                 </svg>
-                <Link ariaCurrent="page" className="sidebar_item_title text-dark font-monospace" to={one.path}>{one.name}</Link>
+                <Link ariaCurrent="page" className="sidebar_item_title font-monospace" to={one.path}>{one.name}</Link>
                 {one.submenu != undefined && 
                 <ul className="sidebar_item_parent">
                   {one['submenu'].map((subone, j) => (
                   <li key={j} className="sidebar_item_child">
-                    <Link ariaCurrent="page" className="text-dark font-monospace" to={subone.path}>{subone.name}</Link>
+                    <Link ariaCurrent="page" className="font-monospace" to={subone.path}>{subone.name}</Link>
                   </li>
                   ))}
                 </ul>
