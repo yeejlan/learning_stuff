@@ -14,7 +14,6 @@ $blue: rgb(0, 128, 192);
 }
 
 * {
-    box-sizing:border-box;
     list-style:none;
 }
 
@@ -23,7 +22,7 @@ a {
 }
 
 .app_container {
-    width: 100%;    
+    width: 100%;
 }
 
 .sidebar_left_panel {
@@ -43,8 +42,19 @@ a {
     position: relative;
 }
 
-.sidebar_item_toggle {
+.sidebar_item_open .sidebar_item_toggle {
+    transform: rotate(90deg);
+}
+
+.sidebar_item_fixed {
+    margin-top: -.075rem;
     margin-right: .3rem;
+}
+
+.sidebar_item_toggle {
+    @extend .sidebar_item_fixed;
+    cursor: pointer;
+    transition: .1s;
 }
 
 .sidebar_item a {
@@ -53,10 +63,6 @@ a {
 
 .sidebar_item a:hover {
     color: $blue;
-}
-
-.sidebar_item_active {
-    font-weight: bold;
 }
 
 .sidebar_item_parent:before {
