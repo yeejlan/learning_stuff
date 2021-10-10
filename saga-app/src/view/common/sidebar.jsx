@@ -40,7 +40,7 @@ const sidebar_menus = [
 ]
 
 function SideBarContent(props) {
-  const content = props.content;
+  const {content} = props;
   return(
     <>
       <span className="p-3">{content}</span>
@@ -106,10 +106,10 @@ function Sidebar(props) {
             ))}
         </div>
       </div>
-      <div className="sidebar_right_panel p-5 col">
+      <div className="content_right_panel col">
             <Switch>
               {sidebar_menus.map((one, i) => (
-                <Route key={i} exact={one.exact} path={one.path} component={<SideBarContent content={one.name} />} />
+                <Route key={i} exact={one.exact} path={one.path} render={ () => <SideBarContent content={one.name} />} />
               ))}
             </Switch>
       </div>
