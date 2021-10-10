@@ -70,7 +70,7 @@ function SidebarMenu(props) {
         }
         {one.submenu === undefined && 
         <>
-        <svg className="sidebar_item_fixed" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" width="15" height="17" fill="#175d96">
+        <svg className="sidebar_item_decorate" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" width="15" height="17" fill="#175d96">
         <path d="M10 3.3c-.6 0-1 .4-1.1 1.1v11.2c0 .3.2.6.4.8s.5.4.8.4c.6 0 1-.4 1.1-1.1V4.5c0-.3-.2-.6-.4-.8s-.5-.4-.8-.4z"></path>
         </svg>
         <Link aria-current="page" className="sidebar_item_title font-monospace" to={one.path}>{one.name}</Link>

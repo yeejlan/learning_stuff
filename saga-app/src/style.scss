@@ -46,13 +46,13 @@ a {
     transform: rotate(90deg);
 }
 
-.sidebar_item_fixed {
+.sidebar_item_decorate {
     margin-top: -.075rem;
     margin-right: .3rem;
 }
 
 .sidebar_item_toggle {
-    @extend .sidebar_item_fixed;
+    @extend .sidebar_item_decorate;
     cursor: pointer;
     transition: .1s;
 }
