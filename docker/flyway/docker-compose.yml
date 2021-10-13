@@ -1,0 +1,10 @@
+version: "3.3"
+services:
+  flyway-migrate:
+    build: .
+    image: flyway-migrate:v1.0
+    command: migrate
+    volumes:
+      - ./conf:/flyway/conf
+      - ./sql:/flyway/sql
+    restart: on-failure

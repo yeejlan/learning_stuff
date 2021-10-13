@@ -2,9 +2,9 @@ version: '3.2'
 
 services:
 
-  snapshot-weichaishi-api:
+  my-app:
     build: .
-    image: snapshot-weichaishi-api:v1.0
+    image: my-app:v1.0
     ports:
       - 8017:80
       - 28017:28017
