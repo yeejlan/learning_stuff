@@ -4,6 +4,7 @@ COPY docker/sources.list.buster /etc/apt/sources.list
 
 RUN sed -i 's#date.timezone = UTC#date.timezone = Asia/Shanghai#g' /opt/bitnami/php/etc/php.ini
 
+#opcache.revalidate_freq = 0 means always validate timestamp
 RUN sed -i 's#opcache.revalidate_freq = 60#opcache.revalidate_freq = 0#g' /opt/bitnami/php/etc/php.ini
 RUN sed -i 's#opcache.memory_consumption = 128#opcache.memory_consumption = 256#g' /opt/bitnami/php/etc/php.ini
 RUN sed -i 's#opcache.max_accelerated_files = 4000#opcache.max_accelerated_files = 20000#g' /opt/bitnami/php/etc/php.ini
