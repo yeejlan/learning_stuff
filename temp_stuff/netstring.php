@@ -24,9 +24,6 @@ class NetString {
 	    }else {
             sscanf($netstring, '%9u', $len);
         }
-        if($len > 999999999) {
-            throw new NetStringException('Invalid length.');
-        }
         if($streaming) {
             $recv_len = $len+1;
             $data = '';
@@ -41,7 +38,12 @@ class NetString {
             $paypoad = substr($data, 0, $len);
             $ending = substr($data, -1);
         }else {
-            $paypoad = substr($netstring, strlen($len)+1, $len);
+            $spos = strlen($len);
+            $delimiter = substr($netstring, $spos, 1);
+            if($delimiter != self::DELIMITER) {
+                throw new NetStringException('Invalid delimiter.');
+            }            
+            $paypoad = substr($netstring, $spos+1, $len);
             $ending = substr($netstring, -1);
         }
 
