@@ -7,7 +7,7 @@ class NetString {
 	public static function encode($value) {
 		$value = json_encode($value);
 		$len = strlen($value);
-		return $len.':'.$value.',';
+		return $len."\n".$value.',';
 	}
 
 	public static function decode($netstring, $streaming = false)
@@ -15,7 +15,7 @@ class NetString {
 	    if (!$netstring) {
 	        throw new NetStringException('Can\'t decode empty string.');
 	    }
-	    $len = 119;
+	    $len = 0;
 	    if($streaming) {
 	    	fscanf($netstring, '%9u', $len);
 	    }else {
@@ -25,7 +25,6 @@ class NetString {
 			throw new NetStringException('Invalid length.');
 		}
 		if($streaming) {
-			fseek($netstring, strlen($len)+1);
 			$data = fread($netstring, $len+1);
 			if(strlen($data) != $len+1) {
 				throw new NetStringException('Read stream error.');
