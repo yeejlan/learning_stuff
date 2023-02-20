@@ -7,21 +7,21 @@ class NetString {
     const DELIMITER = "\n";
     const ENDING = ',';
 
-	public static function encode($value) {
+    public static function encode($value) {
         $value = json_encode($value);
         $len = strlen($value);
         return $len . self::DELIMITER . $value . self::ENDING;
-	}
+    }
 
-	public static function decode($netstring, $streaming = false)
-	{
-	    if (!$netstring) {
-	        throw new NetStringException('Can\'t decode empty string.');
-	    }
-	    $len = 0;
-	    if($streaming) {
-	    	fscanf($netstring, '%9u', $len);
-	    }else {
+    public static function decode($netstring, $streaming = false)
+    {
+        if (!$netstring) {
+            throw new NetStringException('Can\'t decode empty string.');
+        }
+        $len = 0;
+        if($streaming) {
+            fscanf($netstring, '%9u', $len);
+        }else {
             sscanf($netstring, '%9u', $len);
         }
         if($streaming) {
@@ -51,7 +51,7 @@ class NetString {
             throw new NetStringException('Invalid ending.');
         }
         return json_decode($paypoad, true);
-	}
+    }
 
 }
 
