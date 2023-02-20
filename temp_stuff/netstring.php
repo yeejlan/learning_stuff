@@ -4,10 +4,13 @@ class NetStringException extends \Exception{};
 
 class NetString {
 
+    const DELIMITER = "\n";
+    const ENDING = ',';
+
 	public static function encode($value) {
-		$value = json_encode($value);
-		$len = strlen($value);
-		return $len."\n".$value.',';
+        $value = json_encode($value);
+        $len = strlen($value);
+        return $len . self::DELIMITER . $value . self::ENDING;
 	}
 
 	public static function decode($netstring, $streaming = false)
@@ -19,26 +22,33 @@ class NetString {
 	    if($streaming) {
 	    	fscanf($netstring, '%9u', $len);
 	    }else {
-	    	sscanf($netstring, '%9u', $len);
-	    }
-		if($len > 999999999) {
-			throw new NetStringException('Invalid length.');
-		}
-		if($streaming) {
-			$data = fread($netstring, $len+1);
-			if(strlen($data) != $len+1) {
-				throw new NetStringException('Read stream error.');
-			}
-			$paypoad = substr($data, 0, $len);
-			$ending = substr($data, -1);
-		}else {
-			$paypoad = substr($netstring, strlen($len)+1, $len);
-			$ending = substr($netstring, -1);
-		}
-		if($ending != ',') {
-			throw new NetStringException('Invalid ending.');
-		}
-		return json_decode($paypoad, true);
+            sscanf($netstring, '%9u', $len);
+        }
+        if($len > 999999999) {
+            throw new NetStringException('Invalid length.');
+        }
+        if($streaming) {
+            $recv_len = $len+1;
+            $data = '';
+            while ($recv_len && !feof($netstring)) {
+                $recv = fread($netstring, $recv_len);
+                $data .= $recv;
+                $recv_len -= strlen($recv);
+            }
+            if(strlen($data) != $len+1) {
+                throw new NetStringException('Read stream error.');
+            }
+            $paypoad = substr($data, 0, $len);
+            $ending = substr($data, -1);
+        }else {
+            $paypoad = substr($netstring, strlen($len)+1, $len);
+            $ending = substr($netstring, -1);
+        }
+
+        if($ending != self::ENDING) {
+            throw new NetStringException('Invalid ending.');
+        }
+        return json_decode($paypoad, true);
 	}
 
 }
