@@ -79,8 +79,8 @@ $NNN =5000;
 
 $t1 = microtime(true);
 for($i=0;$i<$NNN;$i++){
-	$encoded = NetString::encode($payload);
-	$decoded = NetString::decode($encoded);
+    $encoded = NetString::encode($payload);
+    $decoded = NetString::decode($encoded);
 }
 $t2 = microtime(true);
 
@@ -89,7 +89,7 @@ echo $t2-$t1,PHP_EOL;
 
 $t1 = microtime(true);
 for($i=0;$i<$NNN;$i++){
-	$encoded = json_encode($payload);
+    $encoded = json_encode($payload);
     $decoded = json_decode($encoded, true);
 }
 $t2 = microtime(true);
