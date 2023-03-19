@@ -54,7 +54,7 @@ class AutoRouter extends Router implements BindingRegistrar, RegistrarContract {
 
         try{
             $class = app()->make($className);
-        }catch(Illuminate\Contracts\Container\BindingResolutionException $e){
+        }catch(\Illuminate\Contracts\Container\BindingResolutionException $e){
             //class not existed.
             abort(404);
         }
