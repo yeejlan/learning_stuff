@@ -1,0 +1,23 @@
+[package]
+name = "hello"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+cached = "0.44.0"
+actix-web = "4"
+serde = { version = "1.0.171", features = ["derive"] }
+serde_json = "1.0.102"
+uuid = { version = "1.4.0", features = ["v4"] }
+rand = "0.8.5"
+tracing = { version = "0.1", features = ["log"] }
+tracing-subscriber = { version = "0.3", features = ["registry", "env-filter"] }
+tracing-log = "0.1"
+pin-project = "1.0.0"
+#tracing-actix-web = "0.6"
+#tracing-actix-web = { version = "0.7.5", default-features = false }
+
+[patch.crates-io]
+tracing-actix-web = { path = "../tracing-actix-web" }
