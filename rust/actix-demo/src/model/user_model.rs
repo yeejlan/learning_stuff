@@ -12,10 +12,10 @@ pub mod status {
 
     pub fn get_map() -> BTreeMap<i32, String> {
         BTreeMap::from([
-            (NORMAL, "normal".to_string()),
-            (ACTIVE, "active".to_string()),
-            (FROZEN, "frozen".to_string()),
-            (CLOSED, "closed".to_string()),
+            (NORMAL, String::from("normal")),
+            (ACTIVE, String::from("active")),
+            (FROZEN, String::from("frozen")),
+            (CLOSED, String::from("closed")),
         ])
     }
 
