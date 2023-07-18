@@ -10,6 +10,7 @@ pub mod status {
     pub const FROZEN: i32 = 3;
     pub const CLOSED: i32 = 4;
 
+    #[once]
     pub fn get_map() -> BTreeMap<i32, String> {
         BTreeMap::from([
             (NORMAL, String::from("normal")),
