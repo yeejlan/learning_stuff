@@ -39,7 +39,8 @@ pub mod status {
     pub fn to_str(value: i32)-> Result<String, Exception> {
         let m = get_map();
         m.get(&value)
-            .ok_or_else(|| format!("status not found: {}", value).into())
             .cloned()
+            .ok_or_else(|| format!("status not found: {}", value).into())
+            
     }
 }
