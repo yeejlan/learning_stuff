@@ -30,13 +30,15 @@ pub mod status {
 
     pub fn from_str(value: &str) -> Result<i32, Exception> {
         let m = get_map_reversed();
-        m.get(value).copied()
-        .ok_or_else(|| format!("status not found: {}", value).into())
+        m.get(value)
+            .copied()
+            .ok_or_else(|| format!("status not found: {}", value).into())
     }
 
     pub fn to_str(value: i32)-> Result<String, Exception> {
         let m = get_map();
         m.get(&value)
-            .ok_or_else(|| format!("status not found: {}", value).into()).cloned()
+            .ok_or_else(|| format!("status not found: {}", value).into())
+            .cloned()
     }
 }
