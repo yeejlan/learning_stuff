@@ -8,22 +8,22 @@ pub mod status {
     pub const NORMAL: i32 = 1;
     pub const ACTIVE: i32 = 2;
     pub const FROZEN: i32 = 3;
-    pub const CLOSED: i32 = 3;
+    pub const CLOSED: i32 = 4;
 
-    pub fn get_map() -> BTreeMap<i32, &'static str> {
+    pub fn get_map() -> BTreeMap<i32, String> {
         BTreeMap::from([
-            (NORMAL, "normal"),
-            (ACTIVE, "active"),
-            (FROZEN, "frozen"),
-            (CLOSED, "closed"),
+            (NORMAL, "normal".to_string()),
+            (ACTIVE, "active".to_string()),
+            (FROZEN, "frozen".to_string()),
+            (CLOSED, "closed".to_string()),
         ])
     }
 
     #[once]
-    pub fn get_map_reversed() -> BTreeMap<&'static str, i32> {
-        let mut m: BTreeMap<&str, i32> = BTreeMap::new();
+    pub fn get_map_reversed() -> BTreeMap<String, i32> {
+        let mut m: BTreeMap<String, i32> = BTreeMap::new();
         for v in get_map() {
-            m.insert(v.1, v.0);
+            m.insert(v.1.to_owned(), v.0);
         };
         m
     }
@@ -34,8 +34,9 @@ pub mod status {
         .ok_or_else(|| format!("status not found: {}", value).into())
     }
 
-    pub fn to_str(value: i32)-> &'static str {
+    pub fn to_str(value: i32)-> Result<String, Exception> {
         let m = get_map();
-        m.get(&value).unwrap()
+        m.get(&value)
+            .ok_or_else(|| format!("status not found: {}", value).into()).cloned()
     }
 }
