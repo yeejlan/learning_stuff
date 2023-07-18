@@ -93,7 +93,7 @@ macro_rules! root_span {
                 ($level:expr) => {
                     $crate::ext::request_id_middleware::root_span_macro::private::tracing::span!(
                         $level,
-                        "HTTP fiber",
+                        "HTTP request",
                         // http.method = %http_method,
                         // http.route = %http_route,
                         // http.flavor = %$crate::root_span_macro::private::http_flavor($request.version()),
