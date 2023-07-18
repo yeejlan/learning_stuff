@@ -11,8 +11,6 @@ fn init_subscriber() {
     let subscriber = tracing_subscriber::fmt()
     // Use a more compact, abbreviated log format
     .compact()
-    .with_line_number(true)
-    .with_file(true)
     // Don't display the event's target (module path)
     .with_target(false)
     // Build the subscriber
