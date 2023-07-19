@@ -22,6 +22,7 @@ fn init_subscriber() {
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
+    dotenvy::dotenv().expect(".evn file not found");
     init_subscriber();
 
     HttpServer::new(|| {
