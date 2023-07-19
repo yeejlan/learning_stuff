@@ -823,6 +823,7 @@ dependencies = [
  "cached",
  "criterion",
  "dotenvy",
+ "once_cell",
  "pin-project",
  "rand",
  "serde",
