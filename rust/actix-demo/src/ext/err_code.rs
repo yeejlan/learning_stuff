@@ -1,4 +1,5 @@
 use std::collections::BTreeMap;
+use cached::proc_macro::once;
 
 //error kind
 pub const USER_EXCEPTION: i32 = -1000;
@@ -16,6 +17,8 @@ pub const RESOURCE_NOT_FOUND: i32 = 1400;
 pub const OPERATION_FAILED: i32 = 1500;
 pub const OPERATION_PENDING: i32 = 1600;
 
+
+#[once]
 pub fn get_map() -> BTreeMap<i32, &'static str> {
     BTreeMap::from([
         (401, "unauthorized"),
