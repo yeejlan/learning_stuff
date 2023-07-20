@@ -12,7 +12,7 @@ use cached::proc_macro::once;
 
 pub fn b_err_code_get_map_benchmark(c: &mut Criterion) {
     c.bench_function("error code get_map", 
-        |b| b.iter(||  err_code::get_map().lock().unwrap() ));
+        |b| b.iter(||  err_code::get_map()));
 }
 
 pub fn b_user_status_get_map_benchmark(c: &mut Criterion) {
