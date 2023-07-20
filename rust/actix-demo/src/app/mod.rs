@@ -1,4 +1,4 @@
 pub mod db;
-pub mod app_status;
+pub mod app_state;
 
-pub use app_status::AppState;
+pub use app_state::AppState;
