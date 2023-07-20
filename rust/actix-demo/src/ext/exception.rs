@@ -165,6 +165,12 @@ impl From<serde_json::Error> for Exception {
     }
 }
 
+impl From<sqlx::Error> for Exception {
+    fn from(e: sqlx::Error) -> Self {
+        Self{code:500, message: format!("Query error: {}", e), ..Default::default()}
+    }
+}
+
 impl std::error::Error for Exception {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         None

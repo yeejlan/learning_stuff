@@ -1,3 +1,30 @@
+use actix_web::web;
+use sqlx::{types::chrono::{Utc, DateTime}};
+
+use crate::app::AppContext;
+#[derive(Debug)]
+pub struct UserModel {
+    pub id: i64,
+    pub name: String,
+    pub email: Option<String>,
+    pub password: String,
+    pub status: Option<i32>,
+    pub created_at: Option<DateTime::<Utc>>,
+    pub updated_at: Option<DateTime::<Utc>>,
+}
+
+pub async fn get_user_info(ctx: web::Data<AppContext>, user_id: i64) -> Result<UserModel, sqlx::Error> {
+
+    sqlx::query_as!(UserModel,
+        r#"
+select * from users where id = ?
+        "#,
+        user_id
+    )
+    .fetch_one(&ctx.db_default)
+    .await
+}
+
 pub mod status {
     use cached::proc_macro::once;
     use std::collections::BTreeMap;

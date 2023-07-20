@@ -38,7 +38,7 @@ async fn main() -> std::io::Result<()> {
             // accept all content type
             .content_type(|_mime| true);        
         App::new()
-            .app_data(ctx.clone())
+            .app_data(web::Data::new(ctx.clone()))
             .wrap_fn(|req, srv| {
                 let id = req.extensions()
                     .get::<RequestId>()
