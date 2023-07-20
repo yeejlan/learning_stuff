@@ -6,7 +6,7 @@ use super::{env_u32, env_string};
 pub async fn get_mysql_pool(db_name: &str) -> MySqlPool {
     _mysql_pool(db_name)
         .await
-        .expect(&format! ("Can nott connect to mysql [{}]", db_name))
+        .expect(&format! ("Can not connect to mysql [{}]", db_name))
 }
 
 async fn _mysql_pool(db_name: &str) -> Result<MySqlPool, sqlx::Error> {
