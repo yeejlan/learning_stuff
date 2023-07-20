@@ -1,7 +1,7 @@
 use std::{sync::Mutex, collections::{BTreeMap, HashMap}};
 
 use criterion::{criterion_group, criterion_main, Criterion};
-use hello::ext::err_code;
+use hello::{ext::err_code, model::user_model};
 use once_cell::sync::OnceCell;
 use cached::proc_macro::once;
 
@@ -10,9 +10,14 @@ use cached::proc_macro::once;
 //         |b| b.iter(||  err_code::get_map_once() ));
 // }
 
-pub fn get_map_benchmark(c: &mut Criterion) {
+pub fn b_err_code_get_map_benchmark(c: &mut Criterion) {
+    c.bench_function("error code get_map", 
+        |b| b.iter(||  err_code::get_map().lock().unwrap() ));
+}
+
+pub fn b_user_status_get_map_benchmark(c: &mut Criterion) {
     c.bench_function("user status get_map", 
-        |b| b.iter(||  err_code::get_map() ));
+        |b| b.iter(||  user_model::status::get_map() ));
 }
 
 pub fn b_get_map_static(c: &mut Criterion) {
@@ -70,5 +75,5 @@ fn get_map_once() -> BTreeMap<i32, String> {
 }
 
 // criterion_group!(benches, get_map_with_cache_benchmark, get_map_benchmark);
-criterion_group!(benches, b_get_map, b_get_map_static);
+criterion_group!(benches, b_err_code_get_map_benchmark, b_user_status_get_map_benchmark);
 criterion_main!(benches);
