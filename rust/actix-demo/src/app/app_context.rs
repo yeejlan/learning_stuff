@@ -1,5 +1,6 @@
+use sqlx::mysql::MySqlPool;
 
+#[derive(Clone, Debug)]
 pub struct AppContext {
-    templates: i32,
-    conn: i32,
+    pub db_default: MySqlPool,
 }
