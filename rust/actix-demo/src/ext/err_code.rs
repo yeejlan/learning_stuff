@@ -44,7 +44,8 @@ pub fn get_map() -> &'static Mutex<BTreeMap<i32, &'static str>> {
 
 pub fn to_str(code: i32) -> &'static str {
     let m = get_map();
-    m.lock().unwrap().get(&code).unwrap_or(&"none")
+    m.lock().unwrap()
+        .get(&code).unwrap_or(&"none")
 }
 
 pub fn kind(code: i32) -> i32 {
