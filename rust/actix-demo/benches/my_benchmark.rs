@@ -17,7 +17,7 @@ pub fn get_map_benchmark(c: &mut Criterion) {
 
 pub fn b_get_map_static(c: &mut Criterion) {
     c.bench_function("b_get_map_static", 
-        |b| b.iter(||  get_map_static() ));
+        |b| b.iter(||  get_map_static().lock().unwrap() ));
 }
 
 pub fn b_get_map(c: &mut Criterion) {
@@ -70,5 +70,5 @@ fn get_map_once() -> BTreeMap<i32, String> {
 }
 
 // criterion_group!(benches, get_map_with_cache_benchmark, get_map_benchmark);
-criterion_group!(benches, b_get_map, b_get_map_once, b_get_map_as_hashmap, b_get_map_static);
+criterion_group!(benches, b_get_map, b_get_map_static);
 criterion_main!(benches);

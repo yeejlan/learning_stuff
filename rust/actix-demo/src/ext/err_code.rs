@@ -1,5 +1,5 @@
-use std::collections::BTreeMap;
-use cached::proc_macro::once;
+use std::{collections::BTreeMap, sync::Mutex};
+use once_cell::sync::OnceCell;
 
 //error kind
 pub const USER_EXCEPTION: i32 = -1000;
@@ -18,29 +18,33 @@ pub const OPERATION_FAILED: i32 = 1500;
 pub const OPERATION_PENDING: i32 = 1600;
 
 
-#[once]
-pub fn get_map() -> BTreeMap<i32, &'static str> {
-    BTreeMap::from([
-        (401, "unauthorized"),
-        (403, "forbidden"),
-        (404, "not_found"),
-        (405, "method_not_allowed"),
-        (500, "internal_server_error"),
+pub fn get_map() -> &'static Mutex<BTreeMap<i32, &'static str>> {
 
-        (SUCCESS, "success"),
-        (BAD_RESULT, "bad_result"),
-        (BAD_TOKEN, "bad_token"),
-        (BAD_PARAM, "bad_param"),
-        (OPERATION_NOT_ALLOWED, "operation_not_allowed"),
-        (RESOURCE_NOT_FOUND, "resource_not_found"),
-        (OPERATION_FAILED, "operation_failed"),
-        (OPERATION_PENDING, "operation_pending"),
-    ])
+    static INSTANCE: OnceCell<Mutex<BTreeMap<i32, &'static str>>> = OnceCell::new();
+    INSTANCE.get_or_init( || {
+        let m = BTreeMap::from([
+            (401, "unauthorized"),
+            (403, "forbidden"),
+            (404, "not_found"),
+            (405, "method_not_allowed"),
+            (500, "internal_server_error"),
+    
+            (SUCCESS, "success"),
+            (BAD_RESULT, "bad_result"),
+            (BAD_TOKEN, "bad_token"),
+            (BAD_PARAM, "bad_param"),
+            (OPERATION_NOT_ALLOWED, "operation_not_allowed"),
+            (RESOURCE_NOT_FOUND, "resource_not_found"),
+            (OPERATION_FAILED, "operation_failed"),
+            (OPERATION_PENDING, "operation_pending"),
+        ]);
+        Mutex::new(m)
+    })
 }
 
 pub fn to_str(code: i32) -> &'static str {
     let m = get_map();
-    m.get(&code).unwrap_or(&"none")
+    m.lock().unwrap().get(&code).unwrap_or(&"none")
 }
 
 pub fn kind(code: i32) -> i32 {
