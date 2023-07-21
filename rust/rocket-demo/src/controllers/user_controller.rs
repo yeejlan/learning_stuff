@@ -1,8 +1,11 @@
 use rocket::*;
 
 pub fn build_routes(rocket: Rocket<Build>) -> Rocket<Build> {
-    rocket
-        .mount("/user", routes![index, hi])
+
+    rocket.mount("/user", routes![
+        index, 
+        hi
+    ])
 }
 
 #[get("/index")]
