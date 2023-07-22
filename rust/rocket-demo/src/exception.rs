@@ -6,7 +6,6 @@ use rocket::http::{ContentType, Status};
 
 use serde::Serialize;
 use serde_json::json;
-use crate::err_code;
 use crate::reply::Reply;
 
 #[macro_export]
@@ -80,6 +79,18 @@ impl From<(i32, String)> for Exception {
 impl From<(i32, &str)> for Exception {
     fn from(e: (i32, &str)) -> Self {
         Self{code:e.0, message:e.1.to_owned(), ..Default::default()}
+    }
+}
+
+impl From<(String, i32)> for Exception {
+    fn from(e: (String, i32)) -> Self {
+        Self{code:e.1, message:e.0, ..Default::default()}
+    }
+}
+
+impl From<(&str, i32)> for Exception {
+    fn from(e: (&str, i32)) -> Self {
+        Self{code:e.1, message:e.0.to_owned(), ..Default::default()}
     }
 }
 
@@ -197,7 +208,7 @@ impl<'r> Responder<'r, 'static> for Exception {
         let payload = json!({
             "code": self.code,
             "message": self.message,
-            "reason": err_code::to_str(self.code),
+            "reason": Reply::code_to_str(self.code),
             "data": None::<i32>,
             "trace": self.cause,
             "data": None::<i32>            

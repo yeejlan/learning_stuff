@@ -1,11 +1,13 @@
 use rocket::*;
 
-use crate::{reply::Reply, exception::Exception, err_code, err_wrap};
+use crate::{reply::Reply, exception::Exception, err_wrap};
 
 pub fn build_routes(rocket: Rocket<Build>) -> Rocket<Build> {
 
     rocket.mount("/test", routes![
         action_err, 
+        action_err2,
+        action_err3,
         action_failed,
         action_err500,
         action_err_chain,
@@ -14,12 +16,22 @@ pub fn build_routes(rocket: Rocket<Build>) -> Rocket<Build> {
 
 #[get("/err")]
 async fn action_err() -> Result<Reply, Exception> {
-    Err((401, "no permission"))?
+    Err((401, "not authorized!"))?
+}
+
+#[get("/err2")]
+async fn action_err2() -> Result<Reply, Exception> {
+    Err(("no permission", Reply::OPERATION_NOT_ALLOWED))?
+}
+
+#[get("/err3")]
+async fn action_err3() -> Result<Reply, Exception> {
+    Reply::result_exception("error from replay::result_exception", Reply::BAD_RESULT)
 }
 
 #[get("/failed")]
 async fn action_failed() -> Reply {
-    Reply::failed("my testing error", err_code::OPERATION_NOT_ALLOWED)
+    Reply::failed("my testing error", Reply::OPERATION_FAILED )
 }
 
 #[get("/err500")]
@@ -28,7 +40,7 @@ async fn action_err500() -> Result<Reply, Exception> {
     String::from_utf8(b)
         .map_err(|e| err_wrap!(e))?;
 
-    Ok(Reply::success("success"))
+    Reply::result_success("success")
 }
 
 #[get("/err-chain")]
@@ -37,7 +49,7 @@ async fn action_err_chain() -> Result<Reply, Exception> {
         .await
         .map_err(|e| err_wrap!("My testing error!", e))?;
     
-    Ok(Reply::success(s))
+    Reply::result_success(s)
 }
 
 async fn _may_throw_error() -> Result<String, Exception> {
@@ -51,6 +63,6 @@ async fn _may_throw_error() -> Result<String, Exception> {
 async fn get_my_string() -> Result<String, Exception> {
     let s = _may_throw_error()
         .await
-        .map_err(|e| err_wrap!(err_code::OPERATION_FAILED, "get_my_string failed", e))?;
+        .map_err(|e| err_wrap!(Reply::OPERATION_FAILED, "get_my_string failed", e))?;
     Ok(s)
 }
