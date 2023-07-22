@@ -5,7 +5,7 @@ use rocket_demo::controllers;
 
 #[launch]
 fn rocket() -> _ {
+    dotenvy::dotenv().expect(".evn file not found");
 
     controllers::build_routes()
-    
 }
