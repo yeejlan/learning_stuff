@@ -1,6 +1,6 @@
 use rocket::*;
 
-use crate::models::user::{User, self};
+use crate::{models::user::{User, self}, reply::{AppResponse, success}};
 
 pub fn build_routes(rocket: Rocket<Build>) -> Rocket<Build> {
 
@@ -22,7 +22,7 @@ fn hi() -> &'static str {
 }
 
 #[get("/info")]
-fn info() -> String {
+fn info() -> String  {
     let user = User {
         id: 123,
         name: "Chovy".into(),
@@ -30,5 +30,6 @@ fn info() -> String {
         password: "password here".into(),
         status: user::status::Active,
     };
-    serde_json::to_string(&user).unwrap()
+    success(user)
+
 }

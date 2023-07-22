@@ -1,6 +1,7 @@
-use serde::{Serialize, Deserialize, ser::SerializeStruct};
+use rocket::serde::{Serialize, Deserialize, ser::SerializeStruct};
 
 #[derive(Deserialize, Debug)]
+#[serde(crate = "rocket::serde")]
 pub struct User {
     pub id: i64,
     pub name: String,
@@ -12,7 +13,7 @@ pub struct User {
 impl Serialize for User {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serde::Serializer,
+        S: rocket::serde::Serializer,
     {
         let mut state = serializer.serialize_struct("User", 6)?;
         state.serialize_field("id", &self.id)?;
