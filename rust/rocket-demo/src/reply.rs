@@ -8,7 +8,6 @@ use rocket::serde::json::serde_json::{Value, json};
 use rocket::serde::Serialize;
 
 use crate::err_code;
-
 pub struct Reply(Value, i32);
 
 impl Reply {
@@ -46,13 +45,13 @@ impl Reply {
         }
         c as u16
     }
+
 }
 
 #[rocket::async_trait]
 impl<'r> Responder<'r, 'static> for Reply {
     fn respond_to(self, _: &'r Request<'_>) -> response::Result<'static> {
         let json = self.0.to_string();
-        dbg!(&json);
         Response::build()
             .status(Status::new(Reply::status_code(self.1)))
             .header(ContentType::JSON)

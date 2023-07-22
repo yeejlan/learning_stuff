@@ -1,6 +1,7 @@
 use std::collections::BTreeMap;
 use cached::proc_macro::once;
 
+
 //error kind
 pub const USER_EXCEPTION: i32 = -1000;
 pub const MODEL_EXCEPTION: i32 = -2000;

@@ -2,7 +2,7 @@ use std::io::Cursor;
 
 use rocket::request::Request;
 use rocket::response::{self, Response, Responder};
-use rocket::http::ContentType;
+use rocket::http::{ContentType, Status};
 
 use serde::Serialize;
 use serde_json::json;
@@ -191,19 +191,23 @@ impl std::fmt::Display for Exception {
     }
 }
 
-// #[rocket::async_trait]
-// impl<'r> Responder<'r, 'static> for Exception {
-//     fn respond_to(self, _: &'r Request<'_>) -> response::Result<'static> {
-//         let payload = json!({
-//             "code": self.code,
-//             "message": self.message,
-//             "reason": err_code::to_str(self.code),
-//             "data": None::<i32>,
-//             "trace": self.cause,
-//             "data": None::<i32>            
-//         });
+#[rocket::async_trait]
+impl<'r> Responder<'r, 'static> for Exception {
+    fn respond_to(self, _: &'r Request<'_>) -> response::Result<'static> {
+        let payload = json!({
+            "code": self.code,
+            "message": self.message,
+            "reason": err_code::to_str(self.code),
+            "data": None::<i32>,
+            "trace": self.cause,
+            "data": None::<i32>            
+        });
     
-//         let reply = Reply::new(payload, Reply::status_code(self.code));
-//         Response::build_from(reply)
-//     }
-// }
+        let json = payload.to_string();
+        Response::build()
+            .status(Status::new(Reply::status_code(self.code)))
+            .header(ContentType::JSON)
+            .sized_body(json.len(), Cursor::new(json))
+            .ok()
+    }
+}
