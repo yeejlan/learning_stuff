@@ -26,7 +26,7 @@ async fn action_err2() -> Result<Reply, Exception> {
 
 #[get("/err3")]
 async fn action_err3() -> Result<Reply, Exception> {
-    Reply::result_exception("error from replay::result_exception", Reply::BAD_RESULT)
+    Reply::result_error("error from replay::result_exception", Reply::BAD_RESULT)
 }
 
 #[get("/failed")]

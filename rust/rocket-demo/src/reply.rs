@@ -102,7 +102,7 @@ impl Reply {
         Ok(Self::failed(message, code))
     }
 
-    pub fn result_exception(message: &'static str, code: i32) -> Result<Self, Exception> {
+    pub fn result_error(message: &'static str, code: i32) -> Result<Self, Exception> {
         Err(Exception::from((code, message)))
     }
 
