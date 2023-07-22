@@ -13,6 +13,10 @@ serde = { version = "1.0.171", features = ["derive"] }
 serde_json = "1.0.102"
 dotenvy = "0.15.7"
 uuid = { version = "1.4.1", features = ["v4"] }
+tracing = { version = "0.1", features = ["log"] }
+tracing-appender = "0.2.2"
+tracing-subscriber = { version = "0.3", features = ["registry", "env-filter"] }
+tracing-log = "0.1"
 
 [dependencies.sqlx]
 version = "0.7"

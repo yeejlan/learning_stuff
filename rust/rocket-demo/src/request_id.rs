@@ -1,8 +1,10 @@
 use rocket::fairing::{Fairing, Info, Kind};
 use rocket::{Request, Data, Response};
+use tracing::Span;
 use uuid::Uuid;
 
 pub struct RequestId(String);
+pub struct TracingSpan(Span);
 
 impl RequestId {
     pub fn new() -> Self {
@@ -40,7 +42,21 @@ impl Fairing for RequestId {
     // }
 
     async fn on_request(&self, request: &mut Request<'_>, _: &mut Data<'_>) {
-        request.local_cache(|| RequestId::new());
+
+        let req_id = RequestId::new();
+
+        let span = tracing::span!(
+            tracing::Level::INFO,
+            "request",
+            request_id = %req_id.0,
+        );
+        
+        let enter = span.entered();
+
+        // request.local_cache(|| TracingSpan(span));
+        
+
+        request.local_cache(|| req_id);
     }
 
     async fn on_response<'r>(&self, request: &'r Request<'_>, response: &mut Response<'r>) {

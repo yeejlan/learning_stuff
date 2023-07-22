@@ -242,6 +242,13 @@ impl std::fmt::Display for Exception {
 #[rocket::async_trait]
 impl<'r> Responder<'r, 'static> for Exception {
     fn respond_to(self, _: &'r Request<'_>) -> response::Result<'static> {
+        //don't log http response code, except 500
+        if self.code>0 && self.code<1000 && self.code !=500 {
+            //pass
+        }else{
+            tracing::error!("{}, cause: {:#?}", self.message, self.cause);
+        }
+
         let payload = json!({
             "code": self.code,
             "message": self.message,
