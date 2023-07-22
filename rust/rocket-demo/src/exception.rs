@@ -4,7 +4,6 @@ use rocket::request::Request;
 use rocket::response::{self, Response, Responder};
 use rocket::http::{ContentType, Status};
 
-use serde::Serialize;
 use serde_json::json;
 use crate::reply::Reply;
 
@@ -52,6 +51,7 @@ macro_rules! err_wrap {
             code: $code,
             message: m,
             cause: c,
+            root: Some(Box::new($e)),
         }
     }};
 }
@@ -69,11 +69,12 @@ pub fn get_type_of<T>(_: T) -> &'static str {
     n
 }
 
-#[derive(Debug, Serialize, Default)]
+#[derive(Debug, Default)]
 pub struct Exception {
     pub code: i32,
     pub message: String,
     pub cause: Vec<String>,
+    pub root: Option<Box<dyn std::error::Error>>,
 }
 
 impl From<String> for Exception {
@@ -118,6 +119,7 @@ impl From<(String, String)> for Exception {
             code: 500, 
             message: e.0,
             cause: vec![e.1],
+            root: None,
         }
     }
 }
@@ -128,6 +130,7 @@ impl From<(String, &str)> for Exception {
             code: 500, 
             message: e.0,
             cause: vec![e.1.to_owned()],
+            root: None,
         }
     }
 }
@@ -138,6 +141,7 @@ impl From<(&str, String)> for Exception {
             code: 500, 
             message: e.0.to_owned(),
             cause: vec![e.1],
+            root: None,
         }
     }
 }
@@ -148,6 +152,7 @@ impl From<(&str, &str)> for Exception {
             code: 500, 
             message: e.0.to_owned(),
             cause: vec![e.1.to_owned()],
+            root: None,
         }
     }
 }
@@ -158,6 +163,7 @@ impl From<(i32, String, String)> for Exception {
             code: e.0, 
             message: e.1,
             cause: vec![e.2],
+            root: None,
         }
     }
 }
@@ -168,6 +174,7 @@ impl From<(i32, String, &str)> for Exception {
             code: e.0, 
             message: e.1,
             cause: vec![e.2.to_owned()],
+            root: None,
         }
     }
 }
@@ -178,6 +185,7 @@ impl From<(i32, &str, String)> for Exception {
             code: e.0, 
             message: e.1.to_owned(),
             cause: vec![e.2],
+            root: None,
         }
     }
 }
@@ -188,6 +196,7 @@ impl From<(i32, &str, &str)> for Exception {
             code: e.0, 
             message: e.1.to_owned(),
             cause: vec![e.2.to_owned()],
+            root: None,
         }
     }
 }
@@ -195,13 +204,23 @@ impl From<(i32, &str, &str)> for Exception {
 
 impl From<serde_json::Error> for Exception {
     fn from(e: serde_json::Error) -> Self {
-        Self{code:500, message: format!("serde_json error: {}", e), ..Default::default()}
+        Self{
+            code:500, 
+            message: format!("serde_json error: {}", e),
+            root: Some(Box::new(e)),
+            ..Default::default()
+        }
     }
 }
 
 impl From<sqlx::Error> for Exception {
     fn from(e: sqlx::Error) -> Self {
-        Self{code:500, message: format!("sqlx error: {}", e), ..Default::default()}
+        Self {
+            code:500,
+            message: format!("sqlx error: {}", e), 
+            root: Some(Box::new(e)),
+            ..Default::default()
+        }
     }
 }
 
@@ -214,7 +233,7 @@ impl std::error::Error for Exception {
 impl std::fmt::Display for Exception {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Exception{code, message, cause: _} => 
+            Exception{code, message, cause: _, root: _} => 
                 write!(f, "[{}] {}", code, message),
         }
     }
@@ -229,6 +248,7 @@ impl<'r> Responder<'r, 'static> for Exception {
             "reason": Reply::code_to_str(self.code),
             "data": None::<i32>,
             "trace": self.cause,
+            // "root": self.root.unwrap_or("none".into()).to_string(),
             "data": None::<i32>            
         });
     
