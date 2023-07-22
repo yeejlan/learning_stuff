@@ -3,7 +3,7 @@ use rocket::*;
 pub mod home_controller;
 pub mod user_controller;
 
-pub fn init_routes() -> Rocket<Build> {
+pub fn build_routes() -> Rocket<Build> {
 
     let mut r = rocket::build();
 

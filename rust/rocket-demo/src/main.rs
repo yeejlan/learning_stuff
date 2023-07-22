@@ -5,6 +5,6 @@ use rocket_demo::controllers;
 
 #[launch]
 fn rocket() -> _ {
-    let rocket = controllers::init_routes();
+    let rocket = controllers::build_routes();
     rocket
 }
