@@ -1,4 +1,6 @@
-#[derive(Debug)]
+use serde::{Serialize, Deserialize, ser::SerializeStruct};
+
+#[derive(Deserialize, Debug)]
 pub struct User {
     pub id: i64,
     pub name: String,
@@ -7,7 +9,21 @@ pub struct User {
     pub status: i32,
 }
 
-
+impl Serialize for User {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let mut state = serializer.serialize_struct("User", 6)?;
+        state.serialize_field("id", &self.id)?;
+        state.serialize_field("name", &self.name)?;
+        state.serialize_field("email", &self.email)?;
+        state.serialize_field("password", &self.password)?;
+        state.serialize_field("status", &self.status)?;
+        state.serialize_field("status_str", &status::to_str(self.status))?;
+        state.end()
+    }
+}
 
 #[allow(non_upper_case_globals)]
 pub mod status {
