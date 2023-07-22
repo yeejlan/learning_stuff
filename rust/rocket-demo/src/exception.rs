@@ -8,8 +8,26 @@ use serde::Serialize;
 use serde_json::json;
 use crate::reply::Reply;
 
+///    Creates an Exception from any error, capturing the error chain.
+///    
+///    This allows wrapping any error into an Exception
+///    while preserving the cause chain for debugging.
+///
+///    # Examples
+///    ```
+///    let e = err_wrap!(io::Error::new(ErrorKind::Timeout)); //code = 500
+/// 
+///    let e = err_wrap!("Internal Error", io::Error::new(ErrorKind::FileNotExist)); //code = 500
+/// 
+///    let e = err_wrap!(403, "Forbidden", io::Error::new(ErrorKind::PermissionDenied));
+/// 
+///    let e = err_wrap!(Reply::OPERATION_FAILED, "Get user info failed", io::Error::new(ErrorKind::NotFound));
+///    ```
+/// 
+///    Useful for central handling of errors from different sources.
 #[macro_export]
 macro_rules! err_wrap { 
+ 
     ($e:expr) => {
         err_wrap!(500, "", $e)
     };
@@ -177,13 +195,13 @@ impl From<(i32, &str, &str)> for Exception {
 
 impl From<serde_json::Error> for Exception {
     fn from(e: serde_json::Error) -> Self {
-        Self{code:500, message: format!("Json encode error: {}", e), ..Default::default()}
+        Self{code:500, message: format!("serde_json error: {}", e), ..Default::default()}
     }
 }
 
 impl From<sqlx::Error> for Exception {
     fn from(e: sqlx::Error) -> Self {
-        Self{code:500, message: format!("Query error: {}", e), ..Default::default()}
+        Self{code:500, message: format!("sqlx error: {}", e), ..Default::default()}
     }
 }
 
