@@ -1,6 +1,6 @@
 use rocket::*;
 
-use crate::{models::user::{User, self}, reply::{AppResponse, success}};
+use crate::{models::user::{User, self}, reply::Reply};
 
 pub fn build_routes(rocket: Rocket<Build>) -> Rocket<Build> {
 
@@ -8,6 +8,7 @@ pub fn build_routes(rocket: Rocket<Build>) -> Rocket<Build> {
         index,
         hi,
         info,
+        failed,
     ])
 }
 
@@ -22,7 +23,7 @@ fn hi() -> &'static str {
 }
 
 #[get("/info")]
-fn info() -> String  {
+fn info() -> Reply  {
     let user = User {
         id: 123,
         name: "Chovy".into(),
@@ -30,6 +31,11 @@ fn info() -> String  {
         password: "password here".into(),
         status: user::status::Active,
     };
-    success(user)
+    Reply::success(user)
 
+}
+
+#[get("/failed")]
+fn failed() -> Reply  {
+    Reply::failed("this request is not authorized", 401)
 }
