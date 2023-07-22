@@ -71,7 +71,7 @@ async fn action_err_chain() -> Result<impl Responder, Exception> {
 async fn _may_throw_error() -> Result<String, Exception> {
     let b = vec![0, 159, 146, 150];
     let s = String::from_utf8(b)
-        .map_err(|e| err_wrap!("_may_throw_error failed!".to_owned(), e))?;
+        .map_err(|e| err_wrap!("_may_throw_error failed!", e))?;
 
     Ok(s)
 }

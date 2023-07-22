@@ -6,8 +6,8 @@ use serde_json::{json, Value};
 pub fn success<T: Serialize>(resp: T) -> Result<HttpResponse, Exception> {
     let data = json!({
         "code": 0,
-        "message": "success".to_owned(),
-        "reason": "success".to_owned(),
+        "message": "success",
+        "reason": "success",
         "data": resp,
     });
 
@@ -17,8 +17,8 @@ pub fn success<T: Serialize>(resp: T) -> Result<HttpResponse, Exception> {
 pub fn failed(message: &'static str, code: i32) -> Result<HttpResponse, Exception> {
     let data = json!({
         "code": code,
-        "message": message.to_owned(),
-        "reason": err_code::to_str(code).to_owned(),
+        "message": message,
+        "reason": err_code::to_str(code),
         "data": None::<i32>,
     });    
 
