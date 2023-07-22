@@ -1,6 +1,6 @@
 use rocket::*;
 
-use crate::{reply::Reply, exception::Exception, err_wrap};
+use crate::{reply::Reply, exception::Exception, err_wrap, request_id::TracingSpan};
 
 pub fn build_routes(rocket: Rocket<Build>) -> Rocket<Build> {
 
@@ -35,7 +35,11 @@ async fn action_failed() -> Reply {
 }
 
 #[get("/err500")]
-async fn action_err500() -> Result<Reply, Exception> {
+async fn action_err500(span: TracingSpan) -> Result<Reply, Exception> {
+    let entered = span.0.enter();
+    info!("Hello World");
+    drop(entered);
+    info!("Hello again~~");
     let b = vec![0, 159, 146, 150];
     String::from_utf8(b)
         .map_err(|e| err_wrap!(e))?;
