@@ -15,7 +15,7 @@ use cached::proc_macro::once;
 pub struct Reply(Value, i32);
 
 #[once]
-pub fn get_reply_map() -> BTreeMap<i32, &'static str> {
+pub fn get_code_map() -> BTreeMap<i32, &'static str> {
     Reply::get_map()
 }
 
@@ -61,7 +61,7 @@ impl Reply {
     }    
 
     pub fn code_to_str(code: i32) -> &'static str {
-        let m = get_reply_map();
+        let m = get_code_map();
         m.get(&code).unwrap_or(&"none")
     }
     
