@@ -1,4 +1,4 @@
-use rocket::serde::{Serialize, Deserialize, ser::SerializeStruct};
+use serde::{Serialize, Deserialize, ser::SerializeStruct};
 
 #[derive(Deserialize, Debug)]
 #[serde(crate = "rocket::serde")]
@@ -13,7 +13,7 @@ pub struct User {
 impl Serialize for User {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: rocket::serde::Serializer,
+        S: serde::Serializer,
     {
         let mut state = serializer.serialize_struct("User", 6)?;
         state.serialize_field("id", &self.id)?;
@@ -28,15 +28,26 @@ impl Serialize for User {
 
 #[allow(non_upper_case_globals)]
 pub mod status {
-    use cached::proc_macro::once;
     use std::collections::BTreeMap;
+    use once_cell::sync::Lazy;
+
+    static MAP: Lazy<BTreeMap<i32, &'static str>> = Lazy::new(|| {
+        get_map()
+    });
+    
+    static MAP_REVERSED: Lazy<BTreeMap<&'static str, i32>> = Lazy::new(|| {
+        let mut m = BTreeMap::new();
+        for v in get_map() {
+            m.insert(v.1, v.0);
+        };
+        m
+    });
 
     pub const Normal: i32 = 1;
     pub const Active: i32 = 2;
     pub const Frozen: i32 = 3;
     pub const Closed: i32 = 4;
 
-    #[once]
     pub fn get_map() -> BTreeMap<i32, &'static str> {
         BTreeMap::from([
             (Normal, "normal"),
@@ -46,24 +57,13 @@ pub mod status {
         ])
     }
 
-    #[once]
-    pub fn get_map_reversed() -> BTreeMap<&'static str, i32> {
-        let mut m = BTreeMap::new();
-        for v in get_map() {
-            m.insert(v.1, v.0);
-        };
-        m
-    }
-
     pub fn from_str(value: &str) -> Option<i32> {
-        let m = get_map_reversed();
-        m.get(value)
+        MAP_REVERSED.get(value)
         .copied()
     }
 
     pub fn to_str(value: i32)-> Option<&'static str> {
-        let m = get_map();
-        m.get(&value)
+        MAP.get(&value)
         .copied()
     }
 }

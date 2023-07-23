@@ -17,6 +17,7 @@ tracing = { version = "0.1", features = ["log"] }
 tracing-appender = "0.2.2"
 tracing-subscriber = { version = "0.3", features = ["registry", "env-filter"] }
 tracing-log = "0.1"
+once_cell = "1.18.0"
 
 [dependencies.sqlx]
 version = "0.7"
