@@ -20,6 +20,7 @@ fn init_subscriber() {
 }
 
 
+
 #[launch]
 fn rocket() -> _ {
     dotenvy::dotenv().expect(".evn file not found");
