@@ -23,6 +23,7 @@ async fn main() {
     let mut app = Router::new().route("/", get(|| async { "Hello, World!" }));
 
     app = controllers::merge_routers(app, build_routers());
+    app = controllers::merge_routers(app, controllers::build_routers());
 
     // run it with hyper on localhost:3000
     axum::Server::bind(&"0.0.0.0:13000".parse().unwrap())
