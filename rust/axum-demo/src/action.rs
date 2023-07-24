@@ -9,11 +9,11 @@ use axum::{
 /// # Examples
 /// 
 /// ```
-/// action!(post_get_home33say_hello) // POST, GET for URI: /home/say-hello and /say-hello
+/// action!(post_get_home__say_hello) // POST, GET for URI: /home/say-hello and /say-hello
 /// 
-/// action!(get_home33index) // GET for URI: /home/index and /
+/// action!(get_home__index) // GET for URI: /home/index and /
 /// 
-/// action!(get_post_user33index) // GET, POST for URI: /user/index and /user
+/// action!(get_post_user__index) // GET, POST for URI: /user/index and /user
 /// ```
 /// 
 /// # Name rule
@@ -21,30 +21,30 @@ use axum::{
 /// ```
 /// Start with "get_" or "post_" or "get_post_"
 /// 
-/// "33" for '/', "_" for "-"
+/// "__" for '/', "_" for "-"
 /// 
-/// "controller_name33action_name" for "/controller-name/action-name"
+/// "controller_name__action_name" for "/controller-name/action-name"
 /// 
-/// "home33action" for "/home/action" and "/action"
+/// "home__action" for "/home/action" and "/action"
 /// 
-/// "controller33index" for "/controller/index" and "/controller"
+/// "controller__index" for "/controller/index" and "/controller"
 /// ```
 /// 
 /// # If you got this error
 /// 
 /// ```
-/// error[E0277]: the trait bound `fn() -> &'static str {get_home33index}: Handler<_, _, _>` is not satisfied
+/// error[E0277]: the trait bound `fn() -> &'static str {get_home__index}: Handler<_, _, _>` is not satisfied
 /// ```
 /// 
 /// It means your handler function is incorrect, for example
 /// ```
-///    fn get_home33index() -> &'static str {  //wrong, must be async function
+///    fn get_home__index() -> &'static str {  //wrong, must be async function
 ///       "hello there"
 ///    }
 /// ```
 /// Should change to:
 /// ```
-///    async fn get_home33index() -> &'static str
+///    async fn get_home__index() -> &'static str
 ///       "hello there"
 ///    }
 /// ```
@@ -72,8 +72,8 @@ macro_rules! action {
             let fn_name = crate::action::get_type($name);            
             panic!("Action[{}] must start with get or post, or both!", fn_name);
         }
-        //convert "home33user_info" to "/home/user-info"
-        let action_name = format!("/{}", name.replace("33", "/").replace("_", "-"));
+        //convert "home__user_info" to "/home/user-info"
+        let action_name = format!("/{}", name.replace("__", "/").replace("_", "-"));
         let mut router: Router = Router::new();
         let mut is_home_controller = false;
         let mut home_action = "";
