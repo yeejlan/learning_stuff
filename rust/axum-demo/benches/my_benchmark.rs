@@ -4,6 +4,14 @@ use criterion::{criterion_group, criterion_main, Criterion};
 use once_cell::sync::Lazy;
 use cached::proc_macro::once;
 
+/// get_map_static is way better than the others
+/// 
+/// b_get_map_static        time:   [692.01 ps 696.64 ps 701.48 ps]
+///
+/// b_get_map               time:   [149.68 ns 150.89 ns 152.04 ns]
+
+/// b_get_map_cached        time:   [148.16 ns 149.73 ns 151.22 ns]
+/// 
 pub fn b_get_map_static(c: &mut Criterion) {
     c.bench_function("b_get_map_static", 
         |b| b.iter(||  get_map_static() ));
