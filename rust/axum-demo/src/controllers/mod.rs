@@ -1,3 +1,4 @@
+pub mod test_controller;
 
 #[allow(unused_imports)]
 use axum::{
