@@ -5,12 +5,12 @@ use axum::{
     routing::{get, post},
     Router,
 };
-use axum_demo::{controllers, app};
+use axum_demo::{controllers, app_fn};
 use tokio::signal;
 use tower_http::{classify::ServerErrorsFailureClass, trace::TraceLayer, services::ServeDir};
 use tracing::{info_span, Span};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
-
+use tower_http::cors::CorsLayer;
 
 #[tokio::main]
 async fn main() {
@@ -23,18 +23,21 @@ async fn main() {
         .with(tracing_subscriber::fmt::layer())
         .init();
 
-    let mut router = Router::new();
+    let app = Router::new();
 
-    router = controllers::merge_routers(router, controllers::build_routers());
-    router = router.nest_service("/public", ServeDir::new("public"));
-    router = router.fallback(app::handler_404);
+    let app = controllers::merge_routers(app, controllers::build_routers());
+    let app = app.layer(app_fn::cors_layer());
+
+    let app = app.nest_service("/public", ServeDir::new("public"));
+    let app = app.fallback(app_fn::handler_404);
+    let app = app.into_make_service();
 
     // run it
     let addr = SocketAddr::from(([0, 0, 0, 0], 8080));
     tracing::info!("listening on {}", addr);
     axum::Server::bind(&addr)
-        .serve(router.into_make_service())
-        .with_graceful_shutdown(app::shutdown_signal())
+        .serve(app)
+        .with_graceful_shutdown(app_fn::shutdown_signal())
         .await
         .unwrap();  
 

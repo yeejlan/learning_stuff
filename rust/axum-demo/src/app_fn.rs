@@ -1,6 +1,15 @@
-use axum::{response::IntoResponse, http::StatusCode};
+use axum::{response::IntoResponse, http::{StatusCode, Method}};
 use tokio::signal;
+use tower_http::{cors::{Any, CorsLayer}, normalize_path::NormalizePathLayer};
 
+
+pub fn cors_layer() -> CorsLayer {
+    CorsLayer::new()
+    // allow `GET` and `POST` when accessing the resource
+    .allow_methods([Method::GET, Method::POST])
+    // allow requests from any origin
+    .allow_origin(Any)
+}
 
 pub async fn handler_404() -> impl IntoResponse {
     (StatusCode::NOT_FOUND, "nothing to see here")
