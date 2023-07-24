@@ -1,23 +1,18 @@
 
 use std::net::SocketAddr;
 
-use axum::{
-    routing::{get, post},
-    Router,
-};
+use axum::{Router, http::Request, extract::MatchedPath,};
 use axum_demo::{controllers, app_fn};
-use tokio::signal;
-use tower_http::{classify::ServerErrorsFailureClass, trace::TraceLayer, services::ServeDir};
+use tower_http::{trace::TraceLayer, services::ServeDir};
 use tracing::{info_span, Span};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
-use tower_http::cors::CorsLayer;
 
 #[tokio::main]
 async fn main() {
     tracing_subscriber::registry()
         .with(
             tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| {
-                "tower_http=debug,axum=debug".into()
+                "tower_http=info,axum=debug".into()
             }),
         )
         .with(tracing_subscriber::fmt::layer())
@@ -27,6 +22,29 @@ async fn main() {
 
     let app = controllers::merge_routers(app, controllers::build_routers());
     let app = app.layer(app_fn::cors_layer());
+
+    let app = app.layer(
+        TraceLayer::new_for_http()
+            .make_span_with(|request: &Request<_>| {
+                // Log the matched route's path (with placeholders not filled in).
+                // Use request.uri() or OriginalUri if you want the real path.
+                let matched_path = request
+                    .extensions()
+                    .get::<MatchedPath>()
+                    .map(MatchedPath::as_str);
+
+                info_span!(
+                    "http_request",
+                    method = ?request.method(),
+                    matched_path,
+                    request_id = tracing::field::Empty,
+                )
+            })
+            .on_request(|_request: &Request<_>, _span: &Span| {
+                _span.record("request_id", 112233);
+            })
+    );
+
 
     let app = app.nest_service("/public", ServeDir::new("public"));
     let app = app.fallback(app_fn::handler_404);

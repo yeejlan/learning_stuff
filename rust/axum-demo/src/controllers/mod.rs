@@ -35,6 +35,7 @@ async fn post_get_home__say_hello() -> &'static str {
 }
 
 async fn get_home__index() -> &'static str {
+    tracing::info!("hi~");
     "this is /home/index"
 }
 

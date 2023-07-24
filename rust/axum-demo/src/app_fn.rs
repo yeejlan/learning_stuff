@@ -1,6 +1,6 @@
 use axum::{response::IntoResponse, http::{StatusCode, Method}};
 use tokio::signal;
-use tower_http::{cors::{Any, CorsLayer}, normalize_path::NormalizePathLayer};
+use tower_http::cors::{Any, CorsLayer};
 
 
 pub fn cors_layer() -> CorsLayer {
