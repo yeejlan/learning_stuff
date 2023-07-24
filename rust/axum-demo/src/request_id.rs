@@ -1,3 +1,5 @@
+use axum::http::Request;
+use tower_http::request_id::MakeRequestId;
 use uuid::Uuid;
 
 
@@ -17,3 +19,4 @@ impl RequestId {
         Self(Uuid::nil().hyphenated().to_string())
     }
 }
+
