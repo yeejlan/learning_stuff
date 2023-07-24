@@ -20,13 +20,13 @@ async fn say_hello() -> &'static str {
 #[tokio::main]
 async fn main() {
 
-    let mut app = Router::new().route("/", get(|| async { "Hello, World!" }));
+    let mut app = Router::new();
 
     app = controllers::merge_routers(app, build_routers());
     app = controllers::merge_routers(app, controllers::build_routers());
 
     // run it with hyper on localhost:3000
-    axum::Server::bind(&"0.0.0.0:13000".parse().unwrap())
+    axum::Server::bind(&"0.0.0.0:8080".parse().unwrap())
         .serve(app.into_make_service())
         .await
         .unwrap();
