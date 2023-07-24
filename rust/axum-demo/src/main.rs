@@ -1,8 +1,6 @@
 
-use std::net::SocketAddr;
-
 use axum::{Router, http::Request, extract::MatchedPath,};
-use axum_demo::{controllers, app_fn};
+use axum_demo::{controllers, app_fn, request_id::RequestId};
 use tower_http::{trace::TraceLayer, services::ServeDir};
 use tracing::{info_span, Span};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
@@ -42,8 +40,10 @@ async fn main() {
                     request_id = tracing::field::Empty,
                 )
             })
-            .on_request(|_request: &Request<_>, _span: &Span| {
-                _span.record("request_id", 112233);
+            .on_request(|mut _request: &Request<_>, span: &Span| {
+                let req_id = RequestId::new();
+                //_request.extensions_mut().insert(req_id);
+                span.record("request_id", req_id.0);
             })
     );
 
@@ -53,13 +53,13 @@ async fn main() {
     let app = app.into_make_service();
 
     // run it
-    let addr = SocketAddr::from(([0, 0, 0, 0], 8080));
+    let addr = "0.0.0.0:8080";
     tracing::info!("listening on {}", addr);
-    axum::Server::bind(&addr)
-        .serve(app)
-        .with_graceful_shutdown(app_fn::shutdown_signal())
-        .await
-        .unwrap();  
+    axum::Server::bind(&addr.parse().unwrap())
+    .serve(app)
+    .with_graceful_shutdown(app_fn::shutdown_signal())
+    .await
+    .unwrap();
 
 }
 
