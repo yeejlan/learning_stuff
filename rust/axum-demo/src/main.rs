@@ -1,7 +1,7 @@
 
-use axum::{Router, http::{Request, HeaderName}, extract::MatchedPath,};
+use axum::{Router, http::Request, extract::MatchedPath,};
 use axum_demo::{controllers, app_fn};
-use tower_http::{trace::TraceLayer, services::ServeDir, request_id::{MakeRequestUuid, SetRequestIdLayer, PropagateRequestIdLayer, RequestId}};
+use tower_http::{trace::TraceLayer, services::ServeDir, request_id::RequestId};
 use tracing::{info_span, Span};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
@@ -23,7 +23,7 @@ async fn main() {
     let app = controllers::merge_routers(app, controllers::build_routers());
     let app = app.layer(app_fn::cors_layer());
 
-    let app = app.layer(PropagateRequestIdLayer::new(HeaderName::from_static("request-id")));
+    let app = app.layer(app_fn::propagate_request_id_layer());
     let app = app.layer(
         TraceLayer::new_for_http()
             .make_span_with(|request: &Request<_>| {
@@ -50,10 +50,7 @@ async fn main() {
                 span.record("request_id", req_id);
             })
     );
-    let app = app.layer(SetRequestIdLayer::new(
-        HeaderName::from_static("request-id"),
-        MakeRequestUuid::default(),
-    ));
+    let app = app.layer(app_fn::set_request_id_layer());
 
 
     let app = app.nest_service("/public", ServeDir::new("public"));

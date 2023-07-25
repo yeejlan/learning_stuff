@@ -1,7 +1,19 @@
-use axum::{response::IntoResponse, http::{StatusCode, Method}};
+use axum::{response::IntoResponse, http::{StatusCode, Method, HeaderName}};
 use tokio::signal;
-use tower_http::cors::{Any, CorsLayer};
+use tower_http::{cors::{Any, CorsLayer}, request_id::{PropagateRequestIdLayer, SetRequestIdLayer, MakeRequestUuid}};
 
+const REQUEST_ID: &str = "request-id";
+
+pub fn propagate_request_id_layer() -> PropagateRequestIdLayer {
+    PropagateRequestIdLayer::new(HeaderName::from_static(REQUEST_ID))
+}
+
+pub fn set_request_id_layer() -> SetRequestIdLayer<MakeRequestUuid> {
+    SetRequestIdLayer::new(
+        HeaderName::from_static(REQUEST_ID),
+        MakeRequestUuid::default()
+    )
+}
 
 pub fn cors_layer() -> CorsLayer {
     CorsLayer::new()
