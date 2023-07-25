@@ -1,7 +1,7 @@
 
 use axum::{Router, http::{Request, HeaderName}, extract::MatchedPath,};
-use axum_demo::{controllers, app_fn, request_id::RequestId};
-use tower_http::{trace::TraceLayer, services::ServeDir, request_id::{MakeRequestUuid, SetRequestIdLayer, PropagateRequestIdLayer}, add_extension::AddExtensionLayer};
+use axum_demo::{controllers, app_fn};
+use tower_http::{trace::TraceLayer, services::ServeDir, request_id::{MakeRequestUuid, SetRequestIdLayer, PropagateRequestIdLayer, RequestId}};
 use tracing::{info_span, Span};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
@@ -42,12 +42,12 @@ async fn main() {
                 )
             })
             .on_request(|request: &Request<_>, span: &Span| {
-                let req_id = &request.headers()
-                    .get("request-id")
-                    .map(|r| r.as_bytes())
-                    .unwrap_or(b"0");
-                dbg!(req_id);
-                span.record("request_id", 123);
+                let req_id = &request.extensions()
+                    .get::<RequestId>()
+                    .map(|r| r.header_value().to_str().unwrap())
+                    .unwrap();
+
+                span.record("request_id", req_id);
             })
     );
     let app = app.layer(SetRequestIdLayer::new(
