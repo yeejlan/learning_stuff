@@ -1,4 +1,4 @@
-import spy_core;
+import spy;
 
 class MyClass:
     static_var = 0
@@ -15,7 +15,7 @@ def add(a, b):
     return MyClass.static_var  + a + b
 
 def log(msg): 
-    spy_core.log(msg)
+    spy.log(msg)
 
 def handle_http_request(req):
     print(req)

@@ -18,13 +18,11 @@ async fn main() {
         .with(tracing_subscriber::fmt::layer())
         .init();
 
-    let _ = spy::init_py();
-    let _ = spy::call_py_add();
-    let _ = spy::call_rs_mod_in_py();
+    let _ = spy::spy_initialize();
 
     let app = Router::new();
 
-    let app = spy::handler::build_router(app);
+    let app = spy::spy_handler::build_router(app);
     
     let app = controllers::merge_routers(app, controllers::build_routers());
     let app = app.layer(app_fn::cors_layer());

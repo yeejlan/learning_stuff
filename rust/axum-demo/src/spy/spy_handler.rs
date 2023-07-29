@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use axum::{Router, routing::post, extract::{Query, Path}, http::{HeaderMap, Method}};
 use pyo3::prelude::*;
 
-use crate::spy::spy_core::SpyRequest;
+use crate::spy::spy::SpyRequest;
 
 pub fn build_router(mut r: Router) -> Router {
     r = r.route("/p/:path", post(py_handler).get(py_handler));
@@ -43,7 +43,7 @@ async fn py_handler(
 pub async fn call_script_handler(req: SpyRequest) -> PyResult<()> {
 
     Python::with_gil(|py| {
-        let py_mod = PyModule::import(py, "entry")?;
+        let py_mod = PyModule::import(py, "operative")?;
 
         py_mod
             .getattr("handle_http_request")?

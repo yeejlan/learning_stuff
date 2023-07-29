@@ -14,7 +14,7 @@ fn log(msg: &str) -> () {
 }
 
 #[pymodule]
-fn spy_core(_py: Python<'_>, py_module: &PyModule) -> PyResult<()> {
+fn spy(_py: Python<'_>, py_module: &PyModule) -> PyResult<()> {
     py_module.add_function(wrap_pyfunction!(add_one, py_module)?)?;
     py_module.add_function(wrap_pyfunction!(log, py_module)?)?;
     py_module.add_class::<SpyRequest>()?;
@@ -24,7 +24,7 @@ fn spy_core(_py: Python<'_>, py_module: &PyModule) -> PyResult<()> {
 
 
 pub fn add_to_inittab() -> () {
-    pyo3::append_to_inittab!(spy_core);
+    pyo3::append_to_inittab!(spy);
 }
 
 #[pyclass]
