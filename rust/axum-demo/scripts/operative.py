@@ -17,5 +17,5 @@ def add(a, b):
 def log(msg): 
     spy.log(msg)
 
-def handle_http_request(req):
+def handle_request(req):
     print(req)

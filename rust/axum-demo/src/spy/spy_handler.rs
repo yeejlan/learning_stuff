@@ -33,20 +33,20 @@ async fn py_handler(
         body,
     };
 
-    let e = call_script_handler(req).await;
+    let e = operative_handle_request(req).await;
     dbg!(e);
 
     let _ = log("1123");
     "this is uri_endwith_py_handler"
 }
 
-pub async fn call_script_handler(req: SpyRequest) -> PyResult<()> {
+pub async fn operative_handle_request(req: SpyRequest) -> PyResult<()> {
 
     Python::with_gil(|py| {
         let py_mod = PyModule::import(py, "operative")?;
 
         py_mod
-            .getattr("handle_http_request")?
+            .getattr("handle_request")?
             .call1((req,))?;
 
         Ok(())
