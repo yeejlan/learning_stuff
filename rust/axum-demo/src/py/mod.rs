@@ -1,3 +1,4 @@
+pub mod handler;
 pub mod rspy_core;
 
 use pyo3::prelude::*;

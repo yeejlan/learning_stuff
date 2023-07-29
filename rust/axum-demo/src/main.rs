@@ -24,6 +24,8 @@ async fn main() {
 
     let app = Router::new();
 
+    let app = py::handler::build_router(app);
+    
     let app = controllers::merge_routers(app, controllers::build_routers());
     let app = app.layer(app_fn::cors_layer());
 
