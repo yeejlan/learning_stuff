@@ -33,14 +33,14 @@ async fn py_handler(
         body,
     };
 
-    let e = operative_handle_request(req).await;
+    let e = handle_request_via_operative(req).await;
     dbg!(e);
 
     let _ = log("1123");
-    "this is uri_endwith_py_handler"
+    "this is uri_handle_by_py"
 }
 
-pub async fn operative_handle_request(req: SpyRequest) -> PyResult<()> {
+pub async fn handle_request_via_operative(req: SpyRequest) -> PyResult<()> {
 
     Python::with_gil(|py| {
         let py_mod = PyModule::import(py, "operative")?;
