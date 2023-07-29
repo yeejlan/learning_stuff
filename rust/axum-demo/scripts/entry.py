@@ -1,3 +1,5 @@
+import spy_core;
+
 class MyClass:
     static_var = 0
 
@@ -12,3 +14,5 @@ def add(a, b):
     MyClass.static_var  += 1;
     return MyClass.static_var  + a + b
 
+def log(msg): 
+    spy_core.log(msg)

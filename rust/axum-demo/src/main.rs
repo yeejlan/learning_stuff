@@ -1,6 +1,6 @@
 
 use axum::{Router, http::Request, extract::MatchedPath,};
-use axum_demo::{controllers, app_fn, py};
+use axum_demo::{controllers, app_fn, spy};
 use tower_http::{trace::TraceLayer, services::ServeDir, request_id::RequestId};
 use tracing::{info_span, Span};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
@@ -18,13 +18,13 @@ async fn main() {
         .with(tracing_subscriber::fmt::layer())
         .init();
 
-    let _ = py::init_py();
-    let _ = py::call_py_add();
-    let _ = py::call_rs_mod_in_py();
+    let _ = spy::init_py();
+    let _ = spy::call_py_add();
+    let _ = spy::call_rs_mod_in_py();
 
     let app = Router::new();
 
-    let app = py::handler::build_router(app);
+    let app = spy::handler::build_router(app);
     
     let app = controllers::merge_routers(app, controllers::build_routers());
     let app = app.layer(app_fn::cors_layer());
