@@ -34,17 +34,20 @@ async fn py_handler(
         body,
     };
 
-    handle_request_via_operative(req)
-        .await
-        .map_err(|e| {
-            dbg!(&e);
-            err_wrap!("py_handler error", e)
-        })?;
+    let _response = tokio::task::spawn_blocking(|| {
+        handle_request_via_operative(req)
+    }).await
+    .map_err(|e| err_wrap!("tokio join error", e) )?
+    .map_err(|e| {
+        dbg!(&e);
+        err_wrap!("py_handler error", e)
+    })?;
+
 
     Reply::result_success("this is uri_handle_by_py")
 }
 
-async fn handle_request_via_operative(req: SpyRequest) -> PyResult<()> {
+fn handle_request_via_operative(req: SpyRequest) -> PyResult<()> {
 
     Python::with_gil(|py| {
 
