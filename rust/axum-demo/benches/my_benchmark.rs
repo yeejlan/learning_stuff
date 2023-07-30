@@ -2,7 +2,6 @@ use std::collections::{BTreeMap, HashMap};
 
 use criterion::{criterion_group, criterion_main, Criterion};
 use once_cell::sync::Lazy;
-use cached::proc_macro::once;
 
 /// get_map_static is way better than the others
 /// 
@@ -26,12 +25,6 @@ pub fn b_get_map_as_hashmap(c: &mut Criterion) {
     c.bench_function("b_get_map_as_hashmap", 
         |b| b.iter(||  get_map_as_hashmap() ));
 }
-
-pub fn b_get_map_cached(c: &mut Criterion) {
-    c.bench_function("b_get_map_cached", 
-        |b| b.iter(||  get_map_cached() ));
-}
-
 
 
 static MAP: Lazy<BTreeMap<i32, String>> = Lazy::new(|| {
@@ -62,11 +55,7 @@ fn get_map_as_hashmap() -> HashMap<i32, String> {
     m
 }
 
-#[once]
-fn get_map_cached() -> BTreeMap<i32, String> {
-    get_map()
-}
 
 // criterion_group!(benches, get_map_with_cache_benchmark, get_map_benchmark);
-criterion_group!(benches, b_get_map_static, b_get_map, b_get_map_cached);
+criterion_group!(benches, b_get_map_static, b_get_map);
 criterion_main!(benches);
