@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use axum::{response::{Response, IntoResponse}, http::{StatusCode, HeaderMap, header::Entry}};
 use pyo3::prelude::*;
 
 #[pyfunction]
@@ -72,17 +73,43 @@ impl SpyRequest {
 #[pyclass]
 #[derive(FromPyObject, Debug)]
 pub struct SpyResponse {
+    #[pyo3(get, set)]
     pub status_code: u16,
+    #[pyo3(get, set)]
     pub headers: HashMap<String, String>,
-    pub content: Vec<u8>,
+    #[pyo3(get, set)]
+    pub content: String,
 }
 
 #[pymethods]
 impl SpyResponse {
     fn __repr__(&self) -> String {
-        format!("SpyResponse({})", self.status_code)
+        format!("SpyResponse({} {})", self.status_code, self.content)
     }
     fn __str__(&self) -> String {
         format!("{:#?}", self)
+    }
+
+    #[new]
+    fn new() -> Self {
+        Self {
+            status_code: 200,
+            headers: HashMap::new(),
+            content: String::from(""),
+        }
+    }
+}
+
+impl IntoResponse for SpyResponse {
+    fn into_response(self) -> Response {
+
+        let headers: HeaderMap = (&self.headers).try_into().unwrap_or(HeaderMap::new());
+
+        let status_code = StatusCode::from_u16(self.status_code).unwrap();
+        (
+            status_code,
+            headers,
+            self.content
+        ).into_response()
     }
 }

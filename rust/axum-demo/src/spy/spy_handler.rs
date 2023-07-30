@@ -6,6 +6,8 @@ use pyo3::{prelude::*, types::{PyString, PyTuple}};
 
 use crate::{spy::spy::SpyRequest, exception::Exception, reply::Reply, err_wrap};
 
+use super::spy::SpyResponse;
+
 pub fn build_router(mut r: Router) -> Router {
     r = r.route("/p/:path", post(py_handler).get(py_handler));
     r
@@ -17,7 +19,7 @@ async fn py_handler(
     headers: HeaderMap,
     Path(path): Path<String>, 
     Query(query): Query<HashMap<String, String>>,
-    body: String) -> Result<Reply, Exception>
+    body: String) -> Result<SpyResponse, Exception>
 {
 
     let mut header_map = HashMap::new();
@@ -34,8 +36,15 @@ async fn py_handler(
         body,
     };
 
-    let _response = tokio::task::spawn_blocking(|| {
-        handle_request_via_operative(req)
+    let response = tokio::task::spawn_blocking(|| {
+
+        Python::with_gil(|py| {
+            PyModule::import(py, "operative")?
+            .getattr("handle_request")?
+            .call1((req,))?
+            .extract::<SpyResponse>()
+        })
+        
     }).await
     .map_err(|e| err_wrap!("tokio join error", e) )?
     .map_err(|e| {
@@ -52,21 +61,17 @@ async fn py_handler(
         }
         ex.cause = c;
         ex
-    })?;
+    });
 
-
-    Reply::result_success("this is uri_handle_by_py")
+    response
 }
 
-fn handle_request_via_operative(req: SpyRequest) -> PyResult<()> {
+// fn handle_request_via_operative(req: SpyRequest) -> PyResult<&'static PyAny> {
 
-    Python::with_gil(|py| {
-
-        call_op1(py, "operative", "handle_request", (req,))?;
-
-        Ok(())
-    })
-}
+//     Python::with_gil(|py| {
+//         call_op1(py, "operative", "handle_request", (req,))
+//     })
+// }
 
 
 pub fn call_op0<N>(py: Python<'_>, py_mod: impl IntoPy<Py<PyString>>, 
