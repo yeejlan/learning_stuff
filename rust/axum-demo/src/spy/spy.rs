@@ -1,25 +1,25 @@
 use std::collections::HashMap;
 
-use pyo3::{prelude::*, types::PyString};
+use pyo3::prelude::*;
 
 #[pyfunction]
 fn tracing_debug(msg: &str) -> () {
-    tracing::debug!(msg);
+    tracing::log::debug!("{}", msg);
 }
 
 #[pyfunction]
 fn tracing_info(msg: &str) -> () {
-    tracing::info!(msg);
+    tracing::log::info!("{}", msg);
 }
 
 #[pyfunction]
 fn tracing_warn(msg: &str) -> () {
-    tracing::warn!(msg)
+    tracing::log::warn!("{}", msg);
 }
 
 #[pyfunction]
 fn tracing_error(msg: &str) -> () {
-    tracing::error!(msg)
+    tracing::log::error!("{}", msg);
 }
 
 #[pymodule]

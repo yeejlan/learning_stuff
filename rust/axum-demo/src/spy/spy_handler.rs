@@ -37,11 +37,10 @@ async fn py_handler(
     let e = handle_request_via_operative(req).await;
     dbg!(e);
 
-    let _ = log("1123");
     "this is uri_handle_by_py"
 }
 
-pub async fn handle_request_via_operative(req: SpyRequest) -> PyResult<()> {
+async fn handle_request_via_operative(req: SpyRequest) -> PyResult<()> {
 
     Python::with_gil(|py| {
 
@@ -51,17 +50,6 @@ pub async fn handle_request_via_operative(req: SpyRequest) -> PyResult<()> {
     })
 }
 
-fn log(msg: &str) -> PyResult<()> {
-
-    Python::with_gil(|py| {
-        let builtins = PyModule::import(py, "spy_core")?;
-        builtins
-            .getattr("log")?
-            .call1((msg,))?;
-
-        Ok(())
-    })
-}
 
 pub fn call_op0<N>(py: Python<'_>, py_mod: impl IntoPy<Py<PyString>>, 
     py_attr: impl IntoPy<Py<PyString>>) -> PyResult<&PyAny>
