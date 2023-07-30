@@ -1,16 +1,14 @@
-class OpeException(Exception):
-    def __init__(self, message, code):
+class UserException(Exception):
+    def __init__(self, message: str, code: int):
         super().__init__(message)
+        self.message = message
         self.code = code
 
-class UserException(OpeException):
+class ModelException(Exception):
     pass
 
-class ModelException(OpeException):
+class ServiceException(Exception):
     pass
 
-class ServiceException(OpeException):
-    pass
-
-class FluxException(OpeException):
+class FluxException(Exception):
     pass

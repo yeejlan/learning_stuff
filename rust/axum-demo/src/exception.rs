@@ -249,10 +249,9 @@ impl std::fmt::Display for Exception {
 impl IntoResponse for Exception {
     fn into_response(self) -> Response {
 
-        //don't log http response code, except 500
-        if self.code>0 && self.code<1000 && self.code !=500 {
-            //pass
-        }else{
+        //log internal server error
+        if self.code ==500 {
+
             let mut buffer = String::new();
             buffer.push_str(&self.message);
             buffer.push_str("\n");

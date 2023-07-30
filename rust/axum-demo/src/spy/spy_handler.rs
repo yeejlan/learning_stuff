@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use axum::{Router, routing::post, extract::{Query, Path}, http::{HeaderMap, Method}};
 use pyo3::{prelude::*, types::{PyString, PyTuple}};
 
-use crate::{spy::spy::SpyRequest, exception::Exception, err_wrap};
+use crate::{spy::{spy::SpyRequest, ope}, exception::Exception, err_wrap};
 
 use super::spy::SpyResponse;
 
@@ -48,19 +48,34 @@ async fn py_handler(
     }).await
     .map_err(|e| err_wrap!("tokio join error", e) )?
     .map_err(|e| {
-        let mut tr: String = "".into();
+
         Python::with_gil(|py| {
+
+            if e.is_instance_of::<ope::UserException>(py) {
+                let eo = e.to_object(py);
+                let code = eo.getattr(py, "code").unwrap().extract::<i32>(py).unwrap();
+                let message = eo.getattr(py, "message").unwrap().extract::<String>(py).unwrap();
+                return Exception {
+                    code,
+                    message,
+                    ..Default::default()
+                }
+            }
+
+            let mut tr: String = "".into();
             if let Some(traceback) = e.traceback(py) {
                 tr = format!("{}", traceback.format().unwrap_or(String::from("unknown py traceback.")));
             }
-        });
-        let mut ex = err_wrap!("py_handler error", e);
-        let mut c = ex.cause;
-        for line in tr.lines() {
-            c.push(line.to_string()); 
-        }
-        ex.cause = c;
-        ex
+
+            let mut ex = err_wrap!("py_handler error", e);
+            let mut c = ex.cause;
+
+            for line in tr.lines() {
+                c.push(line.to_string()); 
+            }
+            ex.cause = c;
+            ex
+        })
     });
 
     response

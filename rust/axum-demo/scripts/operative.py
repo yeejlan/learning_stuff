@@ -10,7 +10,8 @@ def _handle_request(req: spy.SpyRequest) -> spy.SpyResponse:
     #ope.info(req)
     # ope.info("handling~" + req.path)
     raise ope.UserException("My test exception", 1234)
-    
+    # raise ope.ModelException("My model exception")
+
     resp = spy.SpyResponse()
     resp.status_code = 200
     resp.content = "handle " + req.path + " finished"
