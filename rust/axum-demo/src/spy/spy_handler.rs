@@ -72,7 +72,7 @@ async fn py_handler(
                 tr = format!("{}", traceback.format().unwrap_or(String::from("unknown py traceback.")));
             }
 
-            let mut ex = err_wrap!("py_handler error", e);
+            let mut ex = err_wrap!("script error", e);
             let mut c = ex.cause;
 
             for line in tr.lines() {
