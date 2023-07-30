@@ -1,19 +1,18 @@
 
 use axum::{response::{IntoResponse,Response}, http::StatusCode};
+use once_cell::sync::Lazy;
 use serde_json::{Value, json};
 use serde::Serialize;
 
 use crate::exception::Exception;
 
 use std::collections::BTreeMap;
-use cached::proc_macro::once;
 
 pub struct Reply(Value, i32);
 
-#[once]
-pub fn get_code_map() -> BTreeMap<i32, &'static str> {
+static MAP: Lazy<BTreeMap<i32, &'static str>> = Lazy::new(|| {
     Reply::get_map()
-}
+});
 
 impl Reply {
 
@@ -57,8 +56,7 @@ impl Reply {
     }    
 
     pub fn code_to_str(code: i32) -> &'static str {
-        let m = get_code_map();
-        m.get(&code).unwrap_or(&"none")
+        MAP.get(&code).unwrap_or(&"none")
     }
     
     pub fn code_to_kind(code: i32) -> i32 {

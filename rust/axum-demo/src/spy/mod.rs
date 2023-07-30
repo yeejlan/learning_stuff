@@ -3,9 +3,13 @@ pub mod spy;
 
 use pyo3::prelude::*;
 
+use crate::reply::Reply;
+
 pub fn spy_initialize() -> () {
     let current_dir = std::env::current_dir().unwrap();
     let current_dir = current_dir.join("scripts");
+
+    Reply::code_to_str(Reply::SUCCESS); //make sure map initialized
 
     spy::add_to_inittab();
 
