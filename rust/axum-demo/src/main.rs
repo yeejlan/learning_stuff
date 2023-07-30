@@ -18,7 +18,7 @@ async fn main() {
         .with(tracing_subscriber::fmt::layer())
         .init();
 
-    let _ = spy::spy_initialize();
+    spy::spy_initialize();
 
     let app = Router::new();
 

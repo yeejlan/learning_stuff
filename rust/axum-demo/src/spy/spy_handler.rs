@@ -2,7 +2,7 @@
 use std::collections::HashMap;
 
 use axum::{Router, routing::post, extract::{Query, Path}, http::{HeaderMap, Method}};
-use pyo3::prelude::*;
+use pyo3::{prelude::*, types::{PyString, PyTuple}};
 
 use crate::spy::spy::SpyRequest;
 
@@ -17,7 +17,8 @@ async fn py_handler(
     headers: HeaderMap,    
     Path(path): Path<String>, 
     Query(query): Query<HashMap<String, String>>,
-    body: String) -> &'static str {
+    body: String) -> &'static str 
+{
 
     let mut header_map = HashMap::new();
     for (key, value) in headers.iter() {
@@ -43,11 +44,8 @@ async fn py_handler(
 pub async fn handle_request_via_operative(req: SpyRequest) -> PyResult<()> {
 
     Python::with_gil(|py| {
-        let py_mod = PyModule::import(py, "operative")?;
 
-        py_mod
-            .getattr("handle_request")?
-            .call1((req,))?;
+        call_op1(py, "operative", "handle_request", (req,))?;
 
         Ok(())
     })
@@ -63,4 +61,20 @@ fn log(msg: &str) -> PyResult<()> {
 
         Ok(())
     })
+}
+
+pub fn call_op0<N>(py: Python<'_>, py_mod: impl IntoPy<Py<PyString>>, 
+    py_attr: impl IntoPy<Py<PyString>>) -> PyResult<&PyAny>
+{
+    PyModule::import(py, py_mod)?
+        .getattr(py_attr)?
+        .call0()
+}
+
+pub fn call_op1(py: Python<'_>, py_mod: impl IntoPy<Py<PyString>>, 
+    py_attr: impl IntoPy<Py<PyString>>, py_args: impl IntoPy<Py<PyTuple>>) -> PyResult<&PyAny>
+{
+    PyModule::import(py, py_mod)?
+        .getattr(py_attr)?
+        .call1(py_args)
 }
