@@ -1,6 +1,19 @@
-def log(msg) -> None:
+def tracing_debug(msg: str) -> None:
     """
-    Gets the best color for the car.
+    call rust tracing::debug!
+    """
 
-    :return: the name of the color our great algorithm thinks is the best for this car
+def tracing_info(msg: str) -> None:
     """
+    call rust tracing::info!
+    """
+
+def tracing_warn(msg: str) -> None:
+    """
+    call rust tracing::warn!
+    """
+
+def tracing_error(msg: str) -> None:
+    """
+    call rust tracing::error!
+    """    

@@ -14,7 +14,7 @@ pub fn build_router(mut r: Router) -> Router {
 
 async fn py_handler(
     method: Method,
-    headers: HeaderMap,    
+    headers: HeaderMap,
     Path(path): Path<String>, 
     Query(query): Query<HashMap<String, String>>,
     body: String) -> &'static str 

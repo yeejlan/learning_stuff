@@ -1,22 +1,33 @@
 use std::collections::HashMap;
 
-use pyo3::prelude::*;
+use pyo3::{prelude::*, types::PyString};
 
 #[pyfunction]
-fn add_one(x: i64) -> i64 {
-    println!("x={}", x);
-    x + 1
+fn tracing_debug(msg: &str) -> () {
+    tracing::debug!(msg);
 }
 
 #[pyfunction]
-fn log(msg: &str) -> () {
+fn tracing_info(msg: &str) -> () {
     tracing::info!(msg);
+}
+
+#[pyfunction]
+fn tracing_warn(msg: &str) -> () {
+    tracing::warn!(msg)
+}
+
+#[pyfunction]
+fn tracing_error(msg: &str) -> () {
+    tracing::error!(msg)
 }
 
 #[pymodule]
 fn spy(_py: Python<'_>, py_module: &PyModule) -> PyResult<()> {
-    py_module.add_function(wrap_pyfunction!(add_one, py_module)?)?;
-    py_module.add_function(wrap_pyfunction!(log, py_module)?)?;
+    py_module.add_function(wrap_pyfunction!(tracing_debug, py_module)?)?;
+    py_module.add_function(wrap_pyfunction!(tracing_info, py_module)?)?;
+    py_module.add_function(wrap_pyfunction!(tracing_warn, py_module)?)?;
+    py_module.add_function(wrap_pyfunction!(tracing_error, py_module)?)?;
     py_module.add_class::<SpyRequest>()?;
     py_module.add_class::<SpyResponse>()?;
     Ok(())
@@ -42,8 +53,14 @@ impl SpyRequest {
     fn __repr__(&self) -> String {
         format!("SpyRequest({})", self.path)
     }
+
     fn __str__(&self) -> String {
         format!("{:#?}", self)
+    }
+
+    fn request_id(&self) -> String {
+        self.headers.get("request-id")
+        .unwrap().to_owned()
     }
 }
 
