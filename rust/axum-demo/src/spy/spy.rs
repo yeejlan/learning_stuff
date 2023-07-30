@@ -54,6 +54,10 @@ pub struct SpyRequest {
     pub method: String,
     #[pyo3(get)]
     pub path: String,
+    #[pyo3(get, set)]
+    pub controller: String,
+    #[pyo3(get, set)]
+    pub action: String,        
     #[pyo3(get)]
     pub query: HashMap<String, String>,
     #[pyo3(get)]

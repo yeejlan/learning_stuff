@@ -37,6 +37,8 @@ async fn py_handler(
         query,
         headers: header_map,
         body,
+        controller: String::from(""),
+        action: String::from(""),
     };
 
     let response = tokio::task::spawn_blocking(|| {

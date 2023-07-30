@@ -9,11 +9,6 @@ def handle_request(req: spy.SpyRequest) -> spy.SpyResponse:
 def _handle_request(req: spy.SpyRequest) -> spy.SpyResponse:
     ope.set_request_id(req.request_id())
 
-    #ope.info(req)
-    # ope.info("handling~" + req.path)
-    #raise ope.UserException("My test exception", 1234)
-    # raise ope.ModelException("My model exception")
-
     path = Path(req.path)
     controller = 'home'
     action = 'index'
@@ -37,6 +32,8 @@ def _handle_request(req: spy.SpyRequest) -> spy.SpyResponse:
     if not hasattr(controller_module, action_name):
         raise ope.UserException("Page not found.", 404)
 
+    req.controller = controller_name
+    req.action = action_name
     resp = getattr(controller_module, action_name)(req) #call action
 
     ope.del_request_id
