@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use axum::{Router, routing::post, extract::{Query, Path}, http::{HeaderMap, Method}};
 use pyo3::{prelude::*, types::{PyString, PyTuple}};
 
-use crate::spy::spy::SpyRequest;
+use crate::{spy::spy::SpyRequest, exception::Exception, reply::Reply, err_wrap};
 
 pub fn build_router(mut r: Router) -> Router {
     r = r.route("/p/:path", post(py_handler).get(py_handler));
@@ -17,7 +17,7 @@ async fn py_handler(
     headers: HeaderMap,
     Path(path): Path<String>, 
     Query(query): Query<HashMap<String, String>>,
-    body: String) -> &'static str 
+    body: String) -> Result<Reply, Exception>
 {
 
     let mut header_map = HashMap::new();
@@ -34,10 +34,14 @@ async fn py_handler(
         body,
     };
 
-    let e = handle_request_via_operative(req).await;
-    dbg!(e);
+    handle_request_via_operative(req)
+        .await
+        .map_err(|e| {
+            dbg!(&e);
+            err_wrap!("py_handler error", e)
+        })?;
 
-    "this is uri_handle_by_py"
+    Reply::result_success("this is uri_handle_by_py")
 }
 
 async fn handle_request_via_operative(req: SpyRequest) -> PyResult<()> {

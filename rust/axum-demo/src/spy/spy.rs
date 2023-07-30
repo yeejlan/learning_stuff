@@ -41,10 +41,15 @@ pub fn add_to_inittab() -> () {
 #[pyclass]
 #[derive(FromPyObject, Debug)]
 pub struct SpyRequest {
+    #[pyo3(get)]
     pub method: String,
+    #[pyo3(get)]
     pub path: String,
+    #[pyo3(get)]
     pub query: HashMap<String, String>,
+    #[pyo3(get)]
     pub headers: HashMap<String, String>,
+    #[pyo3(get)]
     pub body: String,
 }
 
