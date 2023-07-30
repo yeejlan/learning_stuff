@@ -3,6 +3,8 @@ use std::collections::HashMap;
 use axum::{response::{Response, IntoResponse}, http::{StatusCode, HeaderMap}};
 use pyo3::prelude::*;
 
+use crate::reply::Reply;
+
 #[pyfunction]
 fn tracing_debug(msg: &str) -> () {
     tracing::log::debug!("{}", msg);
@@ -23,12 +25,18 @@ fn tracing_error(msg: &str) -> () {
     tracing::log::error!("{}", msg);
 }
 
+#[pyfunction]
+fn code_to_reason(code: i32) -> &'static str {
+    Reply::code_to_str(code)
+}
+
 #[pymodule]
 fn spy(_py: Python<'_>, py_module: &PyModule) -> PyResult<()> {
     py_module.add_function(wrap_pyfunction!(tracing_debug, py_module)?)?;
     py_module.add_function(wrap_pyfunction!(tracing_info, py_module)?)?;
     py_module.add_function(wrap_pyfunction!(tracing_warn, py_module)?)?;
     py_module.add_function(wrap_pyfunction!(tracing_error, py_module)?)?;
+    py_module.add_function(wrap_pyfunction!(code_to_reason, py_module)?)?;
     py_module.add_class::<SpyRequest>()?;
     py_module.add_class::<SpyResponse>()?;
     Ok(())
