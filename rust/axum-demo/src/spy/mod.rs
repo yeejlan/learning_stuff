@@ -17,11 +17,3 @@ pub fn spy_initialize() -> () {
         py.import("operative").unwrap();
     })
 }
-
-mod ope {
-    pyo3::import_exception!(ope, OpeException);
-    pyo3::import_exception!(ope, UserException);
-    pyo3::import_exception!(ope, ModelException);
-    pyo3::import_exception!(ope, ServiceException);
-    pyo3::import_exception!(ope, FluxException);
-}

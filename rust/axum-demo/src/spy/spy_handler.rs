@@ -39,8 +39,19 @@ async fn py_handler(
     }).await
     .map_err(|e| err_wrap!("tokio join error", e) )?
     .map_err(|e| {
-        dbg!(&e);
-        err_wrap!("py_handler error", e)
+        let mut tr: String = "".into();
+        Python::with_gil(|py| {
+            if let Some(traceback) = e.traceback(py) {
+                tr = format!("{}", traceback.format().unwrap_or(String::from("unknown py traceback.")));
+            }
+        });
+        let mut ex = err_wrap!("py_handler error", e);
+        let mut c = ex.cause;
+        for line in tr.lines() {
+            c.push(line.to_string()); 
+        }
+        ex.cause = c;
+        ex
     })?;
 
 
