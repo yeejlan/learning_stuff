@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use axum::{Router, routing::post, extract::{Query, Path}, http::{HeaderMap, Method}};
 use pyo3::{prelude::*, types::{PyString, PyTuple}};
 
-use crate::{spy::spy::SpyRequest, exception::Exception, reply::Reply, err_wrap};
+use crate::{spy::spy::SpyRequest, exception::Exception, err_wrap};
 
 use super::spy::SpyResponse;
 

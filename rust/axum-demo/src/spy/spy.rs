@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use axum::{response::{Response, IntoResponse}, http::{StatusCode, HeaderMap, header::Entry}};
+use axum::{response::{Response, IntoResponse}, http::{StatusCode, HeaderMap}};
 use pyo3::prelude::*;
 
 #[pyfunction]
