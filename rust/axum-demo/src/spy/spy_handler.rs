@@ -9,18 +9,21 @@ use crate::{spy::{spy::SpyRequest, ope}, exception::Exception, err_wrap};
 use super::spy::SpyResponse;
 
 pub fn build_router(mut r: Router) -> Router {
-    r = r.route("/p/:path", post(py_handler).get(py_handler));
+    r = r.route("/p/:a", post(py_handler).get(py_handler));
+    r = r.route("/p/:a/:b", post(py_handler).get(py_handler));
+    r = r.route("/p/:a/:b/:c", post(py_handler).get(py_handler));
     r
 }
-
 
 async fn py_handler(
     method: Method,
     headers: HeaderMap,
-    Path(path): Path<String>, 
+    Path(path): Path<Vec<String>>, 
     Query(query): Query<HashMap<String, String>>,
     body: String) -> Result<SpyResponse, Exception>
 {
+
+    let path = path.join("/");
 
     let mut header_map = HashMap::new();
     for (key, value) in headers.iter() {

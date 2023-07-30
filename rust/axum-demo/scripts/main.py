@@ -1,12 +1,18 @@
 
-import ope_init
-import os
-import ope_thread_pool
+from pathlib import Path
 
-def main():
+path = Path("app/user/userget-user-info")
 
-    print(ope_thread_pool.pool._max_workers)
+# module_name = path.parent.name + "." + path.parts[-2]
+# function_name = "_".join(path.name.split("-")) + "_action" 
 
+controller = ".".join(path.parts[:3])
+print(path.parts)
+print(len(path.parts))
+print(path.parts[0])
 
-if __name__ == "__main__":
-    main()
+print(controller)
+# print(module_name)
+# # app.user
+
+# print(function_name)  
