@@ -6,10 +6,10 @@ def handle_request(req: spy.SpyRequest) -> spy.SpyResponse:
 
 def _handle_request(req: spy.SpyRequest) -> spy.SpyResponse:
     ope.set_request_id(req.request_id())
-    
+
     #ope.info(req)
     # ope.info("handling~" + req.path)
-    # raise ope.UserException("cccc", 1234)
+    raise ope.UserException("My test exception", 1234)
     
     resp = spy.SpyResponse()
     resp.status_code = 200

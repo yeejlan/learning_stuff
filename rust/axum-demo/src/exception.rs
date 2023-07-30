@@ -253,7 +253,14 @@ impl IntoResponse for Exception {
         if self.code>0 && self.code<1000 && self.code !=500 {
             //pass
         }else{
-            tracing::error!("{}, cause: {:#?}", self.message, self.cause);
+            let mut buffer = String::new();
+            buffer.push_str(&self.message);
+            buffer.push_str("\n");
+            for line in &self.cause {
+                buffer.push_str(line);
+                buffer.push_str("\n");
+            }
+            tracing::error!("{}", buffer);
         }
 
         let payload = json!({
