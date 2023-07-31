@@ -18,7 +18,7 @@ pub fn spy_initialize() -> () {
         .getattr("path").unwrap()
         .call_method("append", (current_dir,), None).unwrap();
 
-        py.import("operative").unwrap();
+        py.import("ope").unwrap();
     })
 }
 

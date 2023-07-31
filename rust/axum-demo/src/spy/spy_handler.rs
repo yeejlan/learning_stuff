@@ -44,7 +44,7 @@ async fn py_handler(
     let response = tokio::task::spawn_blocking(|| {
 
         Python::with_gil(|py| {
-            PyModule::import(py, "operative")?
+            PyModule::import(py, "ope")?
             .getattr("handle_request")?
             .call1((req,))?
             .extract::<SpyResponse>()
