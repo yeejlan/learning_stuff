@@ -7,7 +7,7 @@ use crate::reply::Reply;
 
 pub fn spy_initialize() -> () {
     let current_dir = std::env::current_dir().unwrap();
-    let current_dir = current_dir.join("scripts");
+    let current_dir = current_dir.join("operative");
 
     Reply::code_to_str(Reply::SUCCESS); //make sure map initialized
 
