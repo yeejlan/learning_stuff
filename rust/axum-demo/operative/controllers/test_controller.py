@@ -1,5 +1,6 @@
 
 import ope
+import time
 
 def err500_action(req):
     raise ope.ServiceException("my service is down!")
@@ -20,3 +21,7 @@ def req_info_action(req):
 def json_action(req):
     payload = ope.json_decode(req.body)
     return ope.success(payload)
+
+def sleep_action(req):
+    time.sleep(0.01)
+    return ope.success('py: sleep 10ms using time.sleep')
