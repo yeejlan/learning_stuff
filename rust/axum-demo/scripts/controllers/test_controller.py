@@ -17,3 +17,7 @@ def req_info_action(req: spy.SpyRequest) -> spy.SpyResponse:
         'method': req.method,
         'headers': req.headers,
     })
+
+def json_action(req: spy.SpyRequest) -> spy.SpyResponse:
+    payload = ope.json_decode(req.body)
+    return ope.success(payload)
