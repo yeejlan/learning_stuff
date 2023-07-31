@@ -1,13 +1,13 @@
 
 import ope
 
-def err500_action(req: ope.Request) -> ope.Response:
+def err500_action(req):
     raise ope.ServiceException("my service is down!")
 
-def user_error_action(req: ope.Request) -> ope.Response:
+def user_error_action(req):
     raise ope.UserException("messsage from user_error_action", ope.OPERATION_FAILED)
 
-def req_info_action(req: ope.Request) -> ope.Response:
+def req_info_action(req):
     return ope.success({
         'controller': req.controller,
         'action': req.action,
@@ -17,6 +17,6 @@ def req_info_action(req: ope.Request) -> ope.Response:
         'headers': req.headers,
     })
 
-def json_action(req: ope.Request) -> ope.Response:
+def json_action(req):
     payload = ope.json_decode(req.body)
     return ope.success(payload)
