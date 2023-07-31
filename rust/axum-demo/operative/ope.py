@@ -18,7 +18,7 @@ def json_decode(str_data: str):
     return data
 
 def handle_request(req: Request) -> Response:
-    return pool.submit(_handle_request, req).result() 
+    return pool.submit(_handle_request, req).result(timeout=30) 
 
 def _handle_request(req: Request) -> Response:
     set_request_id(req.request_id())
