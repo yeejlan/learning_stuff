@@ -5,15 +5,49 @@ use axum::{Router, routing::post, extract::{Query, Path}, http::{HeaderMap, Meth
 
 use crate::{exception::Exception, err_wrap};
 
-use super::hippo::HippoRequest;
+use super::{hippo::HippoRequest, get_hippo_manager};
 use tokio::io::AsyncWriteExt;
 use tokio::process::Command;
 
 pub fn build_router(mut r: Router) -> Router {
+    // r = r.route("/e/:a", post(hippo_handler2).get(hippo_handler2));
     r = r.route("/h/:a", post(hippo_handler).get(hippo_handler));
     r = r.route("/h/:a/:b", post(hippo_handler).get(hippo_handler));
     r = r.route("/h/:a/:b/:c", post(hippo_handler).get(hippo_handler));
     r
+}
+
+
+async fn hippo_handler2(
+    method: Method,
+    headers: HeaderMap,
+    Path(path): Path<Vec<String>>, 
+    Query(query): Query<HashMap<String, String>>,
+    body: String) -> Result<String, Exception>
+{
+
+    let path = path.join("/");
+
+    let mut header_map = HashMap::new();
+    for (key, value) in headers.iter() {
+        header_map.insert(key.as_str().to_string(), 
+            value.to_str().unwrap_or("").to_string());
+    }
+
+    let req = HippoRequest {
+        method: method.to_string(),
+        path,
+        query,
+        headers: header_map,
+        body,
+    };
+
+    let payload = encode_request(1, req);
+    let manager = get_hippo_manager();
+    let out = manager.lock().unwrap()
+        .run_job(&payload).await?;
+    let response = String::from_utf8_lossy(&out);
+    Ok(response.into())
 }
 
 async fn hippo_handler(
@@ -40,7 +74,7 @@ async fn hippo_handler(
         body,
     };
 
-    let mut child = Command::new("php")
+    let mut child: tokio::process::Child = Command::new("php")
         .arg("./hippo/worker.php")
         .stdout(Stdio::piped())
         .stdin(Stdio::piped())
@@ -65,9 +99,9 @@ async fn hippo_handler(
         .await
         .map_err(|e| err_wrap!("read stdout error", e))?;
 
-    let response = String::from_utf8_lossy(&out.stdout).into_owned();
+    let response = String::from_utf8_lossy(&out.stdout);
 
-    Ok(response)
+    Ok(response.into())
 }
 
 fn encode_request(msg_type: u32, req: HippoRequest) -> Vec<u8> {
