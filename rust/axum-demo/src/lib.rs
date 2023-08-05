@@ -6,4 +6,5 @@ pub mod app_fn;
 pub mod exception;
 pub mod reply;
 pub mod spy;
+pub mod hippo;
 

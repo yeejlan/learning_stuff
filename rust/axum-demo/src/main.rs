@@ -1,13 +1,13 @@
 
 use axum::{Router, http::Request, extract::MatchedPath,};
-use axum_demo::{controllers, app_fn, spy};
+use axum_demo::{controllers, app_fn, spy, hippo};
 use tower_http::{trace::TraceLayer, services::ServeDir, request_id::RequestId};
 use tracing::{info_span, Span};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 #[tokio::main]
 async fn main() {
-    dotenvy::dotenv().expect(".evn file not found");
+    dotenvy::dotenv().ok();
 
     tracing_subscriber::registry()
         .with(
@@ -19,10 +19,12 @@ async fn main() {
         .init();
 
     spy::spy_initialize();
+    hippo::hippo_initialize();
 
     let app = Router::new();
 
     let app = spy::spy_handler::build_router(app);
+    let app: Router = hippo::hippo_handler::build_router(app);
     
     let app = controllers::merge_routers(app, controllers::build_routers());
     let app = app.layer(app_fn::cors_layer());
