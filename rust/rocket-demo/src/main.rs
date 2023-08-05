@@ -25,7 +25,7 @@ fn init_subscriber() {
 fn rocket() -> _ {
     dotenvy::dotenv().expect(".evn file not found");
 
-    init_subscriber();
+    //init_subscriber();
 
     controllers::build_routes()
     .attach(RequestId::default())
