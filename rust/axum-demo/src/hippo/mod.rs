@@ -17,7 +17,7 @@ static HIPPO_POOL: Lazy<Arc<Mutex<HippoPool>>> = Lazy::new(|| {
 pub async fn hippo_initialize() -> () {
     HIPPO_POOL.lock().await
         .set_max_exec_time(60)
-        .set_worker_num(4)
+        .set_worker_num(16)
         .set_php_executor("php".into())
         .set_worker_script("./hippo/worker.php".into())
         .build();

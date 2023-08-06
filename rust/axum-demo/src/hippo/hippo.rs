@@ -3,8 +3,7 @@ use std::{collections::HashMap, process::Stdio};
 use std::sync::atomic::{Ordering, AtomicU8};
 use axum::response::{IntoResponse, Response};
 use serde::Serialize;
-use serde_json::Value;
-use tokio::process::Command;
+use tokio::process::{Command, ChildStdin, ChildStdout};
 use tokio::io::{AsyncWriteExt, AsyncReadExt};
 
 use crate::exception::Exception;
@@ -24,16 +23,13 @@ pub struct HippoMessage {
     pub msg_body: Vec<u8>,
 }
 
-// type MsgMap = HashMap<String, Value>;
 
 impl IntoResponse for HippoMessage {
     fn into_response(self) -> Response {
         if self.msg_type == HippoMsgType::T_Response {
-            // let data :Option<MsgMap> = serde_json::from_slice(&self.msg_body).unwrap_or(None);
-            let json_str = String::from_utf8_lossy(&self.msg_body).to_string();
-            let data: Value = serde_json::from_str(&json_str).unwrap();
-            return  Reply::success(data)
-                .into_response();
+            let out_str = String::from_utf8_lossy(&self.msg_body).to_string();
+
+            return out_str.into_response();
         }
         
         Reply::failed("bad result", Reply::BAD_RESULT)
@@ -57,19 +53,25 @@ impl HippoMsgType {
 #[derive(Debug)]
 pub struct HippoWorker {
     pub child: tokio::process::Child,
-    state: AtomicU8,
     pub expire_at: i64,
+    state: AtomicU8,
+    stdin: ChildStdin,
+    stdout: ChildStdout,
 }
 
 impl HippoWorker {
     const IDLE: u8 = 0;
     const PROCESSING: u8 = 1;
     const STOPPING: u8 = 2;
-    pub fn new(child: tokio::process::Child) -> Self {
+    pub fn new(mut child: tokio::process::Child) -> Self {
+        let stdin = child.stdin.take().unwrap();
+        let stdout = child.stdout.take().unwrap();
         Self {
             child,
             state: AtomicU8::new(Self::IDLE),
             expire_at: 0,
+            stdin,
+            stdout,
         }
     }
 
@@ -94,8 +96,8 @@ impl HippoWorker {
         self.compare_and_swap(Self::IDLE, Self::PROCESSING)
     }
     
-    pub fn into_idle(&self) -> Result<u8, ()> {
-        self.compare_and_swap(Self::PROCESSING, Self::IDLE)
+    pub fn into_idle(&self) -> () {
+        self.state.store(Self::IDLE, Ordering::SeqCst)
     }
 
     pub fn into_stopping(&self) -> () {
@@ -106,37 +108,36 @@ impl HippoWorker {
         //set timeout
         self.expire_at = Self::next_expire_at(60);
 
-        let child = &mut self.child;
-        let mut stdin = child
-        .stdin
-        .take()
-        .ok_or(Exception::from("get stdin error"))?;
+        // let child = &mut self.child;
+        // let mut stdin = child
+        // .stdin
+        // .take()
+        // .ok_or(Exception::from("get stdin error"))?;
     
-        let mut stdout = child.stdout.take()
-        .ok_or(Exception::from("get stdout error"))?;
+        // let mut stdout = child.stdout.take()
+        // .ok_or(Exception::from("get stdout error"))?;
 
         let payload = Self::encode_message(msg);
 
-        stdin
+        self.stdin
             .write(&payload)
             .await?;
  
-        stdin.flush().await?;
+        self.stdin.flush().await?;
+   
 
         let mut msg_header = vec![0; 8];
-        stdout.read_exact(&mut msg_header).await?;
+        self.stdout.read_exact(&mut msg_header).await?;
         let msg_type: u32 = u32::from_be_bytes(msg_header[..4].try_into().unwrap());
         let msg_len: u32 = u32::from_be_bytes(msg_header[4..].try_into().unwrap());
         let mut msg_body = vec![0; msg_len.try_into().unwrap()];
-        stdout.read_exact(&mut msg_body).await?;
+        self.stdout.read_exact(&mut msg_body).await?;
 
         let out = HippoMessage {
             msg_type,
             msg_body,
         };
 
-        //set idle state
-        self.into_idle().unwrap();
         Ok(out)
     }
 
@@ -164,9 +165,6 @@ pub struct HippoPool {
     pub pool: Vec<HippoWorker>,
     pub worker_num: u32,
     pub max_exec_time: u32,
-    pub idle_worker_num: u32,
-    pub processing_worker_num: u32,
-    pub stoping_worker_num: u32,
 }
 
 impl HippoPool {
@@ -178,9 +176,6 @@ impl HippoPool {
             pool: Vec::new(),
             worker_num,
             max_exec_time: 60,
-            idle_worker_num: worker_num,
-            processing_worker_num: 0,
-            stoping_worker_num: 0,
         }
     }
 
@@ -230,9 +225,9 @@ impl HippoPool {
         loop {
             for w in &mut self.pool {
                 if w.is_idle() && w.into_processing().is_ok(){
-                    let res = w.send_message(msg).await?;
-                    let _ = w.into_idle();
-                    return Ok(res);
+                    let res = w.send_message(msg).await;
+                    w.into_idle(); 
+                    return Ok(res?);
                 }
             }
             tokio::time::sleep(Duration::from_millis(1)).await;
