@@ -1,17 +1,24 @@
 
-use std::collections::HashMap;
+use std::{collections::HashMap, ops::Deref};
 
 use axum::{Router, routing::post, extract::{Query, Path}, http::{HeaderMap, Method}};
 
-use crate::exception::Exception;
+use crate::{exception::Exception, reply::Reply};
 
 use super::{hippo::{HippoRequest, HippoMessage, HippoMsgType}, get_hippo_pool};
 
 pub fn build_router(mut r: Router) -> Router {
+    r = r.route("/h/debug", post(hippo_status).get(hippo_status));
     r = r.route("/h/:a", post(hippo_handler).get(hippo_handler));
     r = r.route("/h/:a/:b", post(hippo_handler).get(hippo_handler));
     r = r.route("/h/:a/:b/:c", post(hippo_handler).get(hippo_handler));
     r
+}
+
+async fn hippo_status () -> Result<Reply, Exception> {
+    let pool = get_hippo_pool();
+    dbg!(pool.lock().await.deref());
+    Reply::result_success("please check dbg message")
 }
 
 // #[axum::debug_handler]

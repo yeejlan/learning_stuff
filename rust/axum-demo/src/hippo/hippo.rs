@@ -54,6 +54,7 @@ impl HippoMsgType {
     pub const T_Pong: u32 = 102;
 }
 
+#[derive(Debug)]
 pub struct HippoWorker {
     pub child: tokio::process::Child,
     state: AtomicU8,
@@ -156,22 +157,30 @@ impl HippoWorker {
 
 }
 
+#[derive(Debug)]
 pub struct HippoPool {
-    php_executor: String,
-    worker_script: String,    
-    pool: Vec<HippoWorker>,
-    worker_num: u32,
-    max_exec_time: u32,
+    pub php_executor: String,
+    pub worker_script: String,    
+    pub pool: Vec<HippoWorker>,
+    pub worker_num: u32,
+    pub max_exec_time: u32,
+    pub idle_worker_num: u32,
+    pub processing_worker_num: u32,
+    pub stoping_worker_num: u32,
 }
 
 impl HippoPool {
     pub fn new() -> Self {
+        let worker_num = 4;
         Self { 
             php_executor: String::from("php"),
             worker_script: String::from("./hippo/worker.php"),
             pool: Vec::new(),
-            worker_num: 4,
+            worker_num,
             max_exec_time: 60,
+            idle_worker_num: worker_num,
+            processing_worker_num: 0,
+            stoping_worker_num: 0,
         }
     }
 
@@ -217,14 +226,17 @@ impl HippoPool {
     }
 
     pub async fn send_message(&mut self, msg: HippoMessage) -> Result<HippoMessage, Exception> {
+        //todo: add timeout and spawn and max queue using tokio::sync::Semaphore
         loop {
             for w in &mut self.pool {
                 if w.is_idle() && w.into_processing().is_ok(){
                     let res = w.send_message(msg).await?;
+                    let _ = w.into_idle();
                     return Ok(res);
                 }
             }
             tokio::time::sleep(Duration::from_millis(1)).await;
+            return Err("all worker is busy".into());
         }
     }
 
