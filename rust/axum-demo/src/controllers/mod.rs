@@ -29,6 +29,7 @@ pub fn build_routers() -> Vec<Router> {
     ]
 }
 
+// #[axum::debug_handler]
 async fn get_home__hi() -> Reply {
     Reply::success("this is hello message for testing")
 }

@@ -2,19 +2,20 @@
 pub mod hippo;
 pub mod hippo_handler;
 
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 
 use once_cell::sync::Lazy;
+use tokio::sync::Mutex;
 use std::ops::Deref;
 
-use self::hippo::HippoManager;
+use self::hippo::HippoPool;
 
-static HIPPO_MANAGER: Lazy<Arc<Mutex<HippoManager>>> = Lazy::new(|| {
-    Arc::new(Mutex::new(HippoManager::new()))
+static HIPPO_POOL: Lazy<Arc<Mutex<HippoPool>>> = Lazy::new(|| {
+    Arc::new(Mutex::new(HippoPool::new()))
 });
 
-pub fn hippo_initialize() -> () {
-    HIPPO_MANAGER.lock().unwrap()
+pub async fn hippo_initialize() -> () {
+    HIPPO_POOL.lock().await
         .set_max_exec_time(60)
         .set_worker_num(4)
         .set_php_executor("php".into())
@@ -22,7 +23,7 @@ pub fn hippo_initialize() -> () {
         .build();
 }
 
-pub fn get_hippo_manager() -> Arc<Mutex<HippoManager>> {
-    HIPPO_MANAGER.deref().clone()
+pub fn get_hippo_pool() -> Arc<Mutex<HippoPool>> {
+    HIPPO_POOL.deref().clone()
 }
 

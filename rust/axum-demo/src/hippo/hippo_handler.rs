@@ -1,29 +1,26 @@
 
-use std::{collections::HashMap, process::Stdio};
+use std::collections::HashMap;
 
 use axum::{Router, routing::post, extract::{Query, Path}, http::{HeaderMap, Method}};
 
-use crate::{exception::Exception, err_wrap};
+use crate::exception::Exception;
 
-use super::{hippo::HippoRequest, get_hippo_manager};
-use tokio::io::AsyncWriteExt;
-use tokio::process::Command;
+use super::{hippo::{HippoRequest, HippoMessage, HippoMsgType}, get_hippo_pool};
 
 pub fn build_router(mut r: Router) -> Router {
-    // r = r.route("/e/:a", post(hippo_handler2).get(hippo_handler2));
     r = r.route("/h/:a", post(hippo_handler).get(hippo_handler));
     r = r.route("/h/:a/:b", post(hippo_handler).get(hippo_handler));
     r = r.route("/h/:a/:b/:c", post(hippo_handler).get(hippo_handler));
     r
 }
 
-
-async fn hippo_handler2(
+// #[axum::debug_handler]
+async fn hippo_handler (
     method: Method,
     headers: HeaderMap,
     Path(path): Path<Vec<String>>, 
     Query(query): Query<HashMap<String, String>>,
-    body: String) -> Result<String, Exception>
+    body: String) -> Result<HippoMessage, Exception>
 {
 
     let path = path.join("/");
@@ -42,81 +39,22 @@ async fn hippo_handler2(
         body,
     };
 
-    let payload = encode_request(1, req);
-    let manager = get_hippo_manager();
-    let out = manager.lock().unwrap()
-        .run_job(&payload).await?;
-    let response = String::from_utf8_lossy(&out);
-    Ok(response.into())
+    let payload = encode_request(HippoMsgType::T_Request, req);
+    let pool = get_hippo_pool();
+    let out = pool.lock().await
+        .send_message(payload).await?;
+
+    Ok(out)
 }
 
-async fn hippo_handler(
-    method: Method,
-    headers: HeaderMap,
-    Path(path): Path<Vec<String>>, 
-    Query(query): Query<HashMap<String, String>>,
-    body: String) -> Result<String, Exception>
-{
 
-    let path = path.join("/");
+fn encode_request(msg_type: u32, req: HippoRequest) -> HippoMessage {
 
-    let mut header_map = HashMap::new();
-    for (key, value) in headers.iter() {
-        header_map.insert(key.as_str().to_string(), 
-            value.to_str().unwrap_or("").to_string());
+    let msg_body = serde_json::to_vec(&req).unwrap();
+
+    HippoMessage {
+        msg_type,
+        msg_body,
     }
-
-    let req = HippoRequest {
-        method: method.to_string(),
-        path,
-        query,
-        headers: header_map,
-        body,
-    };
-
-    let mut child: tokio::process::Child = Command::new("php")
-        .arg("./hippo/worker.php")
-        .stdout(Stdio::piped())
-        .stdin(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn()
-        .expect("failed to spawn command");    
-
-    let mut stdin = child
-    .stdin
-    .take()
-    .expect("child did not have a handle to stdin");
-
-    let msg = encode_request(1, req);
-    stdin
-        .write(&msg)
-        .await
-        .expect("could not write to stdin");
-
-    stdin.flush().await.map_err(|e| err_wrap!("flush error", e))?;
-
-    let out = child.wait_with_output()
-        .await
-        .map_err(|e| err_wrap!("read stdout error", e))?;
-
-    let response = String::from_utf8_lossy(&out.stdout);
-
-    Ok(response.into())
 }
 
-fn encode_request(msg_type: u32, req: HippoRequest) -> Vec<u8> {
-
-    let encoded = rmp_serde::to_vec(&req).unwrap();
-
-    let length = encoded.len() as u32;
-
-    let mut header = vec![0; 8];
-    header[..4].copy_from_slice(&msg_type.to_be_bytes());
-    header[4..8].copy_from_slice(&length.to_be_bytes());
-
-    let mut body = vec![];
-    body.extend_from_slice(&header);
-    body.extend_from_slice(&encoded);
-
-    body
-}

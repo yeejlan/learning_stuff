@@ -19,7 +19,7 @@ async fn main() {
         .init();
 
     spy::spy_initialize();
-    hippo::hippo_initialize();
+    hippo::hippo_initialize().await;
 
     let app = Router::new();
 

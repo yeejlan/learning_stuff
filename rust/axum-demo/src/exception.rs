@@ -197,6 +197,16 @@ impl From<(i32, &str, &str)> for Exception {
     }
 }
 
+impl From<std::io::Error> for Exception {
+    fn from(e: std::io::Error) -> Self {
+        Self{
+            code:500, 
+            message: format!("io error: {}", e),
+            root: Some(Box::new(e)),
+            ..Default::default()
+        }
+    }
+}
 
 impl From<serde_json::Error> for Exception {
     fn from(e: serde_json::Error) -> Self {
