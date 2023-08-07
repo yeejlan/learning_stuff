@@ -158,29 +158,20 @@ impl HippoPool {
         let config = self.config.clone();
         let sender = self.idle_worker_sender.clone();
 
+        let renew_worker = Self::renew_worker(&config, w).unwrap();
+        sender.send(renew_worker).unwrap();
         drop(permit);
-        tokio::spawn(async move {
-  
-            let renew_worker = Self::renew_worker(&config, w).await.unwrap();
-            
-            if let Err(e) = sender.send_async(renew_worker)
-            .await {
-                tracing::error!("failed to send idle worker: {:?}", e);
-            }
-        });
-
         return Ok(res?);
     }
 
-    pub async fn renew_worker(config: &HippoConfig, w: HippoWorker) -> Result<HippoWorker, Exception> {
+    pub fn renew_worker(config: &HippoConfig, w: HippoWorker) -> Result<HippoWorker, Exception> {
 
         let mut worker = w;
 
         //worker.add_job_counter();
         if worker.get_job_counter() >= config.max_jobs_per_worker {
             let worker_id = worker.id;
-            worker.child.kill().await
-                .map_err(|e| err_wrap!("kill worker error", e))?;
+            let _ = worker.child.start_kill();
 
             let new_worker = Self::new_worker(worker_id, config);
             return new_worker;
