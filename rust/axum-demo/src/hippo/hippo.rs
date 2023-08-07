@@ -155,12 +155,12 @@ impl HippoPool {
         let res = w.send_message(msg).await;
 
         //release idle worker
-        let config = self.config.clone();
         let sender = self.idle_worker_sender.clone();
+        let renew_worker = Self::renew_worker(&self.config, w).unwrap();
 
-        let renew_worker = Self::renew_worker(&config, w).unwrap();
         sender.send(renew_worker).unwrap();
         drop(permit);
+
         return Ok(res?);
     }
 
