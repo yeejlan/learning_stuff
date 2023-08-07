@@ -19,6 +19,7 @@ uuid = { version = "1.4", features = ["v4"] }
 pyo3 = { version = "0.19.0", features=["auto-initialize"] }
 rmp-serde = "1.1.2"
 chrono = "0.4"
+flume = "0.10"
 
 [dev-dependencies]
 criterion = { version = "0.4", features = ["html_reports"] }

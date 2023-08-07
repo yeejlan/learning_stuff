@@ -17,7 +17,7 @@ pub fn build_router(mut r: Router) -> Router {
 
 async fn hippo_status () -> Result<Reply, Exception> {
     let pool = get_hippo_pool();
-    dbg!(pool.lock().await.deref());
+    dbg!(pool.read().await.deref());
     Reply::result_success("please check dbg message")
 }
 
@@ -48,7 +48,7 @@ async fn hippo_handler (
 
     let payload = encode_request(HippoMsgType::T_Request, req);
     let pool = get_hippo_pool();
-    let out = pool.lock().await
+    let out = pool.clone().write().await
         .send_message(payload)
         .await?;
 

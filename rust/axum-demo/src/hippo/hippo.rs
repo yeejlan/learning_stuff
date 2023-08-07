@@ -1,11 +1,12 @@
-use std::time::Duration;
 use std::{collections::HashMap, process::Stdio};
 use std::sync::atomic::{Ordering, AtomicU8};
 use axum::response::{IntoResponse, Response};
+use flume::{Receiver, Sender};
 use serde::Serialize;
 use tokio::process::{Command, ChildStdin, ChildStdout};
 use tokio::io::{AsyncWriteExt, AsyncReadExt};
 
+use crate::err_wrap;
 use crate::exception::Exception;
 use crate::reply::Reply;
 
@@ -108,15 +109,6 @@ impl HippoWorker {
         //set timeout
         self.expire_at = Self::next_expire_at(60);
 
-        // let child = &mut self.child;
-        // let mut stdin = child
-        // .stdin
-        // .take()
-        // .ok_or(Exception::from("get stdin error"))?;
-    
-        // let mut stdout = child.stdout.take()
-        // .ok_or(Exception::from("get stdout error"))?;
-
         let payload = Self::encode_message(msg);
 
         self.stdin
@@ -161,21 +153,23 @@ impl HippoWorker {
 #[derive(Debug)]
 pub struct HippoPool {
     pub php_executor: String,
-    pub worker_script: String,    
-    pub pool: Vec<HippoWorker>,
+    pub worker_script: String,
     pub worker_num: u32,
     pub max_exec_time: u32,
+    pub idle_worker_receiver: Receiver<HippoWorker>,
+    pub idle_worker_sender: Sender<HippoWorker>,
 }
 
 impl HippoPool {
-    pub fn new() -> Self {
-        let worker_num = 4;
+    pub fn new(worker_num: u32) -> Self {
+        let (idle_worker_sender, idle_worker_receiver) = flume::bounded::<HippoWorker>(worker_num.try_into().unwrap());
         Self { 
             php_executor: String::from("php"),
             worker_script: String::from("./hippo/worker.php"),
-            pool: Vec::new(),
             worker_num,
             max_exec_time: 60,
+            idle_worker_sender,
+            idle_worker_receiver,
         }
     }
 
@@ -189,19 +183,12 @@ impl HippoPool {
         self
     }
 
-    pub fn set_worker_num(&mut self, worker_num: u32) -> &mut Self {
-        self.worker_num = worker_num;
-        self
-    }
-
     pub fn set_max_exec_time(&mut self, max_exec_time: u32) -> &mut Self {
         self.max_exec_time = max_exec_time;
         self
     }
 
     pub fn build(&mut self) -> &mut Self {
-
-        let mut pool = Vec::new();
 
         for _ in 0..self.worker_num {
             let child: tokio::process::Child = Command::new(&self.php_executor)
@@ -213,27 +200,31 @@ impl HippoPool {
             .expect("failed to spawn php worker");
 
             let worker = HippoWorker::new(child);
-            pool.push(worker);
+            self.idle_worker_sender.send(worker).unwrap();
         }
 
-        self.pool = pool;
         self
     }
 
-    pub async fn send_message(&mut self, msg: HippoMessage) -> Result<HippoMessage, Exception> {
-        //todo: add timeout and spawn and max queue using tokio::sync::Semaphore
-        loop {
-            for w in &mut self.pool {
-                if w.is_idle() && w.into_processing().is_ok(){
-                    let res = w.send_message(msg).await;
-                    w.into_idle(); 
-                    return Ok(res?);
-                }
-            }
-            tokio::time::sleep(Duration::from_millis(1)).await;
-            return Err("all worker is busy".into());
+    pub async fn send_message(&self, msg: HippoMessage) -> Result<HippoMessage, Exception> {
+        //todo: add timeout
+
+        let mut w = self.idle_worker_receiver.recv_async()
+            .await
+            .map_err(|e| err_wrap!("worker recv error", e))?;
+        
+
+        // if w.is_idle() && w.into_processing().is_ok() {
+            let res = w.send_message(msg).await;
+
+            //relase worker
+            // w.into_idle();
+            self.idle_worker_sender.send(w)
+                .map_err(|e| err_wrap!("send idle worker error", e))?;
+
+            return Ok(res?);
         }
-    }
+        // Err("worker is not idle".into())
+    // }
 
 }
-
