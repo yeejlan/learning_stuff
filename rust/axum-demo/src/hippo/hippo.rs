@@ -5,6 +5,7 @@ use flume::{Receiver, Sender};
 use serde::Serialize;
 use tokio::process::{Command, ChildStdin, ChildStdout};
 use tokio::io::{AsyncWriteExt, AsyncReadExt};
+use tokio::sync::Semaphore;
 
 use crate::err_wrap;
 use crate::exception::Exception;
@@ -156,13 +157,15 @@ pub struct HippoPool {
     pub worker_script: String,
     pub worker_num: u32,
     pub max_exec_time: u32,
-    pub idle_worker_receiver: Receiver<HippoWorker>,
-    pub idle_worker_sender: Sender<HippoWorker>,
+    idle_worker_receiver: Receiver<HippoWorker>,
+    idle_worker_sender: Sender<HippoWorker>,
+    worker_permit: Semaphore,
 }
 
 impl HippoPool {
     pub fn new(worker_num: u32) -> Self {
         let (idle_worker_sender, idle_worker_receiver) = flume::bounded::<HippoWorker>(worker_num.try_into().unwrap());
+        let worker_permit = Semaphore::new(worker_num.try_into().unwrap());
         Self { 
             php_executor: String::from("php"),
             worker_script: String::from("./hippo/worker.php"),
@@ -170,6 +173,7 @@ impl HippoPool {
             max_exec_time: 60,
             idle_worker_sender,
             idle_worker_receiver,
+            worker_permit,
         }
     }
 
@@ -209,6 +213,8 @@ impl HippoPool {
     pub async fn send_message(&self, msg: HippoMessage) -> Result<HippoMessage, Exception> {
         //todo: add timeout
 
+        let permit = self.worker_permit.acquire().await;
+
         let mut w = self.idle_worker_receiver.recv_async()
             .await
             .map_err(|e| err_wrap!("worker recv error", e))?;
@@ -217,6 +223,7 @@ impl HippoPool {
         let res = w.send_message(msg).await;
 
         //release idle worker
+        drop(permit);
         let sender = self.idle_worker_sender.clone();
         tokio::spawn(async move {
             if let Err(e) = sender.send_async(w)
