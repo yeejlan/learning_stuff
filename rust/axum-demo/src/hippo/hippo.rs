@@ -43,8 +43,8 @@ pub struct HippoMsgType;
 #[allow(non_upper_case_globals)]
 impl HippoMsgType {
 
-    pub const T_Request: u32 = 1;   //mgspack request
-    pub const T_Response: u32 = 2;  //mgspack response
+    pub const T_Request: u32 = 1;   //http request
+    pub const T_Response: u32 = 2;  //http response
     pub const T_BadResponse: u32 = 3;   //error response
 
     pub const T_Ping: u32 = 101;

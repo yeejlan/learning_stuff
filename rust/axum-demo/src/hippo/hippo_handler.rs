@@ -48,7 +48,7 @@ async fn hippo_handler (
 
     let payload = encode_request(HippoMsgType::T_Request, req);
     let pool = get_hippo_pool();
-    let out = pool.clone().write().await
+    let out = pool.clone().read().await
         .send_message(payload)
         .await?;
 
