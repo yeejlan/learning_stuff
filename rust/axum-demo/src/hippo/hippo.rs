@@ -6,6 +6,7 @@ use axum::response::{IntoResponse, Response};
 use flume::{Receiver, Sender};
 use serde::Serialize;
 use tokio::process::Command;
+use tokio::sync::Semaphore;
 
 use crate::err_wrap;
 use crate::exception::Exception;
@@ -103,6 +104,7 @@ pub struct HippoPool {
     config: Arc<HippoConfig>,
     idle_worker_receiver: Receiver<HippoWorker>,
     idle_worker_sender: Sender<HippoWorker>,
+    worker_permit: Semaphore,
 }
 
 impl HippoPool {
@@ -119,10 +121,13 @@ impl HippoPool {
             idle_worker_sender.send(worker).unwrap();
         }
 
+        let worker_permit = Semaphore::new(worker_num.try_into().unwrap());
+
         Self {
             config,
             idle_worker_sender,
             idle_worker_receiver,
+            worker_permit,
         }
     }
 
@@ -141,6 +146,8 @@ impl HippoPool {
     pub async fn send_message(&self, msg: HippoMessage) -> Result<HippoMessage, Exception> {
         //todo: add timeout
 
+        let permit = self.worker_permit.acquire().await;
+
         let mut w = self.idle_worker_receiver.recv_async()
             .await
             .map_err(|e| err_wrap!("worker recv error", e))?;
@@ -151,6 +158,7 @@ impl HippoPool {
         let config = self.config.clone();
         let sender = self.idle_worker_sender.clone();
 
+        drop(permit);
         tokio::spawn(async move {
   
             let renew_worker = Self::renew_worker(&config, w).await.unwrap();
