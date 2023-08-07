@@ -21,7 +21,7 @@ async fn hippo_status () -> Result<Reply, Exception> {
     Reply::result_success("please check dbg message")
 }
 
-// #[axum::debug_handler]
+#[axum::debug_handler]
 async fn hippo_handler (
     method: Method,
     headers: HeaderMap,

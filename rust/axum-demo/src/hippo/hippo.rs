@@ -214,17 +214,19 @@ impl HippoPool {
             .map_err(|e| err_wrap!("worker recv error", e))?;
         
 
-        // if w.is_idle() && w.into_processing().is_ok() {
-            let res = w.send_message(msg).await;
+        let res = w.send_message(msg).await;
 
-            //relase worker
-            // w.into_idle();
-            self.idle_worker_sender.send(w)
-                .map_err(|e| err_wrap!("send idle worker error", e))?;
+        //release idle worker
+        let sender = self.idle_worker_sender.clone();
+        tokio::spawn(async move {
+            if let Err(e) = sender.send_async(w)
+            .await {
+                tracing::error!("failed to send idle worker: {:?}", e);
+            }
+        });
 
-            return Ok(res?);
-        }
-        // Err("worker is not idle".into())
-    // }
+        return Ok(res?);
+    }
+
 
 }
