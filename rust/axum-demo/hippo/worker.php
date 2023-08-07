@@ -27,28 +27,30 @@ function handler($in) {
     $request = json_decode($payload);
 
     print_r($request);
-
 }
 
 $stdin = fopen("php://STDIN", 'rb');
 
 while(true) {
+    ob_start();
     try{
-        ob_start();
         handler($stdin);
-        $out_msg = ob_get_clean();
-
-        $out_type = 2;
+    } catch(\Exception $e) {
+        ob_end_clean();
+        $out_type = 3;
+        $out_msg = (string)$e;
         $out_length = strlen($out_msg);
         $out_header = pack('N2', $out_type, $out_length);
-
         echo $out_header, $out_msg;
-        flush();
-    }catch(e) {
-        $out_type = 3;
-        $out_msg = $e->getMessage();
-        $out_header = pack('N2', $out_type, $out_length);
-        echo $out_header, $out_msg;
-        flush();    
+        flush();  
     }
+
+    $out_msg = ob_get_clean();
+
+    $out_type = 2;
+    $out_length = strlen($out_msg);
+    $out_header = pack('N2', $out_type, $out_length);
+
+    echo $out_header, $out_msg;
+    flush();
 }

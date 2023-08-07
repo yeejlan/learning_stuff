@@ -1,5 +1,6 @@
 use std::{collections::HashMap, process::Stdio};
 use std::sync::atomic::{Ordering, AtomicU8};
+use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use flume::{Receiver, Sender};
 use serde::Serialize;
@@ -9,7 +10,6 @@ use tokio::sync::Semaphore;
 
 use crate::err_wrap;
 use crate::exception::Exception;
-use crate::reply::Reply;
 
 #[derive(Serialize, Debug)]
 pub struct HippoRequest {
@@ -28,14 +28,13 @@ pub struct HippoMessage {
 
 impl IntoResponse for HippoMessage {
     fn into_response(self) -> Response {
-        if self.msg_type == HippoMsgType::T_Response {
-            let out_str = String::from_utf8_lossy(&self.msg_body).to_string();
+        let out_str = String::from_utf8_lossy(&self.msg_body).to_string();
 
+        if self.msg_type == HippoMsgType::T_Response {
             return out_str.into_response();
         }
         
-        Reply::failed("bad result", Reply::BAD_RESULT)
-            .into_response()
+        (StatusCode::INTERNAL_SERVER_ERROR, out_str).into_response()
     }
 }
 
