@@ -13,7 +13,7 @@ static HIPPO_CONFIG: OnceCell<Arc<HippoConfig>> = OnceCell::new();
 static HIPPO_POOL: OnceCell<HippoPool> = OnceCell::new();
 
 
-pub async fn hippo_initialize() -> () {
+pub fn hippo_initialize() -> () {
 
     HIPPO_CONFIG.get_or_init(|| {
         let config = HippoConfig::new()
