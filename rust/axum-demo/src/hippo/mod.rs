@@ -1,5 +1,6 @@
 
 pub mod hippo;
+pub mod worker;
 pub mod hippo_handler;
 
 use std::sync::Arc;
@@ -20,6 +21,7 @@ pub async fn hippo_initialize() -> () {
         .set_php_executor("php".into())
         .set_worker_script("./hippo/worker.php".into())
         .set_max_exec_time(60)
+        .set_max_jobs_per_worker(500)
         .build();
 
 }
