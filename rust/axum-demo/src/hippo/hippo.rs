@@ -107,19 +107,7 @@ pub struct HippoPool {
 
 impl HippoPool {
 
-    pub fn new() -> Self {
-        let worker_num: usize = 8;
-        let (idle_worker_sender, idle_worker_receiver) = 
-            flume::bounded::<HippoWorker>(worker_num);
-
-        Self {
-            config: Arc::new(HippoConfig::new()),
-            idle_worker_sender,
-            idle_worker_receiver,
-        }
-    }
-
-    pub fn init_worker_pool(&mut self, config: HippoConfig) -> () {
+    pub fn new(config: Arc<HippoConfig>) -> Self {
         let worker_num = config.worker_num;
 
         let (idle_worker_sender, idle_worker_receiver) = 
@@ -131,8 +119,11 @@ impl HippoPool {
             idle_worker_sender.send(worker).unwrap();
         }
 
-        self.idle_worker_receiver = idle_worker_receiver;
-        self.idle_worker_sender = idle_worker_sender;
+        Self {
+            config,
+            idle_worker_sender,
+            idle_worker_receiver,
+        }
     }
 
     pub fn new_worker(worker_id: u32, config: &HippoConfig) -> Result<HippoWorker, Exception> {
@@ -154,7 +145,6 @@ impl HippoPool {
             .await
             .map_err(|e| err_wrap!("worker recv error", e))?;
         
-        w.add_job_counter();
         let res = w.send_message(msg).await;
 
         //release idle worker
@@ -175,9 +165,10 @@ impl HippoPool {
     }
 
     pub async fn renew_worker(config: &HippoConfig, w: HippoWorker) -> Result<HippoWorker, Exception> {
-        return Ok(w);
+
         let mut worker = w;
 
+        //worker.add_job_counter();
         if worker.get_job_counter() >= config.max_jobs_per_worker {
             let worker_id = worker.id;
             worker.child.kill().await

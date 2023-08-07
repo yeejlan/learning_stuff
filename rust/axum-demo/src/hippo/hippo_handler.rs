@@ -1,5 +1,5 @@
 
-use std::{collections::HashMap, ops::Deref};
+use std::collections::HashMap;
 
 use axum::{Router, routing::post, extract::{Query, Path}, http::{HeaderMap, Method}};
 
@@ -17,7 +17,7 @@ pub fn build_router(mut r: Router) -> Router {
 
 async fn hippo_status () -> Result<Reply, Exception> {
     let pool = get_hippo_pool();
-    dbg!(pool.read().await.deref());
+    dbg!(pool);
     Reply::result_success("please check dbg message")
 }
 
@@ -48,7 +48,7 @@ async fn hippo_handler (
 
     let payload = encode_request(HippoMsgType::T_Request, req);
     let pool = get_hippo_pool();
-    let out = pool.clone().read().await
+    let out = pool
         .send_message(payload)
         .await?;
 

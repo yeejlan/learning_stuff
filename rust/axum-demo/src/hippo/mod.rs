@@ -5,31 +5,37 @@ pub mod hippo_handler;
 
 use std::sync::Arc;
 
-use once_cell::sync::Lazy;
-use tokio::sync::RwLock;
-use std::ops::Deref;
+use once_cell::sync::OnceCell;
 
 use self::hippo::{HippoPool, HippoConfig};
 
-static HIPPO_POOL: Lazy<Arc<RwLock<HippoPool>>> = Lazy::new(|| {
-
-    let pool = HippoPool::new();
-    Arc::new(RwLock::new(pool))
-});
+static HIPPO_CONFIG: OnceCell<Arc<HippoConfig>> = OnceCell::new();
+static HIPPO_POOL: OnceCell<HippoPool> = OnceCell::new();
 
 
 pub async fn hippo_initialize() -> () {
 
-    //does not work!!!
-    let config = HippoConfig::new()
+    HIPPO_CONFIG.get_or_init(|| {
+        let config = HippoConfig::new()
         .set_max_exec_time(30)
         .set_max_jobs_per_worker(500)
         .set_worker_num(8);
 
-    get_hippo_pool().write().await
-        .init_worker_pool(config);
+        Arc::new(config)
+    });
+
+    HIPPO_POOL.get_or_init(|| {
+        HippoPool::new(get_hippo_config())
+    });
+
 }
 
-pub fn get_hippo_pool() -> Arc<RwLock<HippoPool>> {
-    HIPPO_POOL.deref().clone()
+pub fn get_hippo_pool() -> &'static HippoPool {
+    HIPPO_POOL.get().unwrap().clone()
 }
+
+pub fn get_hippo_config() -> Arc<HippoConfig> {
+    HIPPO_CONFIG.get().unwrap().clone()
+}
+
+
