@@ -9,24 +9,27 @@ use once_cell::sync::Lazy;
 use tokio::sync::RwLock;
 use std::ops::Deref;
 
-use self::hippo::HippoPool;
+use self::hippo::{HippoPool, HippoConfig};
 
 static HIPPO_POOL: Lazy<Arc<RwLock<HippoPool>>> = Lazy::new(|| {
-    let pool = HippoPool::new(8);
+
+    let pool = HippoPool::new();
     Arc::new(RwLock::new(pool))
 });
 
-pub async fn hippo_initialize() -> () {
-    get_hippo_pool().write().await
-        .set_php_executor("php".into())
-        .set_worker_script("./hippo/worker.php".into())
-        .set_max_exec_time(60)
-        .set_max_jobs_per_worker(500)
-        .build();
 
+pub async fn hippo_initialize() -> () {
+
+    //does not work!!!
+    let config = HippoConfig::new()
+        .set_max_exec_time(30)
+        .set_max_jobs_per_worker(500)
+        .set_worker_num(8);
+
+    get_hippo_pool().write().await
+        .init_worker_pool(config);
 }
 
 pub fn get_hippo_pool() -> Arc<RwLock<HippoPool>> {
     HIPPO_POOL.deref().clone()
 }
-
