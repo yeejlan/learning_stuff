@@ -19,7 +19,7 @@ pub fn hippo_initialize() -> () {
         let config = HippoConfig::new()
         .set_max_exec_time(30)
         .set_max_jobs_per_worker(500)
-        .set_worker_num(8);
+        .set_worker_num(1);
 
         Arc::new(config)
     });

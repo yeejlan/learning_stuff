@@ -1,7 +1,9 @@
 
 use std::sync::atomic::{Ordering, AtomicU8, AtomicU16};
-use tokio::process::{ ChildStdin, ChildStdout};
+use flume::Receiver;
+use tokio::process::ChildStdin;
 use tokio::io::{AsyncWriteExt, AsyncReadExt};
+use crate::err_wrap;
 use crate::exception::Exception;
 
 use super::hippo::HippoMessage;
@@ -14,7 +16,7 @@ pub struct HippoWorker {
     state: AtomicU8,
     job_counter: AtomicU16,
     stdin: ChildStdin,
-    stdout: ChildStdout,
+    out_receiver: Receiver<HippoMessage>,
 }
 
 impl HippoWorker {
@@ -23,7 +25,27 @@ impl HippoWorker {
     const STOPPING: u8 = 2;
     pub fn new(id: u32, mut child: tokio::process::Child) -> Self {
         let stdin = child.stdin.take().unwrap();
-        let stdout = child.stdout.take().unwrap();
+        let mut stdout = child.stdout.take().unwrap();
+
+        let (out_sender, out_receiver) = 
+            flume::bounded::<HippoMessage>(1);
+
+        tokio::spawn(async move {
+            let mut msg_header = vec![0; 8];
+            
+            stdout.read_exact(&mut msg_header).await.unwrap();
+            let msg_type: u32 = u32::from_be_bytes(msg_header[..4].try_into().unwrap());
+            let msg_len: u32 = u32::from_be_bytes(msg_header[4..].try_into().unwrap());
+            let mut msg_body = vec![0; msg_len.try_into().unwrap()];
+            stdout.read_exact(&mut msg_body).await.unwrap();
+    
+            let out = HippoMessage {
+                msg_type,
+                msg_body,
+            };
+            out_sender.try_send(out).ok();
+        });
+
         Self {
             id,
             child,
@@ -31,7 +53,7 @@ impl HippoWorker {
             job_counter: AtomicU16::new(0),
             expire_at: 0,
             stdin,
-            stdout,
+            out_receiver,
         }
     }
 
@@ -68,40 +90,36 @@ impl HippoWorker {
         self.compare_and_swap(Self::IDLE, Self::PROCESSING)
     }
     
-    pub fn into_idle(&self) -> () {
+    pub fn to_idle(&self) -> () {
         self.state.store(Self::IDLE, Ordering::SeqCst)
     }
 
-    pub fn into_stopping(&self) -> () {
+    pub fn to_stopping(&self) -> () {
         self.state.store(Self::STOPPING, Ordering::SeqCst)
     }
 
     pub async fn send_message(&mut self, msg: HippoMessage) -> Result<HippoMessage, Exception> {
-        //set timeout
+
+        self.out_receiver.try_recv().ok(); //clear existing message
+
         self.expire_at = Self::next_expire_at(60);
 
         let payload = Self::encode_message(msg);
 
         self.stdin
             .write(&payload)
-            .await?;
+            .await
+            .map_err(|e| err_wrap!("write stdin error", e))?;
  
-        self.stdin.flush().await?;
+        self.stdin.flush().await
+            .map_err(|e| err_wrap!("flush stdin error", e))?;
    
-
-        let mut msg_header = vec![0; 8];
-        self.stdout.read_exact(&mut msg_header).await?;
-        let msg_type: u32 = u32::from_be_bytes(msg_header[..4].try_into().unwrap());
-        let msg_len: u32 = u32::from_be_bytes(msg_header[4..].try_into().unwrap());
-        let mut msg_body = vec![0; msg_len.try_into().unwrap()];
-        self.stdout.read_exact(&mut msg_body).await?;
-
-        let out = HippoMessage {
-            msg_type,
-            msg_body,
-        };
+        let out = self.out_receiver.recv_async()
+            .await
+            .map_err(|e| err_wrap!("stdout recv error",e))?;
 
         Ok(out)
+
     }
 
     fn encode_message(msg: HippoMessage) -> Vec<u8> {
