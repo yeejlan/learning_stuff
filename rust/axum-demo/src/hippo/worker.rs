@@ -31,19 +31,21 @@ impl HippoWorker {
             flume::bounded::<HippoMessage>(1);
 
         tokio::spawn(async move {
-            let mut msg_header = vec![0; 8];
+            loop  {
+                let mut msg_header = vec![0; 8];
             
-            stdout.read_exact(&mut msg_header).await.unwrap();
-            let msg_type: u32 = u32::from_be_bytes(msg_header[..4].try_into().unwrap());
-            let msg_len: u32 = u32::from_be_bytes(msg_header[4..].try_into().unwrap());
-            let mut msg_body = vec![0; msg_len.try_into().unwrap()];
-            stdout.read_exact(&mut msg_body).await.unwrap();
-    
-            let out = HippoMessage {
-                msg_type,
-                msg_body,
-            };
-            out_sender.try_send(out).ok();
+                stdout.read_exact(&mut msg_header).await.unwrap();
+                let msg_type: u32 = u32::from_be_bytes(msg_header[..4].try_into().unwrap());
+                let msg_len: u32 = u32::from_be_bytes(msg_header[4..].try_into().unwrap());
+                let mut msg_body = vec![0; msg_len.try_into().unwrap()];
+                stdout.read_exact(&mut msg_body).await.unwrap();
+        
+                let out = HippoMessage {
+                    msg_type,
+                    msg_body,
+                };
+                out_sender.try_send(out).ok();
+            }
         });
 
         Self {
