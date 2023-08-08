@@ -16,6 +16,7 @@ pub struct HippoWorker {
     job_counter: AtomicU16,
     out_receiver: Receiver<HippoMessage>,
     in_sender: Sender<HippoMessage>,
+    in_receiver: Receiver<HippoMessage>,
 }
 
 impl HippoWorker {
@@ -32,7 +33,7 @@ impl HippoWorker {
         let (in_sender, in_receiver) = 
             flume::bounded::<HippoMessage>(1);        
 
-        tokio::spawn(async move {
+        let a= tokio::spawn(async move {
             loop  {
                 let mut msg_header = vec![0; 8];
             
@@ -54,9 +55,10 @@ impl HippoWorker {
             }
         });
 
-        tokio::spawn(async move {
+        let in_recv = in_receiver.clone();
+        let b = tokio::spawn(async move {
             loop {
-                let msg = match in_receiver.recv_async().await {
+                let msg = match in_recv.recv_async().await {
                     Ok(msg) => msg,
                     Err(e) => {
                         tracing::warn!("in_receiver.recv_async error: {:?}", e);
@@ -76,6 +78,9 @@ impl HippoWorker {
             }
         });
 
+        drop(a);
+        drop(b);
+
         Self {
             id,
             child,
@@ -84,6 +89,7 @@ impl HippoWorker {
             expire_at: 0,
             out_receiver,
             in_sender,
+            in_receiver,
         }
     }
 
@@ -137,7 +143,8 @@ impl HippoWorker {
 
     pub async fn send_message(&mut self, msg: HippoMessage) -> Result<HippoMessage, Exception> {
 
-        // self.out_receiver.try_recv().ok(); //clear existing message
+        self.in_receiver.try_recv().ok(); //clear existing message
+        self.out_receiver.try_recv().ok();
 
         self.expire_at = Self::next_expire_at(60);
 
