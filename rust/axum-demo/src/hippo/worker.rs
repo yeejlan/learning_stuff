@@ -1,7 +1,6 @@
 
 use std::sync::atomic::{Ordering, AtomicU8, AtomicU16};
-use flume::Receiver;
-use tokio::process::ChildStdin;
+use flume::{Receiver, Sender};
 use tokio::io::{AsyncWriteExt, AsyncReadExt};
 use crate::err_wrap;
 use crate::exception::Exception;
@@ -15,8 +14,8 @@ pub struct HippoWorker {
     pub expire_at: i64,
     state: AtomicU8,
     job_counter: AtomicU16,
-    stdin: ChildStdin,
     out_receiver: Receiver<HippoMessage>,
+    in_sender: Sender<HippoMessage>,
 }
 
 impl HippoWorker {
@@ -24,11 +23,14 @@ impl HippoWorker {
     const PROCESSING: u8 = 1;
     const STOPPING: u8 = 2;
     pub fn new(id: u32, mut child: tokio::process::Child) -> Self {
-        let stdin = child.stdin.take().unwrap();
+        let mut stdin = child.stdin.take().unwrap();
         let mut stdout = child.stdout.take().unwrap();
 
         let (out_sender, out_receiver) = 
             flume::bounded::<HippoMessage>(1);
+
+        let (in_sender, in_receiver) = 
+            flume::bounded::<HippoMessage>(1);        
 
         tokio::spawn(async move {
             loop  {
@@ -48,14 +50,31 @@ impl HippoWorker {
             }
         });
 
+        tokio::spawn(async move {
+            loop {
+                let msg = in_receiver.recv_async()
+                .await
+                .unwrap();
+
+                let payload = Self::encode_message(msg);
+                stdin
+                    .write(&payload)
+                    .await
+                    .unwrap();
+     
+                stdin.flush().await
+                    .unwrap();
+            }
+        });
+
         Self {
             id,
             child,
             state: AtomicU8::new(Self::IDLE),
             job_counter: AtomicU16::new(0),
             expire_at: 0,
-            stdin,
             out_receiver,
+            in_sender,
         }
     }
 
@@ -102,19 +121,13 @@ impl HippoWorker {
 
     pub async fn send_message(&mut self, msg: HippoMessage) -> Result<HippoMessage, Exception> {
 
-        self.out_receiver.try_recv().ok(); //clear existing message
+        // self.out_receiver.try_recv().ok(); //clear existing message
 
         self.expire_at = Self::next_expire_at(60);
 
-        let payload = Self::encode_message(msg);
-
-        self.stdin
-            .write(&payload)
+        self.in_sender.send_async(msg)
             .await
-            .map_err(|e| err_wrap!("write stdin error", e))?;
- 
-        self.stdin.flush().await
-            .map_err(|e| err_wrap!("flush stdin error", e))?;
+            .map_err(|e| err_wrap!("stdin send error",e))?;
    
         let out = self.out_receiver.recv_async()
             .await
