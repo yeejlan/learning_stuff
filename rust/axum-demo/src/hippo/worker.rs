@@ -36,11 +36,15 @@ impl HippoWorker {
             loop  {
                 let mut msg_header = vec![0; 8];
             
-                stdout.read_exact(&mut msg_header).await.unwrap();
+                if let Err(e) = stdout.read_exact(&mut msg_header).await {
+                    tracing::warn!("stdout.read_exact error: {:?}", e);
+                }
                 let msg_type: u32 = u32::from_be_bytes(msg_header[..4].try_into().unwrap());
                 let msg_len: u32 = u32::from_be_bytes(msg_header[4..].try_into().unwrap());
                 let mut msg_body = vec![0; msg_len.try_into().unwrap()];
-                stdout.read_exact(&mut msg_body).await.unwrap();
+                if let Err(e) = stdout.read_exact(&mut msg_body).await {
+                    tracing::warn!("stdout.read_exact error: {:?}", e);
+                }
         
                 let out = HippoMessage {
                     msg_type,
@@ -52,18 +56,23 @@ impl HippoWorker {
 
         tokio::spawn(async move {
             loop {
-                let msg = in_receiver.recv_async()
-                .await
-                .unwrap();
+                let msg = match in_receiver.recv_async().await {
+                    Ok(msg) => msg,
+                    Err(e) => {
+                        tracing::warn!("in_receiver.recv_async error: {:?}", e);
+                        panic!("in_receiver.recv_async error: {:?}", e);
+                    }
+                };
 
                 let payload = Self::encode_message(msg);
-                stdin
-                    .write(&payload)
-                    .await
-                    .unwrap();
-     
-                stdin.flush().await
-                    .unwrap();
+                
+                if let Err(e) = stdin.write(&payload).await {
+                    tracing::warn!("stdin.write error: {:?}", e);
+                }
+
+                if let Err(e) = stdin.flush().await {
+                    tracing::warn!("stdin.flush error: {:?}", e);
+                }
             }
         });
 
@@ -95,6 +104,13 @@ impl HippoWorker {
         now.timestamp() + timeout_in_seconds
     }
 
+    pub fn is_stopping(&self) -> bool {
+        if self.state.load(Ordering::Relaxed) == Self::STOPPING {
+            return true;
+        }
+        false
+    }
+    
     pub fn is_idle(&self) -> bool {
         if self.state.load(Ordering::Relaxed) == Self::IDLE {
             return true;

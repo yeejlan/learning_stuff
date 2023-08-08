@@ -131,6 +131,10 @@ impl HippoPool {
         }
     }
 
+    pub fn add_idle_worker(self, worker: HippoWorker) {
+        self.idle_worker_sender.send(worker).unwrap();
+    }
+
     pub fn new_worker(worker_id: u32, config: &HippoConfig) -> Result<HippoWorker, Exception> {
         let child: tokio::process::Child = Command::new(&config.php_executor)
         .arg(&config.worker_script)
@@ -155,10 +159,13 @@ impl HippoPool {
         let res = w.send_message(msg).await;
 
         //release idle worker
-        let sender = self.idle_worker_sender.clone();
         let renew_worker = Self::renew_worker(&self.config, w).unwrap();
+        let sender = self.idle_worker_sender.clone();
 
-        sender.send(renew_worker).unwrap();
+        tokio::task::spawn_blocking(move || {
+            sender.send(renew_worker).unwrap();
+        });
+     
         drop(permit);
 
         return Ok(res?);
