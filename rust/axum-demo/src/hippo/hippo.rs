@@ -102,8 +102,7 @@ impl HippoConfig {
 #[derive(Debug)]
 pub struct HippoPool {
     config: Arc<HippoConfig>,
-    idle_worker_receiver: Receiver<HippoWorker>,
-    idle_worker_sender: Sender<HippoWorker>,
+    idle_worker_channel: (Sender<HippoWorker>, Receiver<HippoWorker>),
     worker_permit: Semaphore,
 }
 
@@ -112,27 +111,22 @@ impl HippoPool {
     pub fn new(config: Arc<HippoConfig>) -> Self {
         let worker_num = config.worker_num;
 
-        let (idle_worker_sender, idle_worker_receiver) = 
+        let idle_worker_channel = 
             flume::bounded::<HippoWorker>(worker_num.try_into().unwrap());        
 
         //add idle workers
         for i in 0 .. worker_num {
             let worker = Self::new_worker(i+1, &config).unwrap();
-            idle_worker_sender.send(worker).unwrap();
+            idle_worker_channel.0.send(worker).unwrap();
         }
 
         let worker_permit = Semaphore::new(worker_num.try_into().unwrap());
 
         Self {
             config,
-            idle_worker_sender,
-            idle_worker_receiver,
+            idle_worker_channel,
             worker_permit,
         }
-    }
-
-    pub fn add_idle_worker(self, worker: HippoWorker) {
-        self.idle_worker_sender.send(worker).unwrap();
     }
 
     pub fn new_worker(worker_id: u32, config: &HippoConfig) -> Result<HippoWorker, Exception> {
@@ -155,12 +149,11 @@ impl HippoPool {
 
         let (tx, rx) = oneshot::channel::<HippoMessage>();
 
-        let idle_worker_receiver = self.idle_worker_receiver.clone();
-        let sender = self.idle_worker_sender.clone();
+        let idle_worker_channel = self.idle_worker_channel.clone();
         let config = self.config.clone();
 
         let t = tokio::spawn(async move {
-            let mut w = idle_worker_receiver.recv_async()
+            let mut w = idle_worker_channel.1.recv_async()
             .await
             .map_err(|e| err_wrap!("worker recv error", e)).unwrap();
         
@@ -168,7 +161,7 @@ impl HippoPool {
 
             //release idle worker
             let renew_worker = Self::renew_worker(&config, w).unwrap();
-            sender.send(renew_worker).unwrap();
+            idle_worker_channel.0.send(renew_worker).unwrap();
 
             tx.send(res.unwrap()).ok();
         });
