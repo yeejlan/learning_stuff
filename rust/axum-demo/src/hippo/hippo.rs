@@ -167,7 +167,7 @@ impl HippoPool {
                 Ok(out) => tx.send(out),
                 Err(e) => {
                     let msg = HippoMessage {
-                        kind: 3,
+                        kind: HippoMsgType::T_BadResponse,
                         body: e.to_string().into(),
                     };
                     tx.send(msg)
