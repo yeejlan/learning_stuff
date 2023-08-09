@@ -112,7 +112,7 @@ impl HippoPool {
         let worker_num = config.worker_num;
 
         let idle_worker_channel = 
-            flume::bounded::<HippoWorker>(worker_num.try_into().unwrap());        
+            flume::bounded::<HippoWorker>(worker_num as usize);        
 
         //add idle workers
         for i in 0 .. worker_num {
@@ -120,7 +120,7 @@ impl HippoPool {
             idle_worker_channel.0.send(worker).unwrap();
         }
 
-        let worker_permit = Semaphore::new(worker_num.try_into().unwrap());
+        let worker_permit = Semaphore::new(worker_num as usize);
 
         Self {
             config,

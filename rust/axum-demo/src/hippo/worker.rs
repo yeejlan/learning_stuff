@@ -102,7 +102,7 @@ impl HippoWorker {
         let msg_type: u32 = u32::from_be_bytes(msg_header[..4].try_into().unwrap());
         let msg_len: u32 = u32::from_be_bytes(msg_header[4..].try_into().unwrap());
 
-        let mut msg_body = vec![0; msg_len.try_into().unwrap()];
+        let mut msg_body = vec![0; msg_len as usize];
         let n = self.stdout.read(&mut msg_body).await?;
         if n != msg_len as usize {
             return Err("bad message body".into());
