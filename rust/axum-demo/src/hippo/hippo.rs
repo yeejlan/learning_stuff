@@ -23,16 +23,16 @@ pub struct HippoRequest {
 }
 
 pub struct HippoMessage {
-    pub msg_type: u32,
-    pub msg_body: Vec<u8>,
+    pub kind: u32,
+    pub body: Vec<u8>,
 }
 
 
 impl IntoResponse for HippoMessage {
     fn into_response(self) -> Response {
-        let out_str = String::from_utf8_lossy(&self.msg_body).to_string();
+        let out_str = String::from_utf8_lossy(&self.body).to_string();
 
-        if self.msg_type == HippoMsgType::T_Response {
+        if self.kind == HippoMsgType::T_Response {
             return out_str.into_response();
         }
         
@@ -167,8 +167,8 @@ impl HippoPool {
                 Ok(out) => tx.send(out),
                 Err(e) => {
                     let msg = HippoMessage {
-                        msg_type: 3,
-                        msg_body: e.to_string().into(),
+                        kind: 3,
+                        body: e.to_string().into(),
                     };
                     tx.send(msg)
                 },

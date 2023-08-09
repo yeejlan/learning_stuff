@@ -99,22 +99,22 @@ impl HippoWorker {
         if n != 8 {
             return Err("bad message header".into());
         }
-        let msg_type: u32 = u32::from_be_bytes(msg_header[..4].try_into().unwrap());
+        let kind: u32 = u32::from_be_bytes(msg_header[..4].try_into().unwrap());
         let msg_len: u32 = u32::from_be_bytes(msg_header[4..].try_into().unwrap());
 
         if msg_len > 5*1024*1024 {
             return Err("message too big".into());
         }
 
-        let mut msg_body = vec![0; msg_len as usize];
-        let n = self.stdout.read(&mut msg_body).await?;
+        let mut body = vec![0; msg_len as usize];
+        let n = self.stdout.read(&mut body).await?;
         if n != msg_len as usize {
             return Err("bad message body".into());
         }
 
         let out = HippoMessage {
-            msg_type,
-            msg_body,
+            kind,
+            body,
         };
 
         Ok(out)
@@ -123,15 +123,15 @@ impl HippoWorker {
 
     fn encode_message(msg: HippoMessage) -> Vec<u8> {
 
-        let length = msg.msg_body.len() as u32;
+        let length = msg.body.len() as u32;
     
         let mut header = vec![0; 8];
-        header[..4].copy_from_slice(&msg.msg_type.to_be_bytes());
+        header[..4].copy_from_slice(&msg.kind.to_be_bytes());
         header[4..8].copy_from_slice(&length.to_be_bytes());
     
         let mut body = vec![];
         body.extend_from_slice(&header);
-        body.extend_from_slice(&msg.msg_body);
+        body.extend_from_slice(&msg.body);
     
         body
     }    

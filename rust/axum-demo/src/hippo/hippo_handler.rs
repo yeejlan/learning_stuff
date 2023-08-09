@@ -56,13 +56,13 @@ async fn hippo_handler (
 }
 
 
-fn encode_request(msg_type: u32, req: HippoRequest) -> HippoMessage {
+fn encode_request(kind: u32, req: HippoRequest) -> HippoMessage {
 
-    let msg_body = serde_json::to_vec(&req).unwrap();
+    let body = serde_json::to_vec(&req).unwrap();
 
     HippoMessage {
-        msg_type,
-        msg_body,
+        kind,
+        body,
     }
 }
 
