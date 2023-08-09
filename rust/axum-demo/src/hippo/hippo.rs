@@ -143,7 +143,6 @@ impl HippoPool {
 
     pub async fn send_message(&self, msg: HippoMessage) -> Result<HippoMessage, Exception> {
         //todo: add timeout
-        
 
         let permit = self.worker_permit.acquire().await
             .map_err(|e| err_wrap!("worker_permit.acquire error", e))?;
@@ -179,7 +178,7 @@ impl HippoPool {
         drop(permit);
 
         let res = rx.await
-            .map_err(|e| err_wrap!(e));
+            .map_err(|e| err_wrap!("rx.await error", e));
 
         res
     }
