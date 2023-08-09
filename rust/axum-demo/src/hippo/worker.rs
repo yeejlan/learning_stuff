@@ -16,7 +16,6 @@ pub struct HippoWorker {
     job_counter: AtomicU16,
     out_receiver: Receiver<HippoMessage>,
     in_sender: Sender<HippoMessage>,
-    in_receiver: Receiver<HippoMessage>,
 }
 
 impl HippoWorker {
@@ -89,7 +88,6 @@ impl HippoWorker {
             expire_at: 0,
             out_receiver,
             in_sender,
-            in_receiver,
         }
     }
 
@@ -143,10 +141,7 @@ impl HippoWorker {
 
     pub async fn send_message(&mut self, msg: HippoMessage) -> Result<HippoMessage, Exception> {
 
-        self.in_receiver.try_recv().ok(); //clear existing message
-        self.out_receiver.try_recv().ok();
-
-        self.expire_at = Self::next_expire_at(60);
+        self.out_receiver.try_recv().ok(); //clear existing message
 
         self.in_sender.send_async(msg)
             .await
