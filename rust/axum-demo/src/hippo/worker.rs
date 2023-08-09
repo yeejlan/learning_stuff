@@ -102,6 +102,10 @@ impl HippoWorker {
         let msg_type: u32 = u32::from_be_bytes(msg_header[..4].try_into().unwrap());
         let msg_len: u32 = u32::from_be_bytes(msg_header[4..].try_into().unwrap());
 
+        if msg_len > 5*1024*1024 {
+            return Err("message too big".into());
+        }
+
         let mut msg_body = vec![0; msg_len as usize];
         let n = self.stdout.read(&mut msg_body).await?;
         if n != msg_len as usize {
