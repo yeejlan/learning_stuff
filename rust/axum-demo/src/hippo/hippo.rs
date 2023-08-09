@@ -149,27 +149,35 @@ impl HippoPool {
 
     pub async fn send_message(&self, msg: HippoMessage) -> Result<HippoMessage, Exception> {
         //todo: add timeout
+        
 
         let permit = self.worker_permit.acquire().await;
 
-        let mut w = self.idle_worker_receiver.recv_async()
-            .await
-            .map_err(|e| err_wrap!("worker recv error", e))?;
-        
-        let res = w.send_message(msg).await;
+        let (tx, rx) = flume::bounded::<HippoMessage>(1);
 
-        //release idle worker
+        let idle_worker_receiver = self.idle_worker_receiver.clone();
         let sender = self.idle_worker_sender.clone();
         let config = self.config.clone();
 
-        let a= tokio::spawn(async move {
+        let t = tokio::spawn(async move {
+            let mut w = idle_worker_receiver.recv_async()
+            .await
+            .map_err(|e| err_wrap!("worker recv error", e)).unwrap();
+        
+            let res = w.send_message(msg).await;
+
+            //release idle worker
             let renew_worker = Self::renew_worker(&config, w).unwrap();
             sender.send(renew_worker).unwrap();
+
+            tx.try_send(res.unwrap()).ok();
         });
-        drop(a);
+        drop(t);
         drop(permit);
 
-        return Ok(res?);
+        let res = rx.recv_async().await.unwrap();
+
+        return Ok(res);
     }
 
     pub fn renew_worker(config: &HippoConfig, w: HippoWorker) -> Result<HippoWorker, Exception> {
