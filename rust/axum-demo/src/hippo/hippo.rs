@@ -160,12 +160,13 @@ impl HippoPool {
 
         //release idle worker
         let sender = self.idle_worker_sender.clone();
+        let config = self.config.clone();
 
-        tokio::task::block_in_place(move || {
-            let renew_worker = Self::renew_worker(&self.config, w).unwrap();
+        let a= tokio::spawn(async move {
+            let renew_worker = Self::renew_worker(&config, w).unwrap();
             sender.send(renew_worker).unwrap();
         });
-     
+        drop(a);
         drop(permit);
 
         return Ok(res?);
