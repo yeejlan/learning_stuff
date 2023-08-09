@@ -6,7 +6,7 @@ use axum::response::{IntoResponse, Response};
 use flume::{Receiver, Sender};
 use serde::Serialize;
 use tokio::process::Command;
-use tokio::sync::Semaphore;
+use tokio::sync::{Semaphore, oneshot};
 
 use crate::err_wrap;
 use crate::exception::Exception;
@@ -153,7 +153,7 @@ impl HippoPool {
 
         let permit = self.worker_permit.acquire().await;
 
-        let (tx, rx) = flume::bounded::<HippoMessage>(1);
+        let (tx, rx) = oneshot::channel::<HippoMessage>();
 
         let idle_worker_receiver = self.idle_worker_receiver.clone();
         let sender = self.idle_worker_sender.clone();
@@ -170,12 +170,12 @@ impl HippoPool {
             let renew_worker = Self::renew_worker(&config, w).unwrap();
             sender.send(renew_worker).unwrap();
 
-            tx.try_send(res.unwrap()).ok();
+            tx.send(res.unwrap()).ok();
         });
         drop(t);
         drop(permit);
 
-        let res = rx.recv_async().await.unwrap();
+        let res = rx.await.unwrap();
 
         return Ok(res);
     }

@@ -1,10 +1,8 @@
 
 use std::sync::atomic::{Ordering, AtomicU8, AtomicU16};
-use flume::{Receiver, Sender};
 use tokio::io::{AsyncWriteExt, AsyncReadExt};
-use crate::err_wrap;
+use tokio::process::{ChildStdout, ChildStdin};
 use crate::exception::Exception;
-
 use super::hippo::HippoMessage;
 
 #[derive(Debug)]
@@ -14,8 +12,8 @@ pub struct HippoWorker {
     pub expire_at: i64,
     state: AtomicU8,
     job_counter: AtomicU16,
-    out_receiver: Receiver<HippoMessage>,
-    in_sender: Sender<HippoMessage>,
+    stdin: ChildStdin,
+    stdout: ChildStdout,
 }
 
 impl HippoWorker {
@@ -23,62 +21,8 @@ impl HippoWorker {
     const PROCESSING: u8 = 1;
     const STOPPING: u8 = 2;
     pub fn new(id: u32, mut child: tokio::process::Child) -> Self {
-        let mut stdin = child.stdin.take().unwrap();
-        let mut stdout = child.stdout.take().unwrap();
-
-        let (out_sender, out_receiver) = 
-            flume::bounded::<HippoMessage>(1);
-
-        let (in_sender, in_receiver) = 
-            flume::bounded::<HippoMessage>(1);        
-
-        let a= tokio::spawn(async move {
-            loop  {
-                let mut msg_header = vec![0; 8];
-            
-                if let Err(e) = stdout.read_exact(&mut msg_header).await {
-                    tracing::warn!("stdout.read_exact error: {:?}", e);
-                }
-                let msg_type: u32 = u32::from_be_bytes(msg_header[..4].try_into().unwrap());
-                let msg_len: u32 = u32::from_be_bytes(msg_header[4..].try_into().unwrap());
-                let mut msg_body = vec![0; msg_len.try_into().unwrap()];
-                if let Err(e) = stdout.read_exact(&mut msg_body).await {
-                    tracing::warn!("stdout.read_exact error: {:?}", e);
-                }
-        
-                let out = HippoMessage {
-                    msg_type,
-                    msg_body,
-                };
-                out_sender.try_send(out).ok();
-            }
-        });
-
-        let in_recv = in_receiver.clone();
-        let b = tokio::spawn(async move {
-            loop {
-                let msg = match in_recv.recv_async().await {
-                    Ok(msg) => msg,
-                    Err(e) => {
-                        tracing::warn!("in_receiver.recv_async error: {:?}", e);
-                        panic!("in_receiver.recv_async error: {:?}", e);
-                    }
-                };
-
-                let payload = Self::encode_message(msg);
-                
-                if let Err(e) = stdin.write(&payload).await {
-                    tracing::warn!("stdin.write error: {:?}", e);
-                }
-
-                if let Err(e) = stdin.flush().await {
-                    tracing::warn!("stdin.flush error: {:?}", e);
-                }
-            }
-        });
-
-        drop(a);
-        drop(b);
+        let stdin = child.stdin.take().unwrap();
+        let stdout = child.stdout.take().unwrap();
 
         Self {
             id,
@@ -86,8 +30,8 @@ impl HippoWorker {
             state: AtomicU8::new(Self::IDLE),
             job_counter: AtomicU16::new(0),
             expire_at: 0,
-            out_receiver,
-            in_sender,
+            stdin,
+            stdout,
         }
     }
 
@@ -141,15 +85,26 @@ impl HippoWorker {
 
     pub async fn send_message(&mut self, msg: HippoMessage) -> Result<HippoMessage, Exception> {
 
-        self.out_receiver.try_recv().ok(); //clear existing message
+        let payload = Self::encode_message(msg);
 
-        self.in_sender.send_async(msg)
-            .await
-            .map_err(|e| err_wrap!("stdin send error",e))?;
+        self.stdin
+            .write(&payload)
+            .await?;
+ 
+        self.stdin.flush().await?;
    
-        let out = self.out_receiver.recv_async()
-            .await
-            .map_err(|e| err_wrap!("stdout recv error",e))?;
+
+        let mut msg_header = vec![0; 8];
+        self.stdout.read_exact(&mut msg_header).await?;
+        let msg_type: u32 = u32::from_be_bytes(msg_header[..4].try_into().unwrap());
+        let msg_len: u32 = u32::from_be_bytes(msg_header[4..].try_into().unwrap());
+        let mut msg_body = vec![0; msg_len.try_into().unwrap()];
+        self.stdout.read_exact(&mut msg_body).await?;
+
+        let out = HippoMessage {
+            msg_type,
+            msg_body,
+        };
 
         Ok(out)
 
