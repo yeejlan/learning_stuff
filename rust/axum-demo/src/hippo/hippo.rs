@@ -145,7 +145,8 @@ impl HippoPool {
         //todo: add timeout
         
 
-        let permit = self.worker_permit.acquire().await;
+        let permit = self.worker_permit.acquire().await
+            .map_err(|e| err_wrap!("worker_permit.acquire error", e))?;
 
         let (tx, rx) = oneshot::channel::<HippoMessage>();
 
