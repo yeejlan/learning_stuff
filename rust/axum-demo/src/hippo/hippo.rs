@@ -163,14 +163,24 @@ impl HippoPool {
             let renew_worker = Self::renew_worker(&config, w).unwrap();
             idle_worker_channel.0.send(renew_worker).unwrap();
 
-            tx.send(res.unwrap()).ok();
+            match res {
+                Ok(out) => tx.send(out),
+                Err(e) => {
+                    let msg = HippoMessage {
+                        msg_type: 3,
+                        msg_body: e.to_string().into(),
+                    };
+                    tx.send(msg)
+                },
+            }
         });
         drop(t);
         drop(permit);
 
-        let res = rx.await.unwrap();
+        let res = rx.await
+            .map_err(|e| err_wrap!(e));
 
-        return Ok(res);
+        res
     }
 
     pub fn renew_worker(config: &HippoConfig, w: HippoWorker) -> Result<HippoWorker, Exception> {
