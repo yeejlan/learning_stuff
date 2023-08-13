@@ -1,5 +1,4 @@
 from enum import IntEnum
-import json
 
 class Reply(IntEnum):
     SUCCESS = 0
@@ -43,17 +42,16 @@ class Reply(IntEnum):
             'reason': 'success',
             'data': resp,
         }
-    
         return j
 
 
     @staticmethod
     def failed(message: str, code: int): 
         j = {
-            "code": code,
-            "message": message,
-            "reason": Reply.code_to_str(code),
-            "data": None,
+            'code': code,
+            'message': message,
+            'reason': Reply.code_to_str(code),
+            'data': None,
         }
         return j
 
