@@ -4,13 +4,7 @@ from collections import namedtuple
 
 from controllers import router
 
-app = FastAPI(host="0.0.0.0", port=5000)
-app.include_router(router)
-
-@app.get("/")
-async def root():
-    return {"message": "Hello World~~"}
-
+from app import app
 
 class Status(StrEnum):
     normal = 'normal'
@@ -48,9 +42,3 @@ async def get_model(status_name: Status):
     return {"status": status_name,
             "status.int": int(status_name),
             }
-
-from reply import Reply
-
-print(int(Reply.BAD_PARAM))
-print(str(Reply.BAD_PARAM))
-
