@@ -56,13 +56,12 @@ class MyPayload(BaseModel):
 
     model_config = {
         "json_schema_extra": {
-            "examples": [
+            "example": 
                 {
                     "name": "my name",
                     "price": 3.05,
                     "qty": 10
                 }
-            ]
         }
     }    
 
@@ -92,7 +91,7 @@ class MyData(BaseModel):
     password: str
     model_config = {
         "json_schema_extra": {
-            "examples": [
+            "example":
 {
   "code": 0,
   "message": "success",
@@ -101,7 +100,6 @@ class MyData(BaseModel):
     "name": "the nama column"
   }
 }
-            ]
         }
     } 
 
@@ -116,3 +114,9 @@ async def test_data_rules():
     }
     del out['password']
     return Reply.success(out)
+
+
+import pydantic_core 
+@router.post('/all-errors') 
+async def list_all_errors():
+    return pydantic_core.list_all_errors()
