@@ -1,7 +1,7 @@
 from enum import IntEnum
 from typing import Any
 
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 
 class Reply(IntEnum):
     SUCCESS = 0
@@ -46,6 +46,9 @@ class Reply(IntEnum):
     def failed(message: str, code: int): 
         return Reply.json_response(code, message, Reply.code_to_str(code), None)
 
+    @staticmethod
+    def redirect(url: str, status_code: int = 307):
+        return RedirectResponse(url=url, status_code=status_code)
 
     @staticmethod
     def code_to_str(code: int) -> str:

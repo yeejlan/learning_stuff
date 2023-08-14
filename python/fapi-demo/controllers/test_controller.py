@@ -69,26 +69,20 @@ class MyPayload(BaseModel):
 @router.post("/json", response_model=MyPayload)
 def test_json_params_validation(p: MyPayload):
     """
-    Test unknown error.
+    Json payload and data validation.
 
     ```
     name: optional, min_length=3, max_length=20
     price: ge=1.05, le=100.67
     qty: int
     ```
-    
-    Output
-    ```
-    {
-        "code": 0,
-        "message": "success",
-        "reason": "success",
-        "data": {
-            "name": "my name",
-            "price": 3.05,
-            "qty": 10
-        }
-    }
-    ```
     """        
-    return Reply.success(p.model_dump())
+
+    out = p.model_dump()
+    out = {
+        "name": "Foo",
+        "price": 13.15, 
+        "qty": 101,
+        "ccc": 123,
+    }
+    return Reply.success(out)
