@@ -66,7 +66,7 @@ class MyPayload(BaseModel):
         }
     }    
 
-@router.post("/json")
+@router.post("/json", response_model=MyPayload)
 def test_json_params_validation(p: MyPayload):
     """
     Test unknown error.
