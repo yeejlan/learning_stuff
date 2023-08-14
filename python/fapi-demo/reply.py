@@ -1,4 +1,5 @@
 from enum import IntEnum
+from typing import Any
 
 from fastapi.responses import JSONResponse
 
@@ -30,14 +31,14 @@ class Reply(IntEnum):
     }
 
     def __str__(self):
-        return Reply.__str_map[self.value]
+        return Reply.__str_map[self.value] # type: ignore
     
     def __int__(self):
         return self.value
 
 
     @staticmethod
-    def success(resp: any):
+    def success(resp: Any):
         return Reply.json_response(0, 'success', 'success', resp)
 
 
@@ -48,7 +49,7 @@ class Reply(IntEnum):
 
     @staticmethod
     def code_to_str(code: int) -> str:
-        return Reply.__str_map[code]
+        return Reply.__str_map[code] # type: ignore
 
 
     @staticmethod
@@ -61,7 +62,7 @@ class Reply(IntEnum):
         return c
     
     @staticmethod
-    def json_response(code:int, message:str, reason:str, data:any):
+    def json_response(code:int, message:str, reason:str, data:Any):
         status_code = Reply.status_code(code)
         return JSONResponse(
             status_code=status_code,
@@ -72,3 +73,4 @@ class Reply(IntEnum):
                 'data': data,
             },
         )
+    

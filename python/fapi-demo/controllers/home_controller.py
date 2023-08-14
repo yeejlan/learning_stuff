@@ -37,4 +37,4 @@ def info():
     }  
     ```
     """       
-    return "this is home/info page"
+    return Reply.success("this is home/info page")
