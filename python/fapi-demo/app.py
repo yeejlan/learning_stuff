@@ -16,27 +16,10 @@ async def homepage():
 async def user_exception_handler(request: Request, ex: UserException):
     code = ex.code
     message = ex.message
-    status_code = Reply.status_code(code)
-    return JSONResponse(
-        status_code=status_code,
-        content={
-            'code': code,
-            'message': message,
-            'reason': Reply.code_to_str(code),
-            'data': None,
-        },
-    )
+    return Reply.json_response(code, message, Reply.code_to_str(code), None)
 
 @app.exception_handler(Exception)
 async def default_exception_handler(request: Request, ex: Exception):
     message = str(ex)
     code = 500
-    return JSONResponse(
-        status_code=code,
-        content={
-            'code': code,
-            'message': message,
-            'reason': Reply.code_to_str(code),
-            'data': None,
-        },
-    )
+    return Reply.json_response(code, message, Reply.code_to_str(code), None)

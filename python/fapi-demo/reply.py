@@ -1,5 +1,7 @@
 from enum import IntEnum
 
+from fastapi.responses import JSONResponse
+
 class Reply(IntEnum):
     SUCCESS = 0
     BAD_RESULT = 1000
@@ -36,24 +38,12 @@ class Reply(IntEnum):
 
     @staticmethod
     def success(resp: any):
-        j = {
-            'code': 0,
-            'message': 'success',
-            'reason': 'success',
-            'data': resp,
-        }
-        return j
+        return Reply.json_response(0, 'success', 'success', resp)
 
 
     @staticmethod
     def failed(message: str, code: int): 
-        j = {
-            'code': code,
-            'message': message,
-            'reason': Reply.code_to_str(code),
-            'data': None,
-        }
-        return j
+        return Reply.json_response(code, message, Reply.code_to_str(code), None)
 
 
     @staticmethod
@@ -69,3 +59,16 @@ class Reply(IntEnum):
             c = code
 
         return c
+    
+    @staticmethod
+    def json_response(code:int, message:str, reason:str, data:any):
+        status_code = Reply.status_code(code)
+        return JSONResponse(
+            status_code=status_code,
+            content={
+                'code': code,
+                'message': message,
+                'reason': Reply.code_to_str(code),
+                'data': data,
+            },
+        )
