@@ -67,7 +67,7 @@ class MyPayload(BaseModel):
     }    
 
 @router.post("/json", response_model=MyPayload)
-def test_json_params_validation(p: MyPayload):
+async def test_json_params_validation(p: MyPayload):
     """
     Json payload and data validation.
 
@@ -85,4 +85,34 @@ def test_json_params_validation(p: MyPayload):
         "qty": 101,
         "ccc": 123,
     }
+    return Reply.success(out)
+
+class MyData(BaseModel):
+    name: str
+    password: str
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+{
+  "code": 0,
+  "message": "success",
+  "reason": "success",
+  "data": {
+    "name": "the nama column"
+  }
+}
+            ]
+        }
+    } 
+
+@router.post('/data', response_model=MyData) 
+async def test_data_rules():
+    """
+    data test, for example, auto hide password, and trans 'name' to 'username'.
+    """  
+    out = {
+        "name": "the nama column",
+        "password": 'password should be hide', 
+    }
+    del out['password']
     return Reply.success(out)
