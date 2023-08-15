@@ -1,3 +1,4 @@
+from typing import List
 from fastapi import APIRouter
 from pydantic import BaseModel
 from reply import Reply
@@ -41,17 +42,12 @@ def info():
     """        
     return Reply.success("this is user/info page")
 
-@router.get("/find/{user_id:path}")
+@router.get("/find/{user_id:path}", response_model=user.User)
 async def get_user_by_id(user_id: int):
     row = await user.get_user_by_id(user_id)
-    if row:
-        del row.password
     return Reply.success(row)
 
-@router.get("/all")
+@router.get("/all", response_model=List[user.User])
 async def get_all_users():
     rows = await user.list_users()
-    if rows:
-        for row in rows:
-            del row.password
     return Reply.success(rows)

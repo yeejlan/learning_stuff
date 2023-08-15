@@ -13,6 +13,13 @@ class User(BaseModel):
     created_at: datetime|None
     updated_at: datetime|None
 
+    def api_dump(self):
+        out = self.model_dump()
+        del out['password']
+        del out['id']
+        return out
+
+
 async def get_user_by_id(user_id: int) -> User:
     query = 'select * from users where id = %s'
     row = await db.select_one(query, user_id, to=User)
