@@ -1,5 +1,7 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
+
 from reply import Reply
 from exception import UserException
 
@@ -7,6 +9,7 @@ from controllers import router
 
 app = FastAPI(host="0.0.0.0", port=5000)
 app.include_router(router)
+app.mount("/public", StaticFiles(directory="public"), name="public")
 
 @app.get("/")
 async def homepage():
