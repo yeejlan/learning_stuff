@@ -14,12 +14,14 @@ async def create_pool():
     user = os.getenv('DB_USER', 'root')
     password = os.getenv('DB_PASSWORD', '')
     name = os.getenv('DB_NAME', 'dev')
+    echo = bool(os.getenv('DB_ECHO', False))
     pool = await aiomysql.create_pool(
         host=host, 
         port=port,
         user=user,
         password=password,
-        db=name
+        db=name,
+        echo=echo,
     )
     return pool
 
@@ -72,6 +74,7 @@ async def insert(query, *args, pool_fn = get_pool):
     async with pool.acquire() as conn:
         async with conn.cursor(DictCursor) as cur:
             await cur.execute(query, args)
+            await conn.commit()
             return cur.lastrowid
 
 
@@ -90,6 +93,7 @@ async def insert_batch(query, *args, pool_fn = get_pool):
     async with pool.acquire() as conn:
         async with conn.cursor(DictCursor) as cur:
             await cur.executemany(query, args)
+            await conn.commit()
             return cur.rowcount
 
 
@@ -103,4 +107,5 @@ async def update(query, *args, pool_fn = get_pool):
     async with pool.acquire() as conn:
         async with conn.cursor(DictCursor) as cur:
             await cur.execute(query, args)
+            await conn.commit()
             return cur.rowcount

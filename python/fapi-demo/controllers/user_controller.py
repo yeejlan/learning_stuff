@@ -19,3 +19,10 @@ async def list_all_users():
 async def list_user_status():
     res = user_model.UserStatus.list_map()
     return Reply.success(res)
+
+
+@router.post("/update-user-status", response_model=int)
+async def update_user_status(user_id: int, user_status: user_model.UserStatusStr):
+    status = user_model.UserStatus.fromStr(user_status.value)
+    res = await user_model.update_user_status(user_id, status)
+    return Reply.success(res)

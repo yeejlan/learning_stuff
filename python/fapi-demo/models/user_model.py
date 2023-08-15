@@ -36,6 +36,7 @@ class UserStatus(IntEnum):
         NewEnum = Enum('UserStatusStr', attrs)
         return NewEnum
 
+UserStatusStr = UserStatus.make_enum()
 
 class UserModel(BaseModel):
     id: int
@@ -55,7 +56,6 @@ class UserModel(BaseModel):
     def api_dump(self):
         out = self.model_dump()
         del out['password']
-        del out['id']
         return out
 
 
@@ -68,3 +68,8 @@ async def list_users() -> List[UserModel]:
     query = 'select * from users where 1 limit 10'
     rows = await db.select(query, to=UserModel)
     return rows
+ 
+async def update_user_status(user_id: int, user_status: int) -> int:
+    query = 'update users set status = %s where id= %s'
+    res = await db.update(query, user_status, user_id)
+    return res
