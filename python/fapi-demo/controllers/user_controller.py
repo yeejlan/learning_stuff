@@ -1,5 +1,6 @@
 from typing import List
 from fastapi import APIRouter
+from pydantic import BaseModel
 from exception import UserException
 from reply import Reply
 from models import user_model
@@ -16,11 +17,14 @@ async def list_all_users():
     rows = await user_model.list_users()
     return Reply.success(rows)
 
+class UpdateUserStatusIn(BaseModel):
+    user_id: int
+    user_status: user_model.UserStatusStr
 
 @router.post("/update-user-status", response_model=int)
-async def update_user_status(user_id: int, user_status: user_model.UserStatusStr):
-    status = user_model.UserStatus.fromStr(user_status.value)
-    res = await user_model.update_user_status(user_id, status)
+async def update_user_status(p: UpdateUserStatusIn):
+    status = user_model.UserStatus.fromStr(p.user_status.value)
+    res = await user_model.update_user_status(p.user_id, status)
 
     return Reply.success(res)
 
