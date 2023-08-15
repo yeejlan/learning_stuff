@@ -103,20 +103,29 @@ class MyData(BaseModel):
         }
     } 
 
+    def api_dump(self):
+        out = self.model_dump()
+        del out['password']
+        return out
+
 @router.post('/data', response_model=MyData) 
 async def test_data_rules():
     """
-    data test, for example, auto hide password, and trans 'name' to 'username'.
+    Output data test, using api_dump() to hide 'password' field.
     """  
     out = {
         "name": "the nama column",
         "password": 'password should be hide', 
     }
-    del out['password']
+
+    out = MyData(**out).api_dump()
     return Reply.success(out)
 
 
 import pydantic_core 
 @router.post('/all-errors') 
 async def list_all_errors():
+    """
+    This function dose not exist, need change source code to make it work.
+    """      
     return pydantic_core.list_all_errors()
