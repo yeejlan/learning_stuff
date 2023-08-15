@@ -1,5 +1,6 @@
 from typing import List
 from fastapi import APIRouter
+from exception import UserException
 from reply import Reply
 from models import user_model
 
@@ -20,6 +21,7 @@ async def list_all_users():
 async def update_user_status(user_id: int, user_status: user_model.UserStatusStr):
     status = user_model.UserStatus.fromStr(user_status.value)
     res = await user_model.update_user_status(user_id, status)
+
     return Reply.success(res)
 
 @router.get("/list-user-status", response_model=user_model.UserStatus.make_enum())
