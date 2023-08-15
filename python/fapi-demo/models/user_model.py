@@ -1,6 +1,6 @@
 from enum import IntEnum
 import db
-from pydantic import BaseModel
+from pydantic import BaseModel, computed_field
 from datetime import datetime
 from typing import List
 
@@ -40,11 +40,15 @@ class UserModel(BaseModel):
     created_at: datetime|None
     updated_at: datetime|None
 
+    @computed_field
+    @property
+    def status_str(self) -> str:
+        return str(self.status)
+
     def api_dump(self):
         out = self.model_dump()
         del out['password']
         del out['id']
-        out['status_str'] = str(out['status'])
         return out
 
 
