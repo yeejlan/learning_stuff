@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from datetime import datetime
 from typing import List
 
-class User(BaseModel):
+class UserModel(BaseModel):
     id: int
     name: str
     email: str|None
@@ -20,12 +20,12 @@ class User(BaseModel):
         return out
 
 
-async def get_user_by_id(user_id: int) -> User:
+async def get_user_by_id(user_id: int) -> UserModel:
     query = 'select * from users where id = %s'
-    row = await db.select_one(query, user_id, to=User)
+    row = await db.select_one(query, user_id, to=UserModel)
     return row
 
-async def list_users() -> List[User]:
+async def list_users() -> List[UserModel]:
     query = 'select * from users where 1 limit 10'
-    rows = await db.select(query, to=User)
+    rows = await db.select(query, to=UserModel)
     return rows
