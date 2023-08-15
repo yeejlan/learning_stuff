@@ -14,3 +14,8 @@ async def get_user_by_id(user_id: int):
 async def list_all_users():
     rows = await user_model.list_users()
     return Reply.success(rows)
+
+@router.get("/list-user-status", response_model=user_model.UserStatus.make_enum())
+async def list_user_status():
+    res = user_model.UserStatus.list_map()
+    return Reply.success(res)
