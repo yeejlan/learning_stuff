@@ -15,14 +15,14 @@ async def list_all_users():
     rows = await user_model.list_users()
     return Reply.success(rows)
 
-@router.get("/list-user-status", response_model=user_model.UserStatus.make_enum())
-async def list_user_status():
-    res = user_model.UserStatus.list_map()
-    return Reply.success(res)
-
 
 @router.post("/update-user-status", response_model=int)
 async def update_user_status(user_id: int, user_status: user_model.UserStatusStr):
     status = user_model.UserStatus.fromStr(user_status.value)
     res = await user_model.update_user_status(user_id, status)
+    return Reply.success(res)
+
+@router.get("/list-user-status", response_model=user_model.UserStatus.make_enum())
+async def list_user_status():
+    res = user_model.UserStatus.list_map()
     return Reply.success(res)
