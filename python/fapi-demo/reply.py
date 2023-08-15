@@ -1,8 +1,12 @@
+from datetime import datetime
 from enum import IntEnum
+import json
 from logging import Logger
 from typing import Any
+from fastapi import Response
 
-from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.responses import RedirectResponse
+from pydantic import BaseModel
 
 import log
 class Reply(IntEnum):
@@ -68,6 +72,13 @@ class Reply(IntEnum):
     
     @staticmethod
     def json_response(code:int, message:str, reason:str, data:Any, extra: dict = {}):
+
+        # if isinstance(data, str):
+        #     try:
+        #         data = json.loads(data)
+        #     except json.decoder.JSONDecodeError:
+        #         pass
+
         status_code = Reply.status_code(code)
         content = {
             'code': code,
@@ -78,12 +89,24 @@ class Reply(IntEnum):
         if extra:
             content.update(extra)
 
-        return JSONResponse(
+        content = json.dumps(content, cls=MyJsonEncoder)
+        return Response(
             status_code=status_code,
             content=content,
+            media_type='application/json',
         )
     
     @staticmethod
     def get_logger(channel_name: str) -> Logger:
         return log.get_logger(channel_name)
     
+
+class MyJsonEncoder(json.JSONEncoder):
+
+    def default(self, o):
+        if isinstance(o, datetime):
+            return o.utcnow().isoformat()
+        elif isinstance(o, BaseModel):
+            return o.model_dump()
+
+        return super().default(o)

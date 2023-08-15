@@ -1,6 +1,8 @@
-from typing import Any
+from typing import Any, Optional
 import aiomysql
 import os
+from typing import TypeVar, Generic
+from pydantic import BaseModel
 
 DictCursor = aiomysql.DictCursor
 
@@ -30,41 +32,50 @@ def get_pool():
     return pool
 
 
-async def select_one(query, *args, pool = pool):
+async def select_one(query, *args, pool_fn = get_pool, to: Any):
     """
     stmt = "SELECT * FROM employees WHERE ID = %s"
     row = await select_one(stmt, (123,))
     """      
+    pool = pool_fn()
     async with pool.acquire() as conn:
         async with conn.cursor(DictCursor) as cur:
             await cur.execute(query, args)
-            return await cur.fetchone()
+            row = await cur.fetchone()
+            if row and to:
+                return to(**row)
+            return row
 
 
-async def select(query, *args, pool = pool):
+async def select(query, *args, pool_fn = get_pool, to: Any):
     """
     stmt = "SELECT * FROM employees WHERE DEPT_ID = %s"
     rows = await select(stmt, (123,))
-    """       
+    """
+    pool = pool_fn() 
     async with pool.acquire() as conn:
         async with conn.cursor(DictCursor) as cur:
             await cur.execute(query, args)
-            return await cur.fetchall()
+            rows = await cur.fetchall()
+            if rows and to:
+                return [to(**row) for row in rows]
+            return rows
 
 
-async def insert(query, *args, pool = pool):
+async def insert(query, *args, pool_fn = get_pool):
     """
     stmt = "INSERT INTO employees (name, phone)
         VALUES ('%s','%s')"
     row_id = await insert(stmt, ('Jane','555-001'))
-    """    
+    """
+    pool = pool_fn() 
     async with pool.acquire() as conn:
         async with conn.cursor(DictCursor) as cur:
             await cur.execute(query, args)
             return cur.lastrowid
 
 
-async def insert_batch(query, *args, pool = pool):
+async def insert_batch(query, *args, pool_fn = get_pool):
     """
     data = [
         ('Jane','555-001'),
@@ -75,18 +86,20 @@ async def insert_batch(query, *args, pool = pool):
         VALUES ('%s','%s')"
     rowcount = await insert_batch(stmt, data)
     """
+    pool = pool_fn()
     async with pool.acquire() as conn:
         async with conn.cursor(DictCursor) as cur:
             await cur.executemany(query, args)
             return cur.rowcount
 
 
-async def update(query, *args, pool = pool):
+async def update(query, *args, pool_fn = get_pool):
     """
     stmt = "UPDATE employees (name, phone)
         VALUES ('%s','%s') WHERE id = %s"
     rowcount = await insert(stmt, ('Jane','555-001', 123))
-    """        
+    """
+    pool = pool_fn()
     async with pool.acquire() as conn:
         async with conn.cursor(DictCursor) as cur:
             await cur.execute(query, args)

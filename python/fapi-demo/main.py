@@ -1,3 +1,4 @@
+import json
 from fastapi import FastAPI
 from enum import StrEnum
 from collections import namedtuple
@@ -42,3 +43,4 @@ async def get_model(status_name: Status):
     return {"status": status_name,
             "status.int": int(status_name),
             }
+
