@@ -1,14 +1,41 @@
+from enum import IntEnum
 import db
 from pydantic import BaseModel
 from datetime import datetime
 from typing import List
 
+class UserStatus(IntEnum):
+    normal = 1
+    frozen = 2
+    closed = 3
+
+    __map = {
+        normal: 'normal',
+        frozen: 'frozen', 
+        closed: 'closed',
+    }
+    __map_r = {v: k for k, v in __map.items()} # type: ignore
+
+    def __int__(self):
+        return self.value
+
+    def __str__(self):
+        return UserStatus.__map[self.value] # type: ignore
+    
+    @staticmethod
+    def fromStr(value):
+        return UserStatus.__map_r[value] # type: ignore
+    
+    @staticmethod
+    def list_map():
+        return UserStatus.__map
+    
 class UserModel(BaseModel):
     id: int
     name: str
     email: str|None
     password: str
-    status: int
+    status: UserStatus
     note: str|None
     created_at: datetime|None
     updated_at: datetime|None
@@ -17,6 +44,7 @@ class UserModel(BaseModel):
         out = self.model_dump()
         del out['password']
         del out['id']
+        out['status_str'] = str(out['status'])
         return out
 
 
