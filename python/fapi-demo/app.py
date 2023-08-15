@@ -5,6 +5,7 @@ from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 import log
 import uuid
+import db
 
 from reply import Reply
 from exception import UserException
@@ -31,6 +32,14 @@ async def add_request_id(request: Request, call_next):
     response = await call_next(request)
     response.headers['request-id'] = uuid_str
     return response
+
+@app.on_event("startup")
+async def startup():
+    db.pool = await db.create_pool()
+
+@app.on_event("shutdown")
+async def shutdown():
+    await db.release_pool()
 
 @app.exception_handler(UserException)
 async def user_exception_handler(request: Request, ex: UserException):

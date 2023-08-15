@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 from reply import Reply
+from models import user
 
 router = APIRouter()
 
@@ -38,3 +39,9 @@ def info():
     ```
     """        
     return Reply.success("this is user/info page")
+
+@router.get("/user")
+async def get_user_by_id():
+    row = await user.get_user_by_id(1)
+    return Reply.success(repr(row))
+
