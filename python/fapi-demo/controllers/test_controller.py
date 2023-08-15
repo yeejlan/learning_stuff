@@ -4,6 +4,7 @@ from fastapi.params import Body
 from pydantic import BaseModel, Field
 from reply import Reply
 from exception import UserException
+import log
 
 router = APIRouter()
 
@@ -129,3 +130,16 @@ async def list_all_errors():
     This function dose not exist, need change source code to make it work.
     """      
     return pydantic_core.list_all_errors()
+
+@router.get('/log')
+async def log_test():
+    """
+    Log test.
+    """ 
+    logger = getLogger()
+    logger.info("my test info")
+    logger.error("my test error info")
+    return "check stdout please."  
+
+def getLogger():
+    return Reply.get_logger(__name__)

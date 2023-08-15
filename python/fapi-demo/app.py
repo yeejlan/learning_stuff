@@ -1,13 +1,21 @@
-import traceback
+from logging import Logger
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.staticfiles import StaticFiles
+from dotenv import load_dotenv
+import log
+import uuid
 
 from reply import Reply
 from exception import UserException
 
 from controllers import router
 
+
+# Load env file
+load_dotenv()
+
+# Create app
 app = FastAPI(host="0.0.0.0", port=5000)
 app.include_router(router)
 app.mount("/public", StaticFiles(directory="public"), name="public")
@@ -15,6 +23,14 @@ app.mount("/public", StaticFiles(directory="public"), name="public")
 @app.get("/")
 async def homepage():
     return Reply.success("this is the homepage~")
+
+@app.middleware("http")
+async def add_request_id(request: Request, call_next):
+    uuid_str = str(uuid.uuid4())
+    log.request_id.set(uuid_str)
+    response = await call_next(request)
+    response.headers['request-id'] = uuid_str
+    return response
 
 @app.exception_handler(UserException)
 async def user_exception_handler(request: Request, ex: UserException):
@@ -41,6 +57,9 @@ async def validation_exception_handler(request, ex):
 async def default_exception_handler(request: Request, ex: Exception):
     message = type(ex).__name__ + ': ' +  str(ex)
     code = 500
-    tb = traceback.format_exc()
-    #todo: log traceback
+    #log error
+    getLogger().error(message)
     return Reply.json_response(code, message, Reply.code_to_str(code), None)
+
+def getLogger() -> Logger: 
+    return log.get_logger('err500')

@@ -1,8 +1,10 @@
 from enum import IntEnum
+from logging import Logger
 from typing import Any
 
 from fastapi.responses import JSONResponse, RedirectResponse
 
+import log
 class Reply(IntEnum):
     SUCCESS = 0
     BAD_RESULT = 1000
@@ -80,4 +82,8 @@ class Reply(IntEnum):
             status_code=status_code,
             content=content,
         )
+    
+    @staticmethod
+    def get_logger(channel_name: str) -> Logger:
+        return log.get_logger(channel_name)
     
