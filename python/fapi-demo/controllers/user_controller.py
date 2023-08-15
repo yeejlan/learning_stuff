@@ -28,7 +28,7 @@ async def update_user_status(p: UpdateUserStatusIn):
 
     return Reply.success(res)
 
-@router.get("/list-user-status", response_model=user_model.UserStatus.make_enum())
+@router.get("/list-user-status", response_model=user_model.UserStatusStr)
 async def list_user_status():
     res = user_model.UserStatus.list_map()
     return Reply.success(res)
