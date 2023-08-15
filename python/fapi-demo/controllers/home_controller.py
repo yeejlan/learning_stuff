@@ -1,12 +1,11 @@
 from fastapi import APIRouter
 from reply import Reply
+from app import app
 
-router = APIRouter()
-
-@router.get("/")
-def index():
+@app.get("/", tags=["home"])
+def homepage():
     """
-    home api.
+    Homepage.
 
     Output
  
@@ -20,21 +19,3 @@ def index():
     ```
     """      
     return Reply.success("this is homepage")
-
-@router.get("/info")
-def info():
-    """
-    home/info api.
-
-    Output
- 
-    ```
-    {
-        "code": 0,
-        "message": "success",
-        "reason": "success",
-        "data": "this is home/info page"
-    }  
-    ```
-    """       
-    return Reply.success("this is home/info page")
