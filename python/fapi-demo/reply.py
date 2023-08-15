@@ -65,15 +65,19 @@ class Reply(IntEnum):
         return c
     
     @staticmethod
-    def json_response(code:int, message:str, reason:str, data:Any):
+    def json_response(code:int, message:str, reason:str, data:Any, extra: dict = {}):
         status_code = Reply.status_code(code)
+        content = {
+            'code': code,
+            'message': message,
+            'reason': Reply.code_to_str(code),
+            'data': data,
+        }
+        if extra:
+            content.update(extra)
+
         return JSONResponse(
             status_code=status_code,
-            content={
-                'code': code,
-                'message': message,
-                'reason': Reply.code_to_str(code),
-                'data': data,
-            },
+            content=content,
         )
     
