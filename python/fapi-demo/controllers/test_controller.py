@@ -143,3 +143,21 @@ async def log_test():
 
 def getLogger():
     return Reply.get_logger(__name__)
+
+
+from fastapi import BackgroundTasks, Depends
+
+
+
+@router.get("/bg-task")
+async def send_notification(
+    message: str, 
+    background_tasks: BackgroundTasks
+):
+    getLogger().debug("before send_notification")
+    background_tasks.add_task(send_message, message)
+    getLogger().debug("after send_notification")
+    return {"message": "Message sent"}
+
+def send_message(msg: str):
+    getLogger().info("message sent: " + msg)
