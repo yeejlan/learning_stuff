@@ -4,11 +4,6 @@ from pydantic import BaseModel, computed_field
 from datetime import datetime
 from typing import List
 
-StatusMap = {
-    1: 'normal',
-    2: 'frozen', 
-    3: 'closed',
-}
 class UserStatus(IntEnum):
     normal = 1
     frozen = 2
@@ -21,7 +16,6 @@ class UserStatus(IntEnum):
         return self.name
 
 status_map = {member.name: member.value for member in UserStatus}
-
 status_map_reversed = {v: k for k, v in status_map.items()}
 
 def make_status_enum():
