@@ -27,7 +27,7 @@ class Reply(IntEnum):
 
 
     def __str__(self):
-        return self.name.lower
+        return self.name.lower()
     
     def __int__(self):
         return self.value
