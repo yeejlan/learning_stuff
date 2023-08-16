@@ -11,7 +11,11 @@ from reply import Reply
 from exception import UserException
 
 # Create app
-app = FastAPI(host="0.0.0.0", port=5000)
+app = FastAPI(host="0.0.0.0",
+              port=5000,
+              title="My FastApi Demo",
+              version="1.2.34",
+            )
 
 @app.middleware("http")
 async def add_request_id(request: Request, call_next):
