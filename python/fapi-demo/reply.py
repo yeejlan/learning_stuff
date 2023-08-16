@@ -11,6 +11,12 @@ from pydantic import BaseModel
 import log
 class Reply(IntEnum):
     SUCCESS = 0
+    UNAUTHORIZED = 401
+    FORBIDDEN = 403
+    NOT_FOUND = 404
+    METHOD_NOT_ALLOWED = 405
+    INTERNAL_SERVER_ERROR = 500
+
     BAD_RESULT = 1000
     BAD_TOKEN = 1100
     BAD_PARAM = 1200
@@ -19,25 +25,9 @@ class Reply(IntEnum):
     OPERATION_FAILED = 1500
     OPERATION_PENDING = 1600
 
-    __str_map = {
-        401: 'unauthorized',
-        403: 'forbidden',
-        404: 'not_found',
-        405: 'method_not_allowed',
-        500: 'internal_server_error',
-
-        SUCCESS: 'success',
-        BAD_RESULT: 'bad_result',
-        BAD_TOKEN: 'bad_token',
-        BAD_PARAM: 'bad_param',
-        OPERATION_NOT_ALLOWED: 'operation_not_allowed',
-        RESOURCE_NOT_FOUND: 'resource_not_found',
-        OPERATION_FAILED: 'operation_failed',
-        OPERATION_PENDING: 'operation_pending',
-    }
 
     def __str__(self):
-        return Reply.__str_map[self.value] # type: ignore
+        return self.name.lower
     
     def __int__(self):
         return self.value
@@ -58,7 +48,7 @@ class Reply(IntEnum):
 
     @staticmethod
     def code_to_str(code: int) -> str:
-        return Reply.__str_map[code] # type: ignore
+        return reply_map_reversed[code]
 
 
     @staticmethod
@@ -100,6 +90,9 @@ class Reply(IntEnum):
     def get_logger(channel_name: str) -> Logger:
         return log.get_logger(channel_name)
     
+
+reply_map = {member.name.lower(): member.value for member in Reply}
+reply_map_reversed = {v: k for k, v in reply_map.items()}
 
 class MyJsonEncoder(json.JSONEncoder):
 

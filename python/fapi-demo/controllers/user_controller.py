@@ -23,12 +23,13 @@ class UpdateUserStatusIn(BaseModel):
 
 @router.post("/update-user-status", response_model=int)
 async def update_user_status(p: UpdateUserStatusIn):
-    status = user_model.UserStatus.fromStr(p.user_status.value)
+    status_str = p.user_status.value
+    status = user_model.UserStatus[status_str].value
     res = await user_model.update_user_status(p.user_id, status)
 
     return Reply.success(res)
 
 @router.get("/list-user-status", response_model=user_model.UserStatusStr)
 async def list_user_status():
-    res = user_model.UserStatus.list_map()
+    res = user_model.status_map_reversed
     return Reply.success(res)
