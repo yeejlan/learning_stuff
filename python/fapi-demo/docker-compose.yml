@@ -1,0 +1,11 @@
+version: '3.2'
+
+services:
+
+  fastapi-demo:
+    build: .
+    image: fastapi-demo:v1.0
+    ports:
+      - 8050:80
+    volumes:
+      - ./:/app
