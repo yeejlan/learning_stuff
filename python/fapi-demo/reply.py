@@ -63,12 +63,6 @@ class Reply(IntEnum):
     @staticmethod
     def json_response(code:int, message:str, reason:str, data:Any, extra: dict = {}):
 
-        # if isinstance(data, str):
-        #     try:
-        #         data = json.loads(data)
-        #     except json.decoder.JSONDecodeError:
-        #         pass
-
         status_code = Reply.status_code(code)
         content = {
             'code': code,
