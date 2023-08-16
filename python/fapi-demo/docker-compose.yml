@@ -9,3 +9,4 @@ services:
       - 8050:80
     volumes:
       - ./:/app
+    restart: unless-stopped
