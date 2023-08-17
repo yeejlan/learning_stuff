@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from enum import StrEnum
-from typing import Any
+from typing import Any, Tuple
+import re
 
 class QueryBuilderException(Exception):
     pass
@@ -144,7 +145,9 @@ class QueryBuilder:
 
         return self
 
-    def build(self):
+    def build(self) -> Tuple[str, list]:
+        self._parts = []
+        self._bindings = []
         (self
             ._build_select()
             ._build_join()
@@ -153,8 +156,15 @@ class QueryBuilder:
 
         return ' '.join(self._parts), self._bindings
     
-    def build_fake_sql(self):
-        pass
+    def build_fake_sql(self) -> str:
+        def quote_str(value):
+            if isinstance(value, str):
+                return f"'{value}'"   
+            return str(value)
+
+        query, values = self.build()
+        query = re.sub(r'%s', lambda x: quote_str(values.pop(0)), query)
+        return query
 
 
 if __name__ == "__main__":
@@ -174,6 +184,8 @@ if __name__ == "__main__":
     )
 
     query, values = q.build()
+    sql = q.build_fake_sql()
 
     print(query) 
     print(values)
+    print(sql)
