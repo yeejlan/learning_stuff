@@ -5,13 +5,14 @@ class QueryBuilderException(Exception):
     pass
 
 class QueryKind(StrEnum):
+    unset = "unset"
     select = "select"
     insert = "insert"
     update = "update"
 
 @dataclass
 class QueryBuilder:
-    kind: QueryKind = QueryKind.select
+    kind: QueryKind = QueryKind.unset
     parts: list = field(default_factory=list)  #statement parts
     bindings: list = field(default_factory=list)  #statement bindings
 
@@ -34,11 +35,11 @@ class QueryBuilder:
         self.kind = QueryKind.select
         t = type(parts)
         if t == tuple or t == list:
-            self.select_parts.append(', '.join(parts))
+            self.select_parts.extend(parts)
         elif t == str:
             self.select_parts.append(parts)
         else:
-            raise QueryBuilderException('not supported select params')
+            raise QueryBuilderException('select params not supported')
         return self
     
     def where(self, field, op=None, value=None, bool_op = 'and'):
@@ -60,7 +61,7 @@ class QueryBuilder:
         if not self.table_parts:
             raise QueryBuilderException('table is missing')
         
-        fields = ' '.join(self.select_parts) if self.select_parts else '*'
+        fields = ', '.join(self.select_parts) if self.select_parts else '*'
         query = f'SELECT {fields} FROM {self.table_parts}'
         self.parts.append(query)
         return self
@@ -89,25 +90,30 @@ class QueryBuilder:
         return self
 
     def build(self):
-        self._build_select() \
+        (self
+            ._build_select()
             ._build_where()
+        )
 
         return ' '.join(self.parts), self.bindings
     
     def build_fake_sql(self):
         pass
-        
+
+
 qb = QueryBuilder()
-query, values = (qb.table('users') 
-    .select(['id', 'name']) 
+q = (qb
+    .table('users as u') 
+    .select(['id', 'name'])
+    .select(('lucy as lion', 'nana'))
+    .select("created_at")
     .where('id', 1) 
-    .where("niasasww") 
+    .where("aBcD=123") 
     .where('cc', 2) 
     .where_or('dd', '>=', 15)
-    .build()
 )
 
+query, values = q.build()
+
 print(query) 
-# SELECT id,name FROM  WHERE user_id = %s
 print(values)
-# (1,)
