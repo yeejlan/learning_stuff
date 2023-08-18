@@ -29,11 +29,6 @@ async def update_user_status(p: UpdateUserStatusIn):
 
     return Reply.success(res)
 
-@router.get("/list-all-user-status", response_model=user_model.UserStatusStr)
-async def list_all_user_status():
-    res = user_model.status_map_reversed
-    return Reply.success(res)
-
 class CreateUserIn(BaseModel):
     name: str
     email: str|None

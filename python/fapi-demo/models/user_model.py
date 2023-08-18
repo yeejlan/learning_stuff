@@ -49,7 +49,7 @@ class UserModel(BaseModel):
 
     @computed_field
     @property
-    def status_str(self) -> str:
+    def status_str(self) -> UserStatusStr:  # type: ignore
         return str(self.status)
 
     def api_dump(self):
