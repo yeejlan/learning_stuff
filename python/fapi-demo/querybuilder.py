@@ -47,7 +47,7 @@ class QueryBuilder:
         return self
 
     def update(self, field: str, value: Any = []):
-        query = f'SET {field} = %s'
+        query = f'{field} = %s'
         self.update_raw(query, value)
         return self
 
@@ -183,7 +183,7 @@ class QueryBuilder:
         for part, values in self._update_parts:
             if is_first:
                 is_first = False
-                query += f'UPDATE {self._table_parts} {part}'
+                query += f'UPDATE {self._table_parts} SET {part}'
             else:
                 query += f', {part}'
             self._bindings.extend(values)
@@ -371,7 +371,7 @@ if __name__ == "__main__":
         .table('users')
         .update('notes', 'my notes')
         .update('score', 50)
-        .update_raw('set age = %s', 22)
+        .update_raw('age = %s', 22)
         .where('id', 123)
         .limit(1)
         .dump_build()
