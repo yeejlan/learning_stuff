@@ -5,9 +5,6 @@ import re
 
 import db
 
-class QueryBuilderException(Exception):
-    pass
-
 class QueryKind(StrEnum):
     unset = "unset"
     select = "select"
@@ -43,10 +40,9 @@ class QueryBuilder:
         t = type(columns)
         if t == list:
             self._select_parts.extend(columns)
-        elif t == str:
-            self._select_parts.append(columns)
         else:
-            raise QueryBuilderException('select params not supported')
+            self._select_parts.append(columns)
+
         return self
 
     def join(self, table: str, on: str, op='join'):
@@ -153,9 +149,6 @@ class QueryBuilder:
         return self
 
     def _build_select(self):
-        if not self._table_parts:
-            raise QueryBuilderException('table is missing')
-        
         fields = ', '.join(self._select_parts) if self._select_parts else '*'
         query = f'SELECT {fields} FROM {self._table_parts}'
         self._parts.append(query)
