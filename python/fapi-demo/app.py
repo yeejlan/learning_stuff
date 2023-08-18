@@ -22,7 +22,7 @@ async def add_request_id(request: Request, call_next):
     uuid_str = str(uuid.uuid4())
     log.request_id.set(uuid_str)
     response = await call_next(request)
-    response.headers['request-id'] = uuid_str
+    # response.headers['request-id'] = uuid_str
     return response
 
 @app.on_event("startup")

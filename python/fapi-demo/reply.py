@@ -68,6 +68,7 @@ class Reply(IntEnum):
             'code': code,
             'message': message,
             'reason': cls.code_to_str(code),
+            'request-id': log.request_id.get(),
             'data': data,
         }
         if extra:
