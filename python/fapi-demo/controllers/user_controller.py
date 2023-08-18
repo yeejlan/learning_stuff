@@ -47,9 +47,5 @@ class CreateUserIn(BaseModel):
 
 @router.post("/create-user", response_model=user_model.UserModel)
 async def create_user(user: CreateUserIn):
-    user_id = await user_model.create_user(user.dict_dump())
-    if not user_id or user_id < 1:
-        raise UserException('create user failed', Reply.OPERATION_FAILED)
-
-    one = await user_model.get_user_by_id(user_id)
+    one = await user_model.create_user(user.dict_dump())
     return Reply.success(one)

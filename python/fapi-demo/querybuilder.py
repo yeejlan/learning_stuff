@@ -401,6 +401,15 @@ class QueryBuilder:
             res = await db.insert(query, *values, pool_fn=self._pool_fn)
         return res
 
+    async def exec_insert_and_return(self) -> Any:
+        res = 0
+        for query, values in self._insert_parts:
+            res = await db.insert(query, *values, pool_fn=self._pool_fn)
+        if res < 1:
+            return None
+        one = await self.select('*').where('id', res).exec_select_one()
+        return one
+
 
 if __name__ == "__main__":
     (QueryBuilder().new()

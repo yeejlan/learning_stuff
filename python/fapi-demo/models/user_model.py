@@ -88,8 +88,8 @@ async def update_user_status(user_id: int, user_status: int) -> int:
     return res
 
 async def create_user(user_data: dict):
-    res = await (make_query_builder()
+    one = await (make_query_builder()
         .insert_with_timestamp(user_data)
-        .exec_insert()
+        .exec_insert_and_return()
     )
-    return res
+    return one
