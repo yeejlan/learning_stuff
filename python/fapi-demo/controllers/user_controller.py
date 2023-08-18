@@ -43,9 +43,6 @@ class CreateUserIn(BaseModel):
     def dict_dump(self):
         d = self.model_dump()
         d['status'] = int(d['status'])
-        now = datetime.now()
-        d['created_at'] = now
-        d['updated_at'] = now
         return d
 
 @router.post("/create-user", response_model=user_model.UserModel)

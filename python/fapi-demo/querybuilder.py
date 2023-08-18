@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import Any, Tuple
 import re
+from datetime import datetime
 
 import db
 
@@ -84,6 +85,14 @@ class QueryBuilder:
         return self
 
     def insert_with_timestamp(self, dict_data: Any):
+        if type(dict_data) == dict:
+            dict_data = [dict_data]
+
+        for one in dict_data:
+            now = datetime.utcnow().isoformat()
+            one['created_at'] = now
+            one['updated_at'] = now
+            self.insert(one)
         return self
 
     def join(self, table: str, on: str, op='join'):
@@ -450,7 +459,7 @@ if __name__ == "__main__":
     (QueryBuilder().new()
         .table('users')
         .insert(user1)
-        .insert([user2, user3])
+        .insert_with_timestamp([user2, user3])
         .dump_build()
         .print_separator()
         .dump_fake_sql()
