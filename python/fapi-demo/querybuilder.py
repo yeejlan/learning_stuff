@@ -296,9 +296,22 @@ class QueryBuilder:
     
 
     def build_fake_sql(self) -> str:
+        escapes = {
+            "'" : "\\'",
+            "\\" : "\\\\"
+        }
+
+        def escape_string(value):
+            escaped = []
+            for char in value:
+                if char in escapes:
+                    escaped.append(escapes[char])
+                else:
+                    escaped.append(char)
+            return "".join(escaped)        
         def quote_str(value):
             if isinstance(value, str):
-                return f"'{value}'"   
+                return f"'{escape_string(value)}'"
             return str(value)
 
         query, values = self.build()
@@ -347,7 +360,7 @@ if __name__ == "__main__":
         .dump_fake_sql()
         .build()
     )
-
+    print('----update----')
     (QueryBuilder().new()
         .table('users')
         .update('notes', 'my notes')
