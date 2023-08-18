@@ -11,6 +11,7 @@ class QueryKind(StrEnum):
     select = "select"
     insert = "insert"
     update = "update"
+    delete = "delete"
 
 @dataclass
 class QueryBuilder:
@@ -82,6 +83,10 @@ class QueryBuilder:
             columns = ', '.join(one.keys())
             sql = "INSERT INTO " + self._table_parts +" ({}) VALUES ({})".format(columns, placeholders)
             self._insert_parts.append((sql, list(one.values())))
+        return self
+
+    def delete(self):
+        self._kind = QueryKind.delete
         return self
 
     def insert_with_timestamp(self, dict_data: Any):
@@ -226,7 +231,14 @@ class QueryBuilder:
             self._bindings.extend(values)
 
         self._parts.append(query)
-        return self;
+        return self
+
+    def _build_delete(self):
+        if self._kind != QueryKind.delete:
+            return self
+        query = f'DELETE FROM {self._table_parts}'
+        self._parts.append(query)
+        return self
 
     def _build_join(self):
         if not self._join_parts:
@@ -314,6 +326,7 @@ class QueryBuilder:
         (self
             ._build_select()
             ._build_update()
+            ._build_delete()
             ._build_join()
             ._build_where()
             ._build_groupby()
@@ -401,13 +414,16 @@ class QueryBuilder:
             res = await db.insert(query, *values, pool_fn=self._pool_fn)
         return res
 
-    async def exec_insert_and_return(self, primary_key='id') -> Any:
+    async def exec_insert_and_retrieve(self, primary_key='id') -> Any:
         res = await self.exec_insert()
         if res < 1:
             return None
         one = await self.select('*').where(primary_key, res).exec_select_one()
         return one
 
+    async def exec_delete(self) -> int:
+        res = await self.exec_update()
+        return res
 
 if __name__ == "__main__":
     (QueryBuilder().new()
@@ -471,5 +487,18 @@ if __name__ == "__main__":
         .print_separator()
         .dump_fake_sql()
         .build()
-    )    
+    )
+    print('----delete----')
+    (QueryBuilder().new()
+        .table('users')
+        .delete()
+        .where('age', '<', 15)
+        .where_not_null('score')
+        .order_by('score DESC')
+        .limit(5)
+        .dump_build()
+        .print_separator()
+        .dump_fake_sql()
+        .build()
+    )
 

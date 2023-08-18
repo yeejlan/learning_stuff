@@ -90,6 +90,14 @@ async def update_user_status(user_id: int, user_status: int) -> int:
 async def create_user(user_data: dict):
     one = await (make_query_builder()
         .insert_with_timestamp(user_data)
-        .exec_insert_and_return()
+        .exec_insert_and_retrieve()
     )
     return one
+
+async def delete_user(user_id: int):
+    res = await (make_query_builder()
+        .delete()
+        .where('id', user_id)
+        .exec_delete()
+    )
+    return res

@@ -49,3 +49,11 @@ class CreateUserIn(BaseModel):
 async def create_user(user: CreateUserIn):
     one = await user_model.create_user(user.dict_dump())
     return Reply.success(one)
+
+class DeleteUserIn(BaseModel):
+    user_id: int
+
+@router.post("/delete-user", response_model=int)
+async def delete_user(p: DeleteUserIn):
+    res = await user_model.delete_user(p.user_id)
+    return Reply.success(res)
