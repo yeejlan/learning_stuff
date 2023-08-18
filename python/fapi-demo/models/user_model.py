@@ -23,6 +23,16 @@ status_map_reversed = {v: k for k, v in status_map.items()}
 def make_status_enum():
     attrs = {val: val for val in status_map_reversed.values()}
     NewEnum = Enum('UserStatusStr', attrs)
+
+    def __str__(self):
+        return self.value
+    
+    def __int__(self):
+        return status_map[self.value]
+    
+    NewEnum.__str__ = __str__
+    NewEnum.__int__ = __int__
+    
     return NewEnum
 
 UserStatusStr = make_status_enum()

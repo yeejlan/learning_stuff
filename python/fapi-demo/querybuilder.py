@@ -83,6 +83,9 @@ class QueryBuilder:
             self._insert_parts.append((sql, list(one.values())))
         return self
 
+    def insert_with_timestamp(self, dict_data: Any):
+        return self
+
     def join(self, table: str, on: str, op='join'):
         self._join_parts.append((table, on, op))
         return self

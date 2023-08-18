@@ -24,8 +24,7 @@ class UpdateUserStatusIn(BaseModel):
 
 @router.post("/update-user-status", response_model=int)
 async def update_user_status(p: UpdateUserStatusIn):
-    status_str = p.user_status.value
-    status = user_model.UserStatus[status_str].value
+    status = int(p.user_status)
     res = await user_model.update_user_status(p.user_id, status)
 
     return Reply.success(res)
@@ -43,7 +42,7 @@ class CreateUserIn(BaseModel):
 
     def dict_dump(self):
         d = self.model_dump()
-        d['status'] = user_model.UserStatus[d['status'].value].value
+        d['status'] = int(d['status'])
         now = datetime.now()
         d['created_at'] = now
         d['updated_at'] = now
