@@ -55,10 +55,10 @@ class QueryBuilder:
         self._join_parts.append((table, on, op))
         return self        
     
-    def where(self, field: str, op=None, value=None, bool_op: str = 'and'):
-        if op is None and value is None: #raw query
+    def where(self, field: str, op=None, value=[], bool_op: str = 'and'):
+        if op is None and value == []: #raw query
             self._where_parts.append((field, 'raw', [], bool_op))
-        elif value is None:
+        elif value == []:
             self._where_parts.append((field, '=', op, bool_op))
         else: 
             self._where_parts.append((field, op, value, bool_op))
@@ -66,7 +66,7 @@ class QueryBuilder:
         return self
 
 
-    def where_or(self, field: str, op=None, value=None, bool_op: str = 'or'):
+    def where_or(self, field: str, op=None, value=[], bool_op: str = 'or'):
         self.where(field, op, value, bool_op)
         return self
 
