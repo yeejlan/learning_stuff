@@ -52,11 +52,10 @@ class QueryBuilder:
         return self
 
     def update_raw(self, query: str, value:Any = []):
-        self._update_parts.append(query)
-        if type(value) == list:
-            self._bindings.extend(value)
-        else:
-            self._bindings.append(value)
+        self._kind = QueryKind.update
+        if type(value) != list:
+            value = [value]
+        self._update_parts.append((query, value))
         return self        
 
     def join(self, table: str, on: str, op='join'):
@@ -71,7 +70,7 @@ class QueryBuilder:
         self._join_parts.append((table, on, op))
         return self        
     
-    def where(self, field: str, op: Any='raw', value=[], bool_op: str = 'and'):
+    def where(self, field: str, op: Any='raw', value: Any=[], bool_op: str = 'and'):
         if op == 'raw': #raw query
             self._where_parts.append((field, 'raw', value, bool_op))
         elif value == []:
@@ -82,12 +81,14 @@ class QueryBuilder:
         return self
 
 
-    def where_or(self, field: str, op='raw', value=[], bool_op: str = 'or'):
+    def where_or(self, field: str, op='raw', value: Any=[], bool_op: str = 'or'):
         self.where(field, op, value, bool_op)
         return self
 
-    def where_raw(self, query: str, values: list = [], bool_op: str = 'and'):
-        self.where(query, 'raw', values, bool_op)
+    def where_raw(self, query: str, value: Any=[], bool_op: str = 'and'):
+        if type(value) != list:
+            value = [value]
+        self.where(query, 'raw', value, bool_op)
         return self
 
     def where_in(self, field: str, values, bool_op = 'and'):
@@ -136,8 +137,10 @@ class QueryBuilder:
             self._groupby_parts.append(query)
         return self
 
-    def having(self, query: str, values: list = [], bool_op: str = 'and'):
-        self._having_parts.append((query, values, bool_op))
+    def having(self, query: str, value: Any = [], bool_op: str = 'and'):
+        if type(value) != list:
+            value = [value]
+        self._having_parts.append((query, value, bool_op))
         return self
 
     def order_by(self, query: str|list):
@@ -164,7 +167,7 @@ class QueryBuilder:
 
     def _build_select(self):
         if self._kind != QueryKind.select:
-            return self;        
+            return self      
         fields = ', '.join(self._select_parts) if self._select_parts else '*'
         query = f'SELECT {fields} FROM {self._table_parts}'
         self._parts.append(query)
@@ -172,11 +175,21 @@ class QueryBuilder:
 
     def _build_update(self):
         if self._kind != QueryKind.update:
-            return self;
-        fields = ', '.join(self._select_parts) if self._select_parts else '*'
-        query = f'UPDATE {fields} FROM {self._table_parts}'
+            return self
+        if not self._update_parts:
+            return self
+        query = ''
+        is_first = True
+        for part, values in self._update_parts:
+            if is_first:
+                is_first = False
+                query += f'UPDATE {self._table_parts} {part}'
+            else:
+                query += f', {part}'
+            self._bindings.extend(values)
+
         self._parts.append(query)
-        return self
+        return self;
 
     def _build_join(self):
         if not self._join_parts:
@@ -263,6 +276,7 @@ class QueryBuilder:
         self._bindings = []
         (self
             ._build_select()
+            ._build_update()
             ._build_join()
             ._build_where()
             ._build_groupby()
@@ -307,21 +321,21 @@ class QueryBuilder:
         return res        
 
 if __name__ == "__main__":
-    qb = (QueryBuilder().new()
+    (QueryBuilder().new()
         .table('users as u') 
         .join('user_ext as e', 'e.uid = u.user_id')
         .select(['id', 'name'])
         .select("created_at")
         .where('u.id', 1) 
         .where("aBcD=123") 
-        .where_raw('FGHI=%s', ['BNMV'])
+        .where_raw('FGHI=%s', 'BNMV')
         .where('type', '<>', 'bid')
         .where_between('age', 12, 20)
         .where_in('pet', ['dog', 'cat', 'bird'])
         .where_null('note')
         .where_or('dd', '>=', 15)
         .group_by(['age', 'score'])
-        .having('avg(age) > %s', [10])
+        .having('avg(age) > %s', 10)
         .having('sum(age) < %s', [10000])
         # .order_by_rand()
         .order_by('age desc')
@@ -329,6 +343,18 @@ if __name__ == "__main__":
         .offset(99)
         .limit(20)
         .union("select * from my_ext_users where my_uid=%s and tag=%s", [890, 'ext_user'])
+        .dump_build()
+        .dump_fake_sql()
+        .build()
+    )
+
+    (QueryBuilder().new()
+        .table('users')
+        .update('notes', 'my notes')
+        .update('score', 50)
+        .update_raw('set age = %s', 22)
+        .where('id', 123)
+        .limit(1)
         .dump_build()
         .dump_fake_sql()
         .build()
