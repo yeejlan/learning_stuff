@@ -52,6 +52,7 @@ def make_query_builder() -> QueryBuilder:
     return (QueryBuilder.new()
         .table('users')
         .map_query_to_model(UserModel)
+        .use_pool_function(db.get_pool)
     )
 
 async def get_user_by_id(user_id: int) -> UserModel:
