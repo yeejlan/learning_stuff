@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from exception import UserException
 from reply import Reply
 from models import user_model
+from datetime import datetime
 
 router = APIRouter()
 
@@ -33,3 +34,26 @@ async def update_user_status(p: UpdateUserStatusIn):
 async def list_user_status():
     res = user_model.status_map_reversed
     return Reply.success(res)
+
+class CreateUserIn(BaseModel):
+    name: str
+    email: str|None
+    password: str
+    status: user_model.UserStatusStr
+
+    def dict_dump(self):
+        d = self.model_dump()
+        d['status'] = user_model.UserStatus[d['status'].value].value
+        now = datetime.now()
+        d['created_at'] = now
+        d['updated_at'] = now
+        return d
+
+@router.post("/create-user", response_model=user_model.UserModel)
+async def create_user(user: CreateUserIn):
+    user_id = await user_model.create_user(user.dict_dump())
+    if not user_id or user_id < 1:
+        raise UserException('create user failed', Reply.OPERATION_FAILED)
+
+    one = await user_model.get_user_by_id(user_id)
+    return Reply.success(one)

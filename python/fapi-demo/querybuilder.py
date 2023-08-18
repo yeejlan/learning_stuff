@@ -20,6 +20,7 @@ class QueryBuilder:
     _table_parts: str = ''
     _select_parts: list = field(default_factory=list) 
     _update_parts: list = field(default_factory=list)
+    _insert_parts: list = field(default_factory=list)
     _join_parts: list = field(default_factory=list)
     _where_parts: list = field(default_factory=list)
     _groupby_parts: list = field(default_factory=list)
@@ -67,7 +68,20 @@ class QueryBuilder:
         if type(value) != list:
             value = [value]
         self._update_parts.append((query, value))
-        return self        
+        return self
+
+    def insert(self, dict_data: Any):
+        self._kind = QueryKind.insert
+
+        if type(dict_data) == dict:
+            dict_data = [dict_data]
+
+        for one in dict_data:
+            placeholders = ', '.join(['%s'] * len(one))
+            columns = ', '.join(one.keys())
+            sql = "INSERT INTO " + self._table_parts +" ({}) VALUES ({})".format(columns, placeholders)
+            self._insert_parts.append((sql, list(one.values())))
+        return self
 
     def join(self, table: str, on: str, op='join'):
         self._join_parts.append((table, on, op))
@@ -300,6 +314,10 @@ class QueryBuilder:
         return ' '.join(self._parts), self._bindings
 
     def dump_build(self):
+        if self._kind == QueryKind.insert:
+            for sql, values in self._insert_parts:
+                print(sql, values)
+            return self
         p, v = self.build()
         print(p)
         print(v)
@@ -326,6 +344,13 @@ class QueryBuilder:
                 return f"'{escape_string(value)}'"
             return str(value)
 
+        if self._kind == QueryKind.insert:
+            queries = []
+            for sql, values in self._insert_parts:
+                query = re.sub(r'%s', lambda x: quote_str(values.pop(0)), sql)
+                queries.append(query)
+            return "\n".join(queries)
+
         query, values = self.build()
         query = re.sub(r'%s', lambda x: quote_str(values.pop(0)), query)
         return query
@@ -333,7 +358,11 @@ class QueryBuilder:
     def dump_fake_sql(self):
         s = self.build_fake_sql()
         print(s)
-        return self  
+        return self
+    
+    def print_separator(self):
+        print('--------')
+        return self
 
     async def dump_only(self) -> Any:
         self.dump_fake_sql()
@@ -353,6 +382,13 @@ class QueryBuilder:
         query, values = self.build()
         res = await db.update(query, *values, pool_fn=self._pool_fn)
         return res
+
+    async def exec_insert(self) -> int:
+        res = 0
+        for query, values in self._insert_parts:
+            res = await db.insert(query, *values, pool_fn=self._pool_fn)
+        return res
+
 
 if __name__ == "__main__":
     (QueryBuilder().new()
@@ -378,6 +414,7 @@ if __name__ == "__main__":
         .limit(20)
         .union("select * from my_ext_users where my_uid=%s and tag=%s", [890, 'ext_user'])
         .dump_build()
+        .print_separator()
         .dump_fake_sql()
         .build()
     )
@@ -390,8 +427,30 @@ if __name__ == "__main__":
         .where('id', 123)
         .limit(1)
         .dump_build()
+        .print_separator()
         .dump_fake_sql()
         .build()
     )
-
+    print('----insert----')
+    user1 = {
+        'id':1,
+        'name': 'nana',
+    }
+    user2 = {
+        'id':2,
+        'name': 'choi'
+    }
+    user3 = {
+        'id':3,
+        'name': 'allen'
+    }    
+    (QueryBuilder().new()
+        .table('users')
+        .insert(user1)
+        .insert([user2, user3])
+        .dump_build()
+        .print_separator()
+        .dump_fake_sql()
+        .build()
+    )    
 

@@ -76,3 +76,11 @@ async def update_user_status(user_id: int, user_status: int) -> int:
         .exec_update()
     )
     return res
+
+async def create_user(user_data: dict):
+    res = await (make_query_builder()
+        .insert(user_data)
+        # .dump_only()
+        .exec_insert()
+    )
+    return res

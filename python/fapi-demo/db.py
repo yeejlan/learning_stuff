@@ -78,7 +78,7 @@ async def insert(query, *args, pool_fn = get_pool) -> int:
             return cur.lastrowid
 
 
-async def insert_batch(query, *args, pool_fn = get_pool) -> int:
+async def insert_batch(query:list, records:list, pool_fn = get_pool) -> int:
     """
     data = [
         ('Jane','555-001'),
@@ -92,7 +92,7 @@ async def insert_batch(query, *args, pool_fn = get_pool) -> int:
     pool = pool_fn()
     async with pool.acquire() as conn:
         async with conn.cursor(DictCursor) as cur:
-            await cur.executemany(query, args)
+            await cur.executemany(query, records)
             await conn.commit()
             return cur.rowcount
 
