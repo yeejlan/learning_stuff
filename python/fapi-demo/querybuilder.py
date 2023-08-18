@@ -13,7 +13,7 @@ class QueryKind(StrEnum):
 
 @dataclass
 class QueryBuilder:
-    _kind: QueryKind = QueryKind.unset
+    _kind: QueryKind = QueryKind.select
     _parts: list = field(default_factory=list)  #statement parts
     _bindings: list = field(default_factory=list)  #statement bindings
 

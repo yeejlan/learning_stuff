@@ -53,7 +53,6 @@ def make_query_builder() -> QueryBuilder:
 
 async def get_user_by_id(user_id: int) -> UserModel:
     row = await (make_query_builder()
-        .select('*')
         .where('id', user_id)
         .exec_select_one(to=UserModel)
     )
@@ -61,7 +60,6 @@ async def get_user_by_id(user_id: int) -> UserModel:
 
 async def list_users() -> List[UserModel]:
     rows = await (make_query_builder()
-        .select('*')
         .limit(10)
         .exec_select(to=UserModel)
     )
