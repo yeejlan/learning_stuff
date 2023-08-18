@@ -53,7 +53,6 @@ async def get_user_by_id(user_id: int) -> UserModel:
         .table('users')
         .select('*')
         .where('id', user_id)
-        # .dump_fake_sql()
         .exec_select_one(to=UserModel)
     )
     return row
@@ -63,7 +62,6 @@ async def list_users() -> List[UserModel]:
         .table('users')
         .select('*')
         .limit(10)
-        # .dump_fake_sql()
         .exec_select(to=UserModel)
     )
     return rows
@@ -73,7 +71,6 @@ async def update_user_status(user_id: int, user_status: int) -> int:
         .table('users')
         .update('status', user_status)
         .where('id', user_id)
-        # .dump_fake_sql()
         .exec_update()
     )
     return res
