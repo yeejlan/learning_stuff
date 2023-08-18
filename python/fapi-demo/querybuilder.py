@@ -28,9 +28,20 @@ class QueryBuilder:
     _extra_parts: list = field(default_factory=list)
     _union_parts: list = field(default_factory=list)
 
+    _pool_fn: Any = db.get_pool
+    _map_to_model: Any = None
+
     @classmethod
     def new(cls):
         return cls()
+    
+    def use_pool_function(self, pool_fn:Any):
+        self._pool_fn = pool_fn
+        return self
+
+    def map_query_to_model(self, model:Any):
+        self._map_to_model = model
+        return self
 
     def table(self, table: str):
         self._table_parts = table
@@ -322,21 +333,25 @@ class QueryBuilder:
     def dump_fake_sql(self):
         s = self.build_fake_sql()
         print(s)
-        return self        
+        return self  
 
-    async def exec_select_one(self, to: Any, pool_fn = db.get_pool):
+    async def dump_only(self) -> Any:
+        self.dump_fake_sql()
+        return None
+
+    async def exec_select_one(self):
         query, values = self.build()
-        res = await db.select_one(query, *values, pool_fn=pool_fn, to=to)
+        res = await db.select_one(query, *values, pool_fn=self._pool_fn, to=self._map_to_model)
         return res
 
-    async def exec_select(self, to: Any, pool_fn = db.get_pool):
+    async def exec_select(self):
         query, values = self.build()
-        res = await db.select(query, *values, pool_fn=pool_fn, to=to)
+        res = await db.select(query, *values, pool_fn=self._pool_fn, to=self._map_to_model)
         return res
 
-    async def exec_update(self, pool_fn = db.get_pool) -> int:
+    async def exec_update(self) -> int:
         query, values = self.build()
-        res = await db.update(query, *values, pool_fn=pool_fn)
+        res = await db.update(query, *values, pool_fn=self._pool_fn)
         return res
 
 if __name__ == "__main__":

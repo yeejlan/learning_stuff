@@ -49,19 +49,22 @@ class UserModel(BaseModel):
 
 
 def make_query_builder() -> QueryBuilder:
-    return QueryBuilder.new().table('users')
+    return (QueryBuilder.new()
+        .table('users')
+        .map_query_to_model(UserModel)
+    )
 
 async def get_user_by_id(user_id: int) -> UserModel:
     row = await (make_query_builder()
         .where('id', user_id)
-        .exec_select_one(to=UserModel)
+        .exec_select_one()
     )
     return row
 
 async def list_users() -> List[UserModel]:
     rows = await (make_query_builder()
         .limit(10)
-        .exec_select(to=UserModel)
+        .exec_select()
     )
     return rows
  
