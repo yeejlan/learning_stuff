@@ -341,7 +341,8 @@ class QueryBuilder:
     def dump_build(self):
         if self._kind == QueryKind.insert:
             for sql, values in self._insert_parts:
-                print(sql, values)
+                print(sql)
+                print(values)
             return self
         p, v = self.build()
         print(p)
@@ -390,6 +391,8 @@ class QueryBuilder:
         return self
 
     async def dump_only(self) -> Any:
+        self.dump_build()
+        self.print_separator()    
         self.dump_fake_sql()
         return None
 
