@@ -3,6 +3,8 @@ from enum import StrEnum
 from typing import Any, Tuple
 import re
 
+import db
+
 class QueryBuilderException(Exception):
     pass
 
@@ -27,6 +29,10 @@ class QueryBuilder:
     _orderby_parts: list = field(default_factory=list)
     _extra_parts: list = field(default_factory=list)
     _union_parts: list = field(default_factory=list)
+
+    @classmethod
+    def new(cls):
+        return cls()
 
     def table(self, table: str):
         self._table_parts = table
@@ -250,6 +256,12 @@ class QueryBuilder:
         )
 
         return ' '.join(self._parts), self._bindings
+
+    def dump_build(self):
+        p, v = self.build()
+        print(p)
+        print(v)
+        return self
     
 
     def build_fake_sql(self) -> str:
@@ -262,10 +274,23 @@ class QueryBuilder:
         query = re.sub(r'%s', lambda x: quote_str(values.pop(0)), query)
         return query
 
+    def dump_fake_sql(self):
+        s = self.build_fake_sql()
+        print(s)
+        return self        
+
+    async def get_one(self, to: Any, pool_fn = db.get_pool):
+        query, values = self.build()
+        res = await db.select_one(query, *values, pool_fn=pool_fn, to=to)
+        return res
+
+    async def get_all(self, to: Any, pool_fn = db.get_pool):
+        query, values = self.build()
+        res = await db.select(query, *values, pool_fn=pool_fn, to=to)
+        return res        
 
 if __name__ == "__main__":
-    qb = QueryBuilder()
-    q = (qb
+    qb = (QueryBuilder().new()
         .table('users as u') 
         .join('user_ext as e', 'e.uid = u.user_id')
         .select(['id', 'name'])
@@ -287,11 +312,9 @@ if __name__ == "__main__":
         .offset(99)
         .limit(20)
         .union("select * from my_ext_users where my_uid=%s and tag=%s", [890, 'ext_user'])
+        .dump_build()
+        .dump_fake_sql()
+        .build()
     )
 
-    query, values = q.build()
-    sql = q.build_fake_sql()
 
-    print(query)
-    print(values)
-    print(sql)

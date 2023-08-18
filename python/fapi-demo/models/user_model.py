@@ -4,6 +4,8 @@ from pydantic import BaseModel, computed_field
 from datetime import datetime
 from typing import List
 
+from querybuilder import QueryBuilder
+
 class UserStatus(IntEnum):
     normal = 1
     frozen = 2
@@ -47,13 +49,23 @@ class UserModel(BaseModel):
 
 
 async def get_user_by_id(user_id: int) -> UserModel:
-    query = 'select * from users where id = %s'
-    row = await db.select_one(query, user_id, to=UserModel)
+    row = await (QueryBuilder.new()
+        .table('users')
+        .select('*')
+        .where('id', user_id)
+        # .dump_fake_sql()
+        .get_one(to=UserModel)
+    )
     return row
 
 async def list_users() -> List[UserModel]:
-    query = 'select * from users where 1 limit 10'
-    rows = await db.select(query, to=UserModel)
+    rows = await (QueryBuilder.new()
+        .table('users')
+        .select('*')
+        .limit(10)
+        # .dump_fake_sql()
+        .get_all(to=UserModel)
+    )
     return rows
  
 async def update_user_status(user_id: int, user_status: int) -> int:
