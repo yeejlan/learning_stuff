@@ -33,14 +33,14 @@ class Reply(IntEnum):
         return self.value
 
 
-    @staticmethod
-    def success(resp: Any):
-        return Reply.json_response(0, 'success', 'success', resp)
+    @classmethod
+    def success(cls, resp: Any):
+        return cls.json_response(0, 'success', 'success', resp)
 
 
-    @staticmethod
-    def failed(message: str, code: int): 
-        return Reply.json_response(code, message, Reply.code_to_str(code), None)
+    @classmethod
+    def failed(cls, message: str, code: int): 
+        return cls.json_response(code, message, Reply.code_to_str(code), None)
 
     @staticmethod
     def redirect(url: str, status_code: int = 307):
@@ -60,14 +60,14 @@ class Reply(IntEnum):
 
         return c
     
-    @staticmethod
-    def json_response(code:int, message:str, reason:str, data:Any, extra: dict = {}):
+    @classmethod
+    def json_response(cls, code:int, message:str, reason:str, data:Any, extra: dict = {}):
 
-        status_code = Reply.status_code(code)
+        status_code = cls.status_code(code)
         content = {
             'code': code,
             'message': message,
-            'reason': Reply.code_to_str(code),
+            'reason': cls.code_to_str(code),
             'data': data,
         }
         if extra:
