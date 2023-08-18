@@ -13,8 +13,8 @@ async def get_user_by_id(user_id: int):
     row = await user_model.get_user_by_id(user_id)
     return Reply.success(row)
 
-@router.get("/all", response_model=List[user_model.UserModel])
-async def list_all_users():
+@router.get("/list_users", response_model=List[user_model.UserModel])
+async def list_users():
     rows = await user_model.list_users()
     return Reply.success(rows)
 
@@ -29,8 +29,8 @@ async def update_user_status(p: UpdateUserStatusIn):
 
     return Reply.success(res)
 
-@router.get("/list-user-status", response_model=user_model.UserStatusStr)
-async def list_user_status():
+@router.get("/list-all-user-status", response_model=user_model.UserStatusStr)
+async def list_all_user_status():
     res = user_model.status_map_reversed
     return Reply.success(res)
 
