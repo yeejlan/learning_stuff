@@ -47,10 +47,12 @@ class UserModel(BaseModel):
         del out['password']
         return out
 
+def user_table() -> str:
+    return 'users'
 
 async def get_user_by_id(user_id: int) -> UserModel:
     row = await (QueryBuilder.new()
-        .table('users')
+        .table(user_table())
         .select('*')
         .where('id', user_id)
         .exec_select_one(to=UserModel)
@@ -59,7 +61,7 @@ async def get_user_by_id(user_id: int) -> UserModel:
 
 async def list_users() -> List[UserModel]:
     rows = await (QueryBuilder.new()
-        .table('users')
+        .table(user_table())
         .select('*')
         .limit(10)
         .exec_select(to=UserModel)
@@ -68,7 +70,7 @@ async def list_users() -> List[UserModel]:
  
 async def update_user_status(user_id: int, user_status: int) -> int:
     res = await (QueryBuilder.new()
-        .table('users')
+        .table(user_table())
         .update('status', user_status)
         .where('id', user_id)
         .exec_update()
