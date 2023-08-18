@@ -24,9 +24,9 @@ class QueryBuilder:
     _where_parts: list = field(default_factory=list)
     _groupby_parts: list = field(default_factory=list)
     _having_parts: list = field(default_factory=list)
-    _order_parts: list = field(default_factory=list)
+    _orderby_parts: list = field(default_factory=list)
+    _extra_parts: list = field(default_factory=list)
     _union_parts: list = field(default_factory=list)
-    _unionorder_parts: list = field(default_factory=list)
 
     def table(self, table: str):
         self._table_parts = table
@@ -55,8 +55,8 @@ class QueryBuilder:
         self._join_parts.append((table, on, op))
         return self        
     
-    def where(self, field: str, op=None, value=[], bool_op: str = 'and'):
-        if op is None and value == []: #raw query
+    def where(self, field: str, op: Any='raw', value=[], bool_op: str = 'and'):
+        if op == 'raw' and value == []: #raw query
             self._where_parts.append((field, 'raw', [], bool_op))
         elif value == []:
             self._where_parts.append((field, '=', op, bool_op))
@@ -66,7 +66,7 @@ class QueryBuilder:
         return self
 
 
-    def where_or(self, field: str, op=None, value=[], bool_op: str = 'or'):
+    def where_or(self, field: str, op='raw', value=[], bool_op: str = 'or'):
         self.where(field, op, value, bool_op)
         return self
 
@@ -104,6 +104,48 @@ class QueryBuilder:
         self.where_raw(field + ' NOT BETWEEN %s AND %s', [value1, value2], bool_op)
         return self
 
+    def union(self, query: str, values: list = [], op = 'union'):
+        self._union_parts.append((query, values, op))
+        return self
+
+    def union_all(self, query: str, values: list = [], op = 'union all'):
+        self._union_parts.append((query, values, op))
+        return self
+
+    def group_by(self, query: str|list):
+        t = type(query)
+        if t == list:
+            self._groupby_parts.extend(query)
+        else:
+            self._groupby_parts.append(query)
+        return self
+
+    def having(self, query: str, values: list = [], bool_op: str = 'and'):
+        self._having_parts.append((query, values, bool_op))
+        return self
+
+    def order_by(self, query: str|list):
+        t = type(query)
+        if t == list:
+            self._orderby_parts.extend(query)
+        else:
+            self._orderby_parts.append(query)
+        return self
+
+    def order_by_rand(self):
+        self.order_by('RAND()')
+        return self
+    
+    def limit(self, num: int):
+        query = f'LIMIT {num}'
+        self._extra_parts.append(query)
+        return self
+
+    def offset(self, num: int):
+        query = f'OFFSET {num}'
+        self._extra_parts.append(query)
+        return self
+
     def _build_select(self):
         if not self._table_parts:
             raise QueryBuilderException('table is missing')
@@ -119,7 +161,7 @@ class QueryBuilder:
         for table, on, op in self._join_parts:
             query = f'{op.upper()} {table} ON {on}'
             self._parts.append(query)
-        return self        
+        return self
 
     def _build_where(self):
         if not self._where_parts:
@@ -145,6 +187,54 @@ class QueryBuilder:
 
         return self
 
+    def _build_union(self):
+        if not self._union_parts:
+            return self
+        for query, values, op in self._union_parts:
+            query = f'{op.upper()} {query}'
+            self._parts.append(query)
+            self._bindings.extend(values)
+        return self
+
+    def _build_groupby(self):
+        if not self._groupby_parts:
+            return self
+        query = 'GROUP BY ' + ', '.join(self._groupby_parts)
+        self._parts.append(query)
+        return self
+
+    def _build_having(self):
+        if not self._having_parts:
+            return self
+
+        query = ''
+        is_first = True
+        for part, values, bool_op in self._having_parts:
+            if is_first:
+                is_first = False
+                query += f'HAVING {part}'
+            else:
+                query += f' {bool_op.upper()} {part}'
+            self._bindings.extend(values)
+
+        self._parts.append(query)
+
+        return self
+
+    def _build_orderby(self):
+        if not self._orderby_parts:
+            return self
+        query = 'ORDER BY ' + ', '.join(self._orderby_parts)
+        self._parts.append(query)
+        return self
+
+    def _build_extra(self):
+        if not self._extra_parts:
+            return self
+        query = ' '.join(self._extra_parts)
+        self._parts.append(query)
+        return self
+
     def build(self) -> Tuple[str, list]:
         self._parts = []
         self._bindings = []
@@ -152,10 +242,16 @@ class QueryBuilder:
             ._build_select()
             ._build_join()
             ._build_where()
+            ._build_groupby()
+            ._build_having()
+            ._build_orderby()
+            ._build_extra()
+            ._build_union() #stay at bottom
         )
 
         return ' '.join(self._parts), self._bindings
     
+
     def build_fake_sql(self) -> str:
         def quote_str(value):
             if isinstance(value, str):
@@ -176,16 +272,26 @@ if __name__ == "__main__":
         .select("created_at")
         .where('u.id', 1) 
         .where("aBcD=123") 
+        .where_raw('FGHI=%s', ['BNMV'])
         .where('type', '<>', 'bid')
         .where_between('age', 12, 20)
-        .where_in('pet', ['dog', 'cat'])
+        .where_in('pet', ['dog', 'cat', 'bird'])
         .where_null('note')
         .where_or('dd', '>=', 15)
+        .group_by(['age', 'score'])
+        .having('avg(age) > %s', [10])
+        .having('sum(age) < %s', [10000])
+        # .order_by_rand()
+        .order_by('age desc')
+        .order_by(['score desc', 'create_at desc'])
+        .offset(99)
+        .limit(20)
+        .union("select * from my_ext_users where my_uid=%s and tag=%s", [890, 'ext_user'])
     )
 
     query, values = q.build()
     sql = q.build_fake_sql()
 
-    print(query) 
+    print(query)
     print(values)
     print(sql)
