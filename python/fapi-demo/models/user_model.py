@@ -54,7 +54,7 @@ async def get_user_by_id(user_id: int) -> UserModel:
         .select('*')
         .where('id', user_id)
         # .dump_fake_sql()
-        .get_one(to=UserModel)
+        .exec_select_one(to=UserModel)
     )
     return row
 
@@ -64,11 +64,16 @@ async def list_users() -> List[UserModel]:
         .select('*')
         .limit(10)
         # .dump_fake_sql()
-        .get_all(to=UserModel)
+        .exec_select(to=UserModel)
     )
     return rows
  
 async def update_user_status(user_id: int, user_status: int) -> int:
-    query = 'update users set status = %s where id= %s'
-    res = await db.update(query, user_status, user_id)
+    res = await (QueryBuilder.new()
+        .table('users')
+        .update('status', user_status)
+        .where('id', user_id)
+        # .dump_fake_sql()
+        .exec_update()
+    )
     return res

@@ -64,7 +64,7 @@ async def select(query, *args, pool_fn = get_pool, to: Any):
             return rows
 
 
-async def insert(query, *args, pool_fn = get_pool):
+async def insert(query, *args, pool_fn = get_pool) -> int:
     """
     stmt = "INSERT INTO employees (name, phone)
         VALUES ('%s','%s')"
@@ -78,7 +78,7 @@ async def insert(query, *args, pool_fn = get_pool):
             return cur.lastrowid
 
 
-async def insert_batch(query, *args, pool_fn = get_pool):
+async def insert_batch(query, *args, pool_fn = get_pool) -> int:
     """
     data = [
         ('Jane','555-001'),
@@ -97,7 +97,7 @@ async def insert_batch(query, *args, pool_fn = get_pool):
             return cur.rowcount
 
 
-async def update(query, *args, pool_fn = get_pool):
+async def update(query, *args, pool_fn = get_pool) -> int:
     """
     stmt = "UPDATE employees (name, phone)
         VALUES ('%s','%s') WHERE id = %s"

@@ -324,14 +324,19 @@ class QueryBuilder:
         print(s)
         return self        
 
-    async def get_one(self, to: Any, pool_fn = db.get_pool):
+    async def exec_select_one(self, to: Any, pool_fn = db.get_pool):
         query, values = self.build()
         res = await db.select_one(query, *values, pool_fn=pool_fn, to=to)
         return res
 
-    async def get_all(self, to: Any, pool_fn = db.get_pool):
+    async def exec_select(self, to: Any, pool_fn = db.get_pool):
         query, values = self.build()
         res = await db.select(query, *values, pool_fn=pool_fn, to=to)
+        return res
+
+    async def exec_update(self, pool_fn = db.get_pool) -> int:
+        query, values = self.build()
+        res = await db.update(query, *values, pool_fn=pool_fn)
         return res
 
 if __name__ == "__main__":
