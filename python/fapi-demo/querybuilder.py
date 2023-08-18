@@ -19,6 +19,7 @@ class QueryBuilder:
 
     _table_parts: str = ''
     _select_parts: list = field(default_factory=list) 
+    _update_parts: list = field(default_factory=list)
     _join_parts: list = field(default_factory=list)
     _where_parts: list = field(default_factory=list)
     _groupby_parts: list = field(default_factory=list)
@@ -45,6 +46,19 @@ class QueryBuilder:
 
         return self
 
+    def update(self, field: str, value: Any = []):
+        query = f'SET {field} = %s'
+        self.update_raw(query, value)
+        return self
+
+    def update_raw(self, query: str, value:Any = []):
+        self._update_parts.append(query)
+        if type(value) == list:
+            self._bindings.extend(value)
+        else:
+            self._bindings.append(value)
+        return self        
+
     def join(self, table: str, on: str, op='join'):
         self._join_parts.append((table, on, op))
         return self
@@ -58,8 +72,8 @@ class QueryBuilder:
         return self        
     
     def where(self, field: str, op: Any='raw', value=[], bool_op: str = 'and'):
-        if op == 'raw' and value == []: #raw query
-            self._where_parts.append((field, 'raw', [], bool_op))
+        if op == 'raw': #raw query
+            self._where_parts.append((field, 'raw', value, bool_op))
         elif value == []:
             self._where_parts.append((field, '=', op, bool_op))
         else: 
@@ -149,8 +163,18 @@ class QueryBuilder:
         return self
 
     def _build_select(self):
+        if self._kind != QueryKind.select:
+            return self;        
         fields = ', '.join(self._select_parts) if self._select_parts else '*'
         query = f'SELECT {fields} FROM {self._table_parts}'
+        self._parts.append(query)
+        return self
+
+    def _build_update(self):
+        if self._kind != QueryKind.update:
+            return self;
+        fields = ', '.join(self._select_parts) if self._select_parts else '*'
+        query = f'UPDATE {fields} FROM {self._table_parts}'
         self._parts.append(query)
         return self
 
