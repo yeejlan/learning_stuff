@@ -308,7 +308,8 @@ class QueryBuilder:
                     escaped.append(escapes[char])
                 else:
                     escaped.append(char)
-            return "".join(escaped)        
+            return "".join(escaped)
+
         def quote_str(value):
             if isinstance(value, str):
                 return f"'{escape_string(value)}'"
@@ -331,7 +332,7 @@ class QueryBuilder:
     async def get_all(self, to: Any, pool_fn = db.get_pool):
         query, values = self.build()
         res = await db.select(query, *values, pool_fn=pool_fn, to=to)
-        return res        
+        return res
 
 if __name__ == "__main__":
     (QueryBuilder().new()
