@@ -35,14 +35,14 @@ class CreateUserIn(BaseModel):
     password: str
     status: user_model.UserStatusStr
 
-    def dict_dump(self):
+    def as_dict(self):
         d = self.model_dump()
         d['status'] = int(d['status'])
         return d
 
 @router.post("/create-user", response_model=user_model.UserModel)
 async def create_user(user: CreateUserIn):
-    one = await user_model.create_user(user.dict_dump())
+    one = await user_model.create_user(user.as_dict())
     return Reply.success(one)
 
 class DeleteUserIn(BaseModel):
