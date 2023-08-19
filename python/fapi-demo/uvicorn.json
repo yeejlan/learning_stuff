@@ -1,0 +1,24 @@
+ 
+{
+    "version": 1,
+    "disable_existing_loggers": true,
+    "formatters": {
+        "uvicorn_fmt": {
+            "()": "uvicorn.logging.DefaultFormatter",
+            "fmt": "%(asctime)s [%(levelname)s] %(message)s",
+            "datefmt": "%Y-%m-%dT%H:%M:%S%z",
+            "use_colors": false
+        }
+    },
+    "handlers": {
+        "uvicorn_handler": {
+            "formatter": "uvicorn_fmt",
+            "class": "logging.handlers.TimedRotatingFileHandler",
+            "filename": "./storage/logs/uvicorn.log",
+            "delay": true
+        }
+    },
+    "loggers": {
+        "uvicorn.error": {"handlers": ["uvicorn_handler"], "level": "INFO"}
+    }
+}
