@@ -58,44 +58,44 @@ class UserModel(BaseModel):
         return out
 
 
-def make_query_builder() -> QueryBuilder:
+def makeQueryBuilder() -> QueryBuilder:
     return (QueryBuilder.new()
         .table('users')
         .map_query_to_model(UserModel)
         .use_pool_function(db.get_pool)
     )
 
-async def get_user_by_id(user_id: int) -> UserModel:
-    row = await (make_query_builder()
+async def getUserById(user_id: int) -> UserModel:
+    row = await (makeQueryBuilder()
         .where('id', user_id)
         .exec_select_one()
     )
     return row
 
-async def list_users() -> List[UserModel]:
-    rows = await (make_query_builder()
+async def listUsers() -> List[UserModel]:
+    rows = await (makeQueryBuilder()
         .limit(10)
         .exec_select()
     )
     return rows
  
-async def update_user_status(user_id: int, user_status: int) -> int:
-    res = await (make_query_builder()
+async def updateUserStatus(user_id: int, user_status: int) -> int:
+    res = await (makeQueryBuilder()
         .update('status', user_status)
         .where('id', user_id)
         .exec_update()
     )
     return res
 
-async def create_user(user_data: dict):
-    one = await (make_query_builder()
+async def createUser(user_data: dict):
+    one = await (makeQueryBuilder()
         .insert_with_timestamp(user_data)
         .exec_insert_and_retrieve()
     )
     return one
 
-async def delete_user(user_id: int):
-    res = await (make_query_builder()
+async def deleteUser(user_id: int):
+    res = await (makeQueryBuilder()
         .delete()
         .where('id', user_id)
         .exec_delete()
