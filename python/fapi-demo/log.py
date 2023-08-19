@@ -41,7 +41,6 @@ class CustomLogger(logging.Logger):
         super(CustomLogger, self)._log(level, msg, args, exc_info, extra)
 
 logger_dict: dict[str, logging.Logger] = {}
-logger_channels = []
 
 
 def make_custome_logger(channel = 'app'):
