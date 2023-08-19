@@ -5,7 +5,7 @@ from fastapi.params import Body
 from pydantic import BaseModel, Field
 from reply import Reply
 from exception import ModelException, UserException
-import log
+from log import getLogger
 
 router = APIRouter()
 
@@ -134,16 +134,13 @@ async def list_all_errors():
 
 @router.get('/log')
 async def log_test():
-    """
-    Log test.
-    """ 
-    logger = getLogger()
-    logger.info("my test info")
-    logger.error("my test error info")
-    return "check stdout please."  
+    
+    getLogger('err500').error('my app has a error')
+    getLogger('my').warning('something dose not work')
+    getLogger('app').info('my app is running')
 
-def getLogger():
-    return Reply.get_logger(__name__)
+    return "check log files please."  
+
 
 
 from fastapi import BackgroundTasks, Depends

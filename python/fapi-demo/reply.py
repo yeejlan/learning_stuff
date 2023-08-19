@@ -80,11 +80,7 @@ class Reply(IntEnum):
             content=content,
             media_type='application/json',
         )
-    
-    @staticmethod
-    def get_logger(channel_name: str) -> Logger:
-        return log.get_logger(channel_name)
-    
+
 
 reply_map = {member.name.lower(): member.value for member in Reply}
 reply_map_reversed = {v: k for k, v in reply_map.items()}
