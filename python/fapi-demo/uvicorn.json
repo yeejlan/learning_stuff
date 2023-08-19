@@ -13,7 +13,7 @@
     "handlers": {
         "uvicorn_handler": {
             "formatter": "uvicorn_fmt",
-            "class": "logging.handlers.TimedRotatingFileHandler",
+            "class": "logging.FileHandler",
             "filename": "./storage/logs/uvicorn.log",
             "delay": true
         }

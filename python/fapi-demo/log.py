@@ -1,6 +1,5 @@
 from datetime import datetime
 import logging
-from logging.handlers import TimedRotatingFileHandler
 from contextvars import ContextVar
 
 
@@ -18,7 +17,7 @@ class CustomLogger(logging.Logger):
         handler.setFormatter(formatter)
         self.addHandler(handler)
         # add file handler
-        file_handler = TimedRotatingFileHandler('storage/logs/app.log', when='midnight', delay=True)
+        file_handler = logging.FileHandler('storage/logs/app.log')
         file_handler.setFormatter(formatter)
         self.addHandler(file_handler)
 
