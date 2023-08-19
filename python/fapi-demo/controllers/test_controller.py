@@ -1,3 +1,4 @@
+import asyncio
 from typing import Generator
 from fastapi import APIRouter, Depends
 from fastapi.params import Body
@@ -161,3 +162,8 @@ async def send_notification(
 
 def send_message(msg: str):
     getLogger().info("message sent: " + msg)
+
+@router.get("/sleep-10-seconds")
+async def sleep_10_seconds():
+    await asyncio.sleep(10)
+    return {"message": "Done sleeping."}
