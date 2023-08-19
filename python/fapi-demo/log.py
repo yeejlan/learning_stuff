@@ -47,7 +47,7 @@ logger_channels = []
 def make_custome_logger(channel = 'app'):
     logger_name = channel
     logger= logging.getLogger(logger_name)
-    logger.setLevel(logging.INFO)    
+    logger.setLevel(logging.DEBUG)    
     return logger
 
 def build_initial_loggers(logger_channels: list[str] = ['app', 'err500']):
@@ -59,7 +59,7 @@ def build_initial_loggers(logger_channels: list[str] = ['app', 'err500']):
 
     logging.setLoggerClass(old_logger_clazz)
 
-def getLogger(channel_name: str) -> logging.Logger:
+def get_logger(channel_name: str = 'app') -> logging.Logger:
     channel.set(channel_name)
     if channel_name in logger_dict:
         return logger_dict[channel_name]
