@@ -135,7 +135,7 @@ async def list_all_errors():
 @router.get('/log')
 async def log_test():
     
-    get_logger('err500').error('my app has a error')
+    get_logger('err500').error('my app has an error')
     get_logger('my').warning('something dose not work')
     getLogger().info('log_test() is done')
 
