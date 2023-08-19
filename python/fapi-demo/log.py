@@ -4,10 +4,11 @@ from logging.handlers import TimedRotatingFileHandler
 from contextvars import ContextVar
 
 
-request_id = ContextVar('request_id', default='0000')  
+request_id = ContextVar('request_id', default='0000')
+uid = ContextVar('uid', default=0)
 channel = ContextVar('channel', default='app')
 
-CUSTOM_FORMAT = '%(iso8601)s [%(channel)s] [%(levelname)s] %(message)s {request_id=%(request_id)s}'
+CUSTOM_FORMAT = '%(iso8601)s [%(channel)s] [%(levelname)s] %(message)s {uid=%(uid)s, request_id=%(request_id)s}'
 
 class CustomLogger(logging.Logger):
     def __init__(self, name):
@@ -25,6 +26,7 @@ class CustomLogger(logging.Logger):
         if extra is None:
             extra = {
                 'request_id': request_id.get(),
+                'uid': uid.get(),
                 'channel': channel.get(),
                 'iso8601': datetime.utcnow().isoformat(),
             }
