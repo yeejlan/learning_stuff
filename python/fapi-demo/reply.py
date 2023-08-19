@@ -61,7 +61,7 @@ class Reply(IntEnum):
         return c
     
     @classmethod
-    def json_response(cls, code:int, message:str, reason:str, data:Any, extra: dict = {}):
+    def json_response(cls, code:int, message:str, reason:str, data:Any, extra: dict[str, Any] = {}):
 
         status_code = cls.status_code(code)
         content = {

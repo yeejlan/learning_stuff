@@ -37,7 +37,10 @@ async def shutdown():
 async def user_exception_handler(request: Request, ex: UserException):
     code = ex.code
     message = ex.message
-    return Reply.json_response(code, message, Reply.code_to_str(code), None)
+    at = ex.at
+    return Reply.json_response(code, message, Reply.code_to_str(code), None, {
+        'at': str(at),
+    })
 
 
 @app.exception_handler(RequestValidationError)
@@ -49,7 +52,7 @@ async def validation_exception_handler(request, ex):
     del err['msg']
     del err['input']
     del err['url']
-    
+
     return Reply.json_response(code, message, Reply.code_to_str(code), None, {
         'error': err,
     })
@@ -58,9 +61,16 @@ async def validation_exception_handler(request, ex):
 async def default_exception_handler(request: Request, ex: Exception):
     message = type(ex).__name__ + ': ' +  str(ex)
     code = 500
+
+    at = ''
+    if hasattr(ex, 'at'):
+        at = str(ex.at) # type: ignore
+   
     #log error
-    getLogger().error(message)
-    return Reply.json_response(code, message, Reply.code_to_str(code), None)
+    getLogger().error(message + ' @' + str(at))
+    return Reply.json_response(code, message, Reply.code_to_str(code), None, {
+        'at': at,
+    })
 
 def getLogger() -> Logger: 
     return log.get_logger('err500')

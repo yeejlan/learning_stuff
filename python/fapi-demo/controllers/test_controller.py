@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends
 from fastapi.params import Body
 from pydantic import BaseModel, Field
 from reply import Reply
-from exception import UserException
+from exception import ModelException, UserException
 import log
 
 router = APIRouter()
@@ -48,7 +48,7 @@ def test_unknown_error():
     }    
     ```
     """    
-    raise Exception("this is unknown error")
+    raise ModelException("this is unknown error")
 
 class MyPayload(BaseModel):
     name: str = Field(None, min_length=3, max_length=20)
