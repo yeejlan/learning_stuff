@@ -17,8 +17,8 @@ class CustomLogger(logging.Logger):
         handler = logging.StreamHandler() 
         handler.setFormatter(formatter)
         self.addHandler(handler)
-        #add file handler
-        file_handler = TimedRotatingFileHandler('storage/logs/uvicorn.log', when='midnight', delay=True)
+        # add file handler
+        file_handler = TimedRotatingFileHandler('storage/logs/app.log', when='midnight', delay=True)
         file_handler.setFormatter(formatter)
         self.addHandler(file_handler)
 
