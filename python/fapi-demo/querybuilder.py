@@ -418,10 +418,10 @@ class QueryBuilder:
         return res
 
     async def exec_insert_and_retrieve(self, primary_key='id') -> Any:
-        res = await self.exec_insert()
-        if res < 1:
+        insert_id = await self.exec_insert()
+        if insert_id < 1:
             return None
-        one = await self.select('*').where(primary_key, res).exec_select_one()
+        one = await self.select('*').where(primary_key, insert_id).exec_select_one()
         return one
 
     async def exec_delete(self) -> int:
