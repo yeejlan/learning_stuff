@@ -8,4 +8,4 @@ RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt -i https://pyp
 
 COPY ./ /app
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80", "--reload" "--log-config" "uvicorn.json" "--no-access-log"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80", "--reload", "--log-config", "uvicorn.json", "--no-access-log"]
