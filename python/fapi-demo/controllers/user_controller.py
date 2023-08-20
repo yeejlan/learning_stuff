@@ -55,8 +55,14 @@ async def delete_user(p: DeleteUserIn):
     res = await user_model.deleteUser(p.user_id)
     return Reply.success(res)
 
+class GetAuthorizedUserOut(BaseModel):
+    authorized_user: user_model.UserModel
 
-@router.get("/get-authorized-user", response_model=user_model.UserModel)
+@router.get("/get-authorized-user", response_model=GetAuthorizedUserOut)
 async def get_authorized_user(user = Depends(deps.getAuthorizedUser)):
-    
-    return Reply.success(user)
+
+    authorized = {
+        'authorized_user': user,
+    }
+    out = GetAuthorizedUserOut(**authorized)
+    return Reply.success(out)
