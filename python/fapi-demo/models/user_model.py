@@ -58,7 +58,7 @@ class UserModel(BaseModel):
         return out
 
 
-def makeQueryBuilder() -> QueryBuilder:
+def make_query_builder() -> QueryBuilder:
     return (QueryBuilder.new()
         .table('users')
         .map_query_to_model(UserModel)
@@ -66,21 +66,21 @@ def makeQueryBuilder() -> QueryBuilder:
     )
 
 async def getUserById(user_id: int) -> UserModel:
-    row = await (makeQueryBuilder()
+    row = await (make_query_builder()
         .where('id', user_id)
         .exec_select_one()
     )
     return row
 
 async def listUsers() -> List[UserModel]:
-    rows = await (makeQueryBuilder()
+    rows = await (make_query_builder()
         .limit(10)
         .exec_select()
     )
     return rows
  
 async def updateUserStatus(user_id: int, user_status: int) -> int:
-    res = await (makeQueryBuilder()
+    res = await (make_query_builder()
         .update('status', user_status)
         .where('id', user_id)
         .exec_update()
@@ -88,14 +88,14 @@ async def updateUserStatus(user_id: int, user_status: int) -> int:
     return res
 
 async def createUser(user_data: dict):
-    one = await (makeQueryBuilder()
+    one = await (make_query_builder()
         .insert_with_timestamp(user_data)
         .exec_insert_and_retrieve()
     )
     return one
 
 async def deleteUser(user_id: int):
-    res = await (makeQueryBuilder()
+    res = await (make_query_builder()
         .delete()
         .where('id', user_id)
         .exec_delete()
