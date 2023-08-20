@@ -8,3 +8,4 @@ reload = True
 loglevel = 'info'
 errorlog = get_daily_log_name('gunicorn')
 
+pidfile = 'storage/gunicorn_pid'
