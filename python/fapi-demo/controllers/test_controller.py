@@ -165,3 +165,14 @@ def send_message(msg: str):
 async def sleep_10_seconds():
     await asyncio.sleep(10)
     return {"message": "Done sleeping."}
+
+async def get_user_id():
+    try:
+        yield 1 
+    finally:
+        print("clean up")
+
+@router.get("/test-generator-with-exception")
+async def test_generator_with_exception(id=Depends(get_user_id)):
+    print("id=" + str(id))
+    raise Exception("Error!")
