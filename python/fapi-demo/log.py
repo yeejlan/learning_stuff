@@ -26,7 +26,7 @@ class CustomLogger(logging.Logger):
 
         # add file handler
         log_file = get_daily_log_name(channel = name)
-        file_handler = logging.FileHandler(log_file)
+        file_handler = logging.FileHandler(log_file, delay=True)
         file_handler.setFormatter(custom_formatter)
         self.addHandler(file_handler)
 

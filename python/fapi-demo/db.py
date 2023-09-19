@@ -15,6 +15,7 @@ async def create_pool():
     password = os.getenv('DB_PASSWORD', '')
     name = os.getenv('DB_NAME', 'dev')
     echo = bool(os.getenv('DB_ECHO', False))
+    connect_timeout = int(os.getenv('DB_CONNECT_TIMEOUT', 5))
     pool = await aiomysql.create_pool(
         host=host, 
         port=port,
@@ -22,6 +23,7 @@ async def create_pool():
         password=password,
         db=name,
         echo=echo,
+        connect_timeout=connect_timeout,
     )
     return pool
 
