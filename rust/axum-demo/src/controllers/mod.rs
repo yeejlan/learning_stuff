@@ -23,6 +23,7 @@ pub fn build_routers() -> Vec<Router> {
         action!(get_home__index),
         action!(get_post_user__index),
         action!(get_home__hi),
+        action!(get_home__err),
         action!(get_home__sleep),
         action!(get_home__sleep2),
         // action!(home__say_hello),
@@ -32,6 +33,11 @@ pub fn build_routers() -> Vec<Router> {
 // #[axum::debug_handler]
 async fn get_home__hi() -> reply::Result<Reply> {
     Reply::result_success("this is hello message for testing")
+}
+
+async fn get_home__err() -> reply::Result<Reply> {
+    let s = "this is error message".to_string();
+    Reply::result_failed(&s, Reply::BAD_RESULT)
 }
 
 async fn get_home__sleep() -> Reply {

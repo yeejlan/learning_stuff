@@ -82,7 +82,7 @@ impl Reply {
         Ok(Self::success(resp))
     }
     
-    pub fn failed(message: &'static str, code: i32) -> Self {
+    pub fn failed(message: &str, code: i32) -> Self {
         let data = json!({
             "code": code,
             "message": message,
@@ -93,11 +93,11 @@ impl Reply {
         Reply(data, code)
     }
 
-    pub fn result_failed(message: &'static str, code: i32) -> Result<Self> {
+    pub fn result_failed(message: &str, code: i32) -> Result<Self> {
         Ok(Self::failed(message, code))
     }
 
-    pub fn result_error(message: &'static str, code: i32) -> Result<Self> {
+    pub fn result_error(message: &str, code: i32) -> Result<Self> {
         Err(Exception::from((code, message)))
     }
 
