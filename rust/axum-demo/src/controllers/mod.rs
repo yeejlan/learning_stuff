@@ -6,7 +6,7 @@ use axum::{
     Router,
 };
 
-use crate::{action, reply::Reply};
+use crate::{action, reply::{self, Reply}};
 
 
 
@@ -30,8 +30,8 @@ pub fn build_routers() -> Vec<Router> {
 }
 
 // #[axum::debug_handler]
-async fn get_home__hi() -> Reply {
-    Reply::success("this is hello message for testing")
+async fn get_home__hi() -> reply::Result<Reply> {
+    Reply::result_success("this is hello message for testing")
 }
 
 async fn get_home__sleep() -> Reply {

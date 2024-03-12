@@ -9,6 +9,7 @@ use crate::exception::Exception;
 use std::collections::BTreeMap;
 
 pub struct Reply(Value, i32);
+pub type Result<T> = std::result::Result<T, Exception>;
 
 static MAP: Lazy<BTreeMap<i32, &'static str>> = Lazy::new(|| {
     Reply::get_map()
@@ -77,7 +78,7 @@ impl Reply {
         Reply(data, 0)
     }
 
-    pub fn result_success<T: Serialize>(resp: T) -> Result<Self, Exception> {
+    pub fn result_success<T: Serialize>(resp: T) -> Result<Self> {
         Ok(Self::success(resp))
     }
     
@@ -92,11 +93,11 @@ impl Reply {
         Reply(data, code)
     }
 
-    pub fn result_failed(message: &'static str, code: i32) -> Result<Self, Exception> {
+    pub fn result_failed(message: &'static str, code: i32) -> Result<Self> {
         Ok(Self::failed(message, code))
     }
 
-    pub fn result_error(message: &'static str, code: i32) -> Result<Self, Exception> {
+    pub fn result_error(message: &'static str, code: i32) -> Result<Self> {
         Err(Exception::from((code, message)))
     }
 

@@ -3,7 +3,7 @@ use std::collections::HashMap;
 
 use axum::{Router, routing::post, extract::{Query, Path}, http::{HeaderMap, Method}};
 
-use crate::{exception::Exception, reply::Reply};
+use crate::{exception::Exception, reply::{self, Reply}};
 
 use super::{hippo::{HippoRequest, HippoMessage, HippoMsgType}, get_hippo_pool};
 
@@ -27,7 +27,7 @@ async fn hippo_handler (
     headers: HeaderMap,
     Path(path): Path<Vec<String>>, 
     Query(query): Query<HashMap<String, String>>,
-    body: String) -> Result<HippoMessage, Exception>
+    body: String) -> reply::Result<HippoMessage>
 {
 
     let path = path.join("/");

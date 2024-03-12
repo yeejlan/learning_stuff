@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use axum::{Router, routing::post, extract::{Query, Path}, http::{HeaderMap, Method}};
 use pyo3::{prelude::*, types::{PyString, PyTuple}};
 
-use crate::{spy::{spy::SpyRequest, ope}, exception::Exception, err_wrap};
+use crate::{err_wrap, exception::Exception, reply, spy::{ope, spy::SpyRequest}};
 
 use super::spy::SpyResponse;
 
@@ -20,7 +20,7 @@ async fn py_handler(
     headers: HeaderMap,
     Path(path): Path<Vec<String>>, 
     Query(query): Query<HashMap<String, String>>,
-    body: String) -> Result<SpyResponse, Exception>
+    body: String) -> reply::Result<SpyResponse>
 {
 
     let path = path.join("/");
@@ -85,14 +85,6 @@ async fn py_handler(
 
     response
 }
-
-// fn handle_request_via_operative(req: SpyRequest) -> PyResult<&'static PyAny> {
-
-//     Python::with_gil(|py| {
-//         call_op1(py, "operative", "handle_request", (req,))
-//     })
-// }
-
 
 pub fn call_op0<N>(py: Python<'_>, py_mod: impl IntoPy<Py<PyString>>, 
     py_attr: impl IntoPy<Py<PyString>>) -> PyResult<&PyAny>

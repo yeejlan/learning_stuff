@@ -31,7 +31,7 @@ pub fn hippo_initialize() -> () {
 }
 
 pub fn get_hippo_pool() -> &'static HippoPool {
-    HIPPO_POOL.get().unwrap().clone()
+    HIPPO_POOL.get().unwrap()
 }
 
 pub fn get_hippo_config() -> Arc<HippoConfig> {
