@@ -73,6 +73,8 @@ pub struct Exception {
     pub root: Option<Box<dyn std::error::Error>>,
 }
 
+pub type Result<T> = std::result::Result<T, Exception>;
+
 impl From<String> for Exception {
     fn from(e: String) -> Self {
         Self{code:500, message:e, ..Default::default()}
