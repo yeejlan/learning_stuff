@@ -1,6 +1,6 @@
 from enum import Enum, IntEnum
 import db
-from pydantic import BaseModel, computed_field
+from pydantic import BaseModel, computed_field, Field
 from datetime import datetime
 from typing import List, Optional
 
@@ -16,9 +16,9 @@ class Refund(BaseModel):
     amount: str
 
 class Product(BaseModel):
-    name: str
-    asset: str
-    redeem_at: datetime
+    name: str = Field(..., description="Product name, only ASCII allowed")
+    asset: str = Field(..., description="Product asset, USD EUR etc")
+    redeem_at: datetime = Field(..., description="Expected redeem time")
 
 class Detail(BaseModel):
     redeem: Optional[Redeem] = None
