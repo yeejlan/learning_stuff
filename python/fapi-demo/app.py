@@ -25,6 +25,18 @@ async def add_request_id(request: Request, call_next):
     # response.headers['request-id'] = uuid_str
     return response
 
+# @app.middleware("commonparams")
+# class CommonParamsMiddleware(request: Request, call_next):
+#     async def dispatch(self, request: Request, call_next):
+#         _unique_id = request.query_params.get("_unique_id")
+#         _skip_auth = request.query_params.get("_skip_auth", "false").lower() == "true"
+        
+#         request.state._unique_id = _unique_id
+#         request.state._skip_auth = _skip_auth
+        
+#         response = await call_next(request)
+#         return response
+
 @app.on_event("startup")
 async def startup():
     db.pool = await db.create_pool()

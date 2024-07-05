@@ -20,18 +20,18 @@ async def list_users():
     rows = await user_model.listUsers()
     return Reply.success(rows)
 
-class UpdateUserStatusIn(BaseModel):
+class UpdateUserStatusRequest(BaseModel):
     user_id: int
     user_status: user_model.UserStatusStr
 
 @router.post("/update-user-status", response_model=int)
-async def update_user_status(p: UpdateUserStatusIn):
-    status = int(p.user_status)
-    res = await user_model.updateUserStatus(p.user_id, status)
+async def update_user_status(req: UpdateUserStatusRequest):
+    status = int(req.user_status)
+    res = await user_model.updateUserStatus(req.user_id, status)
 
     return Reply.success(res)
 
-class CreateUserIn(BaseModel):
+class CreateUserRequest(BaseModel):
     name: str
     email: str|None
     password: str
@@ -43,26 +43,26 @@ class CreateUserIn(BaseModel):
         return d
 
 @router.post("/create-user", response_model=user_model.UserModel)
-async def create_user(user: CreateUserIn):
+async def create_user(user: CreateUserRequest):
     one = await user_model.createUser(user.as_dict())
     return Reply.success(one)
 
-class DeleteUserIn(BaseModel):
+class DeleteUserRequest(BaseModel):
     user_id: int
 
 @router.post("/delete-user", response_model=int)
-async def delete_user(p: DeleteUserIn):
+async def delete_user(p: DeleteUserRequest):
     res = await user_model.deleteUser(p.user_id)
     return Reply.success(res)
 
-class GetAuthorizedUserOut(BaseModel):
+class GetAuthorizedUserResponse(BaseModel):
     authorized_user: user_model.UserModel
 
-@router.get("/get-authorized-user", response_model=GetAuthorizedUserOut)
+@router.get("/get-authorized-user", response_model=GetAuthorizedUserResponse)
 async def get_authorized_user(user = Depends(deps.getAuthorizedUser)):
 
     authorized = {
         'authorized_user': user,
     }
-    out = GetAuthorizedUserOut(**authorized)
+    out = GetAuthorizedUserResponse(**authorized)
     return Reply.success(out)
