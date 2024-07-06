@@ -1,4 +1,4 @@
-from enum import Enum, IntEnum
+from enum import IntEnum, StrEnum
 import db
 from pydantic import BaseModel, computed_field
 from datetime import datetime
@@ -11,16 +11,13 @@ class UserStatus(IntEnum):
     frozen = 2
     closed = 3
 
-class UserStatusStr(str, Enum):
+class UserStatusStr(StrEnum):
     normal = 'normal'
     frozen = 'frozen'
     closed = 'closed'
 
     def __int__(self):
         return UserStatus[self.name].value
-    
-    def __str__(self):
-        return self.value
 
     @classmethod
     def from_int(cls, value):
