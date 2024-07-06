@@ -11,31 +11,20 @@ class UserStatus(IntEnum):
     frozen = 2
     closed = 3
 
+class UserStatusStr(str, Enum):
+    normal = 'normal'
+    frozen = 'frozen'
+    closed = 'closed'
+
     def __int__(self):
-        return self.value
-
-    def __str__(self):
-        return self.name
-
-status_map = {member.name: member.value for member in UserStatus}
-status_map_reversed = {v: k for k, v in status_map.items()}
-
-def make_status_enum():
-    attrs = {val: val for val in status_map_reversed.values()}
-    NewEnum = Enum('UserStatusStr', attrs)
-
+        return UserStatus[self.name].value
+    
     def __str__(self):
         return self.value
-    
-    def __int__(self):
-        return status_map[self.value]
-    
-    NewEnum.__str__ = __str__
-    NewEnum.__int__ = __int__
-    
-    return NewEnum
 
-UserStatusStr = make_status_enum()
+    @classmethod
+    def from_int(cls, value):
+        return cls(UserStatus(value).name)
 
 class UserModel(BaseModel):
     id: int
@@ -50,7 +39,7 @@ class UserModel(BaseModel):
     @computed_field
     @property
     def status_str(self) -> UserStatusStr:  # type: ignore
-        return str(self.status)
+        return UserStatusStr.from_int(self.status)
 
     def api_dump(self):
         out = self.model_dump()
