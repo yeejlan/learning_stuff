@@ -35,12 +35,11 @@ class UserModel(BaseModel):
 
     @computed_field
     @property
-    def status_str(self) -> UserStatusStr:  # type: ignore
+    def status_str(self) -> UserStatusStr: 
         return UserStatusStr.from_int(self.status)
 
     def api_dump(self):
-        out = self.model_dump()
-        del out['password']
+        out = self.model_dump(exclude={'password'})
         return out
 
 

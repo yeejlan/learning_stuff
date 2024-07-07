@@ -2,6 +2,7 @@ from datetime import datetime
 from enum import IntEnum
 import json
 from logging import Logger
+from datetime import timezone
 from typing import Any
 from fastapi import Response
 
@@ -89,7 +90,7 @@ class MyJsonEncoder(json.JSONEncoder):
 
     def default(self, o):
         if isinstance(o, datetime):
-            return o.utcnow().isoformat()
+            return o.now(timezone.utc).isoformat()
         elif isinstance(o, BaseModel):
             if hasattr(o, 'api_dump'):
                 return o.api_dump() # type: ignore

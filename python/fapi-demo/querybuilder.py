@@ -2,12 +2,11 @@ from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import Any, Tuple
 import re
-from datetime import datetime
+from datetime import datetime, timezone
 
 import db
 
 class QueryKind(StrEnum):
-    unset = "unset"
     select = "select"
     insert = "insert"
     update = "update"
@@ -94,7 +93,7 @@ class QueryBuilder:
             dict_data = [dict_data]
 
         for one in dict_data:
-            now = datetime.utcnow().isoformat()
+            now = datetime.now(timezone.utc).isoformat()
             one['created_at'] = now
             one['updated_at'] = now
             self.insert(one)

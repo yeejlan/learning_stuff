@@ -1,7 +1,7 @@
 from datetime import datetime
 import logging
 from contextvars import ContextVar
-
+from core.util import now_as_iso8601, now_with_timezone
 
 request_id = ContextVar('request_id', default='0000')
 uid = ContextVar('uid', default=0)
@@ -10,7 +10,7 @@ channel = ContextVar('channel', default='app')
 CUSTOM_FORMAT = '%(iso8601)s [%(channel)s] [%(levelname)s] %(message)s {uid=%(uid)s, request_id=%(request_id)s}'
 
 def get_daily_log_name(channel:str = 'app', path:str = 'storage/logs'):
-    today = datetime.utcnow()
+    today = now_with_timezone()
     today_str = today.strftime("%Y-%m-%d")
     return f'{path}/{channel}-{today_str}.log'
 
@@ -36,7 +36,7 @@ class CustomLogger(logging.Logger):
                 'request_id': request_id.get(),
                 'uid': uid.get(),
                 'channel': channel.get(),
-                'iso8601': datetime.utcnow().isoformat(),
+                'iso8601': now_as_iso8601(),
             }
         super(CustomLogger, self)._log(level, msg, args, exc_info, extra)
 
