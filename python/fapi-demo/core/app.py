@@ -8,8 +8,8 @@ config = AppContext.getConfig()
 isDebug = AppContext.isDebugMode()
 
 appOptions = {
-    "host": "0.0.0.0",
-    "port": 5000,
+    "host": config.get('LISTEN_HOST', "0.0.0.0"),
+    "port": config.getInt('LISTEN_PORT', 5000),
     "title": config.get('APP_NAME', "My FastApi Demo"),
     "version": config.get('APP_VERSION', "1.0.0"),
     "redoc_url": None  # disable ReDoc
