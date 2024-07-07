@@ -2,7 +2,7 @@ from enum import IntEnum
 import sys, os
 sys.path.append(os.getcwd())
 from core.config import Config
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 
 class AppException(Exception):
     pass
@@ -14,73 +14,81 @@ class Environment(IntEnum):
     DEVELOPMENT = 40
 
 class AppContext:
-    _instance = None
-    _setting: Dict[str, Any] = {}
-    _is_init: bool = False
-    _config: Config
-    _is_debug: bool = False
+    _instance: Optional['AppContext'] = None
+
+    def __init__(self):
+        self._setting: Dict[str, Any] = {}
+        self._isInit: bool = False
+        self._config: Optional[Config] = None
+        self._isDebug: bool = False
 
     @classmethod
-    def init(cls, config_file: str) -> None:
-        if not cls._instance:
+    def getInstance(cls) -> 'AppContext':
+        if cls._instance is None:
             cls._instance = cls()
+        return cls._instance
+
+    @classmethod
+    def init(cls, configFile: str) -> None:
+        instance = cls.getInstance()
+        instance._config = Config(configFile)
+        envString = instance._config.get('APP_ENV', 'production')
+        env = getattr(Environment, envString.upper())
+        instance._setting['envString'] = envString
+        instance._setting['env'] = env
         
-        cls._config = Config(config_file)
-        env_string = cls._config.get('APP_ENV', 'production');
-        env = getattr(Environment, env_string.upper())
-        cls._setting['env_string'] = env_string
-        cls._setting['env'] = env
-        
-        is_debug = cls._config.getBool('APP_DEBUG', False);
+        isDebug = instance._config.getBool('APP_DEBUG', False)
         if env == Environment.PRODUCTION:
-            is_debug = False
-        cls._setting['debug'] = is_debug
-        cls._is_debug = is_debug
-        cls._is_init = True
+            isDebug = False
+        instance._setting['debug'] = isDebug
+        instance._isDebug = isDebug
+        instance._isInit = True
 
     @classmethod
-    def get_env(cls) -> Environment:
-        cls._check_init()
-        return cls._setting['env']
+    def getEnv(cls) -> Environment:
+        instance = cls.getInstance()
+        instance._checkInit()
+        return instance._setting['env']
 
     @classmethod
-    def get_env_string(cls) -> str:
-        cls._check_init()
-        return cls._setting['env_string']
+    def getEnvString(cls) -> str:
+        instance = cls.getInstance()
+        instance._checkInit()
+        return instance._setting['envString']
 
     @classmethod
-    def get_config(cls) -> Config:
-        cls._check_init()
-        return cls._config
+    def getConfig(cls) -> Config:
+        instance = cls.getInstance()
+        instance._checkInit()
+        return instance._config # type: ignore
 
     @classmethod
-    def get_setting(cls) -> Dict[str, Any]:
-        cls._check_init()
-        return cls._setting
+    def getSetting(cls) -> Dict[str, Any]:
+        instance = cls.getInstance()
+        instance._checkInit()
+        return instance._setting.copy()  # Return a copy to prevent accidental modifications
     
     @classmethod
-    def is_debug_mode(cls) -> bool:
-        if not cls._is_debug:
-            return False
-        return True
+    def isDebugMode(cls) -> bool:
+        instance = cls.getInstance()
+        return instance._isDebug
 
-    @classmethod
-    def _check_init(cls) -> None:
-        if not cls._is_init:
-            raise AppException(f'Please call {cls.__name__}.init first')
-        
+    def _checkInit(self) -> None:
+        if not self._isInit:
+            raise AppException(f'Please call {self.__class__.__name__}.init first')
+
 if __name__ == "__main__":
     AppContext.init('.env')
 
-    env = AppContext.get_env()
-    env_string = AppContext.get_env_string()
+    env = AppContext.getEnv()
+    envString = AppContext.getEnvString()
 
-    print((env, env_string))
+    print((env, envString))
 
-    config = AppContext.get_config()
-    db_host = config.get('DB_HOST', 'localhost')
-    print(db_host)
+    config = AppContext.getConfig()
+    dbHost = config.get('DB_HOST', 'localhost')
+    print(dbHost)
 
-    settings = AppContext.get_setting()
-    is_debug = AppContext.is_debug_mode()
-    print(settings, is_debug)
+    settings = AppContext.getSetting()
+    isDebug = AppContext.isDebugMode()
+    print(settings, isDebug)
