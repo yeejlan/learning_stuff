@@ -22,3 +22,25 @@ async def requestContextMiddleware(request: Request, call_next):
 
 def get_request_context() -> dict[str, Any]:
     return request_context_var.get()
+
+def getContext(key: str, default=None):
+    ctx = request_context_var.get()
+    return ctx.get(key, default)
+
+def setContext(key: str, value: Any):
+    ctx = request_context_var.get()
+    ctx[key] = value
+    request_context_var.set(ctx)
+
+if __name__ == "__main__":
+    ctx = get_request_context()
+    print(ctx)
+
+    setContext('uid', 101)
+    setContext('req_id', 9001)
+    ctx = get_request_context()
+    print(ctx)
+
+    setContext('orderId', 123)
+    ctx = get_request_context()
+    print(ctx)
