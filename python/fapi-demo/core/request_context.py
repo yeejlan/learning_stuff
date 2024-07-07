@@ -20,7 +20,7 @@ async def requestContextMiddleware(request: Request, call_next):
         request_context_var.reset(token)
 
 
-def get_request_context() -> dict[str, Any]:
+def getRequestContext() -> dict[str, Any]:
     return request_context_var.get()
 
 def getContext(key: str, default=None):
@@ -33,14 +33,14 @@ def setContext(key: str, value: Any):
     request_context_var.set(ctx)
 
 if __name__ == "__main__":
-    ctx = get_request_context()
+    ctx = getRequestContext()
     print(ctx)
 
     setContext('uid', 101)
     setContext('req_id', 9001)
-    ctx = get_request_context()
+    ctx = getRequestContext()
     print(ctx)
 
     setContext('orderId', 123)
-    ctx = get_request_context()
+    ctx = getRequestContext()
     print(ctx)
