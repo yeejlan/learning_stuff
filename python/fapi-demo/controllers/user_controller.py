@@ -1,6 +1,6 @@
 from typing import List
-from fastapi import APIRouter, Depends
-from pydantic import BaseModel
+from fastapi import APIRouter, Depends, Path
+from pydantic import BaseModel, Field
 from exception import UserException
 from reply import Reply
 from models import user_model
@@ -10,8 +10,11 @@ import deps
 
 router = APIRouter()
 
-@router.get("/find/{user_id:path}", response_model=user_model.UserModel)
-async def get_user_by_id(user_id: int):
+
+@router.get("/find/{user_id}", response_model=user_model.UserModel)
+async def get_user_by_id(
+    user_id: int = Path(..., gt=10, description="The ID of the user to get")
+):
     row = await user_model.getUserById(user_id)
     return Reply.success(row)
 

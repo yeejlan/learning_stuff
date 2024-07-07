@@ -17,6 +17,8 @@ class Refund(BaseModel):
 
 class Product(BaseModel):
     name: str = Field(..., description="Product name, only ASCII allowed")
+    #nullable -- name: str | None = Field(default=None, description="Product name, only ASCII allowed")
+    #defalut -- name: str = Field(default="Default Product", description="Product name, only ASCII allowed")
     asset: str = Field(..., description="Product asset, USD EUR etc")
     redeem_at: datetime = Field(..., description="Expected redeem time")
 
