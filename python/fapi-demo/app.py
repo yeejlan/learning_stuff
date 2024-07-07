@@ -4,6 +4,7 @@ from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
+from core.app import getApp
 import log
 import uuid
 import db
@@ -11,15 +12,7 @@ import db
 from reply import Reply
 from exception import UserException
 
-# Create app
-isDebug = os.getenv("APP_DEBUG", "false").lower() == "true"
-app = FastAPI(host="0.0.0.0",
-              port=5000,
-              title="My FastApi Demo",
-              version="1.2.34",
-              #docs_url="/docs" #if isDebug else None,  # disable Swagger UI 
-              redoc_url=None  # disable ReDoc
-            )
+app = getApp()
 
 @app.middleware("http")
 async def add_request_id(request: Request, call_next):

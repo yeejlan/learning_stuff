@@ -42,6 +42,9 @@ class AppContext:
             isDebug = False
         instance._setting['debug'] = isDebug
         instance._isDebug = isDebug
+
+        instance._setting['app_name'] = instance._config.get('APP_NAME')
+        instance._setting['app_version'] = instance._config.get('APP_VERSION')
         instance._isInit = True
 
     @classmethod
