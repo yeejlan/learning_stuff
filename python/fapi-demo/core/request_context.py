@@ -20,35 +20,35 @@ class RequestContextMiddleware(BaseHTTPMiddleware):
             request_context_var.reset(token)
 
 
-def getRequestContext() -> dict[str, Any]:
+def getRequestContextDict() -> dict[str, Any]:
     return request_context_var.get()
 
 def getPublicRequestContext() -> dict[str, Any]:
-    request_context = getRequestContext()  
+    request_context = getRequestContextDict()  
     public_context = {}
     for key, value in request_context.items():
         if not key.startswith("_"):
             public_context[key] = value
     return public_context
 
-def getContext(key: str, default=None):
+def getRequestContext(key: str, default=None):
     ctx = request_context_var.get()
     return ctx.get(key, default)
 
-def setContext(key: str, value: Any):
+def setRequestContext(key: str, value: Any):
     ctx = request_context_var.get()
     ctx[key] = value
     request_context_var.set(ctx)
 
 if __name__ == "__main__":
-    ctx = getRequestContext()
+    ctx = getRequestContextDict()
     print(ctx)
 
-    setContext('uid', 101)
-    setContext('req_id', 9001)
-    ctx = getRequestContext()
+    setRequestContext('uid', 101)
+    setRequestContext('req_id', 9001)
+    ctx = getRequestContextDict()
     print(ctx)
 
-    setContext('orderId', 123)
-    ctx = getRequestContext()
+    setRequestContext('orderId', 123)
+    ctx = getRequestContextDict()
     print(ctx)
