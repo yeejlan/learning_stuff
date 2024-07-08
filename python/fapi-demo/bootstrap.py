@@ -1,4 +1,5 @@
 from logging import Logger
+import traceback
 from fastapi import Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.staticfiles import StaticFiles
@@ -8,7 +9,7 @@ from core.request_context import RequestContextMiddleware
 
 from core.resource_loader import getResourceLoader
 from core.reply import Reply
-from core.exception import UserException
+from core.exception import FluxException, ModelException, UserException
 
 app = getApp()
 logger.buildInitialLoggers(['app', 'err500'])
@@ -47,16 +48,19 @@ async def validation_exception_handler(request, ex):
     })
 
 @app.exception_handler(Exception)
+@app.exception_handler(ModelException)
+@app.exception_handler(FluxException)
 async def default_exception_handler(request: Request, ex: Exception):
-    message = type(ex).__name__ + ': ' +  str(ex)
+    message = f"{type(ex).__name__}: {str(ex)}"
     code = 500
+    at = getattr(ex, 'at', '')
 
-    at = ''
-    if hasattr(ex, 'at'):
-        at = str(ex.at) # type: ignore
-   
+    stack_trace = traceback.format_exc().strip()
+    error_log = f"{message} @{at}\n{stack_trace}"
+
     #log error
-    getLogger().error(message + ' @' + str(at))
+    getLogger().error(error_log)
+
     return Reply.json_response(code, message, Reply.code_to_str(code), None, {
         'at': at,
     })
