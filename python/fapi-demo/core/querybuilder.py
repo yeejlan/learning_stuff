@@ -1,8 +1,10 @@
 import sys, os
+
+import aiomysql
 sys.path.append(os.getcwd())
 from dataclasses import dataclass, field
 from enum import StrEnum
-from typing import Any, Tuple
+from typing import Any, Tuple, Union
 import re
 from datetime import datetime, timezone
 
@@ -33,16 +35,19 @@ class QueryBuilder:
     _extra_parts: list = field(default_factory=list)
     _union_parts: list = field(default_factory=list)
 
-    _pool: Any = None
+    _conn_or_pool: Any = None
     _map_to_model: Any = None
 
     @classmethod
     def new(cls):
         return cls()
     
-    def use_pool(self, pool:Any):
-        self._pool = pool
+    def set_conn_or_pool(self, conn_or_pool: Union[aiomysql.Connection, aiomysql.Pool]):
+        self._conn_or_pool = conn_or_pool
         return self
+    
+    def get_conn_or_pool(self) -> Union[aiomysql.Connection, aiomysql.Pool]:
+        return self._conn_or_pool
 
     def map_query_to_model(self, model:Any):
         self._map_to_model = model
@@ -407,23 +412,23 @@ class QueryBuilder:
 
     async def exec_select_one(self):
         query, values = self.build()
-        res = await db_mysql.select_one(query, *values, pool=self._pool, to=self._map_to_model)
+        res = await db_mysql.select_one(query, tuple(values), conn_or_pool=self._conn_or_pool, to=self._map_to_model)
         return res
 
     async def exec_select(self):
         query, values = self.build()
-        res = await db_mysql.select(query, *values, pool=self._pool, to=self._map_to_model)
+        res = await db_mysql.select(query, tuple(values), conn_or_pool=self._conn_or_pool, to=self._map_to_model)
         return res
 
     async def exec_update(self) -> int:
         query, values = self.build()
-        res = await db_mysql.update(query, *values, pool=self._pool)
+        res = await db_mysql.update(query, tuple(values), conn_or_pool=self._conn_or_pool)
         return res
 
     async def exec_insert(self) -> int:
         res = 0
         for query, values in self._insert_parts:
-            res = await db_mysql.insert(query, *values, pool=self._pool)
+            res = await db_mysql.insert(query, tuple(values), conn_or_pool=self._conn_or_pool)
         return res
 
     async def exec_insert_and_retrieve(self, primary_key='id') -> Any:

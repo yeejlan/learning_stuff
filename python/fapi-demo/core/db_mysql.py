@@ -1,12 +1,10 @@
+from contextlib import asynccontextmanager
 import sys, os
 sys.path.append(os.getcwd())
 from core import app
-from typing import Any, Callable
+from typing import Any, Callable, Union
 import aiomysql
 import os
-
-
-DictCursor = aiomysql.DictCursor
 
 config = app.config
 
@@ -38,14 +36,21 @@ async def release_pool(pool: aiomysql.Pool):
     pool.close()
     await pool.wait_closed()
 
+@asynccontextmanager
+async def get_connection(conn_or_pool: Union[aiomysql.Connection, aiomysql.Pool]):
+    if isinstance(conn_or_pool, aiomysql.Pool):
+        async with conn_or_pool.acquire() as conn:
+            yield conn
+    else:
+        yield conn_or_pool
 
-async def select_one(query, *args, pool: aiomysql.Pool, to: Any):
+async def select_one(query, args: tuple, conn_or_pool: Union[aiomysql.Connection, aiomysql.Pool], to: Any=None):
     """
     stmt = "SELECT * FROM employees WHERE ID = %s"
     row = await select_one(stmt, (123,))
     """      
-    async with pool.acquire() as conn:
-        async with conn.cursor(DictCursor) as cur:
+    async with get_connection(conn_or_pool) as conn:
+        async with conn.cursor(aiomysql.DictCursor) as cur:
             await cur.execute(query, args)
             row = await cur.fetchone()
             if row and to:
@@ -53,13 +58,13 @@ async def select_one(query, *args, pool: aiomysql.Pool, to: Any):
             return row
 
 
-async def select(query, *args, pool: aiomysql.Pool, to: Any):
+async def select(query, args: tuple, conn_or_pool: Union[aiomysql.Connection, aiomysql.Pool], to: Any=None):
     """
     stmt = "SELECT * FROM employees WHERE DEPT_ID = %s"
     rows = await select(stmt, (123,))
     """
-    async with pool.acquire() as conn:
-        async with conn.cursor(DictCursor) as cur:
+    async with get_connection(conn_or_pool) as conn:
+        async with conn.cursor(aiomysql.DictCursor) as cur:
             await cur.execute(query, args)
             rows = await cur.fetchall()
             if rows and to:
@@ -67,19 +72,19 @@ async def select(query, *args, pool: aiomysql.Pool, to: Any):
             return rows
 
 
-async def insert(query, *args, pool: aiomysql.Pool) -> int:
+async def insert(query, args: tuple, conn_or_pool: Union[aiomysql.Connection, aiomysql.Pool]) -> int:
     """
     stmt = "INSERT INTO employees (name, phone)
         VALUES ('%s','%s')"
     row_id = await insert(stmt, ('Jane','555-001'))
     """
-    async with pool.acquire() as conn:
-        async with conn.cursor(DictCursor) as cur:
+    async with get_connection(conn_or_pool) as conn:
+        async with conn.cursor(aiomysql.DictCursor) as cur:
             await cur.execute(query, args)
             return cur.lastrowid
 
 
-async def insert_batch(query:list, records:list, pool: aiomysql.Pool) -> int:
+async def insert_batch(query:list, records:list, conn_or_pool: Union[aiomysql.Connection, aiomysql.Pool]) -> int:
     """
     data = [
         ('Jane','555-001'),
@@ -90,34 +95,33 @@ async def insert_batch(query:list, records:list, pool: aiomysql.Pool) -> int:
         VALUES ('%s','%s')"
     rowcount = await insert_batch(stmt, data)
     """
-    async with pool.acquire() as conn:
-        async with conn.cursor(DictCursor) as cur:
+    async with get_connection(conn_or_pool) as conn:
+        async with conn.cursor(aiomysql.DictCursor) as cur:
             await cur.executemany(query, records)
             return cur.rowcount
 
 
-async def update(query, *args, pool: aiomysql.Pool) -> int:
+async def update(query, args: tuple, conn_or_pool: Union[aiomysql.Connection, aiomysql.Pool]) -> int:
     """
     stmt = "UPDATE employees (name, phone)
         VALUES ('%s','%s') WHERE id = %s"
     rowcount = await insert(stmt, ('Jane','555-001', 123))
     """
-    async with pool.acquire() as conn:
-        async with conn.cursor(DictCursor) as cur:
+    async with get_connection(conn_or_pool) as conn:
+        async with conn.cursor(aiomysql.DictCursor) as cur:
             await cur.execute(query, args)
             return cur.rowcount
         
-async def transaction(operation: Callable[[aiomysql.DictCursor], Any], pool: aiomysql.Pool):
-    async with pool.acquire() as conn:
-        async with conn.cursor(aiomysql.DictCursor) as cur:
-            await conn.begin()
-            try:
-                result = await operation(cur)
-                await conn.commit()
-                return result
-            except Exception as e:
-                await conn.rollback()
-                raise e
+async def transaction(operations: Callable[[aiomysql.Connection], Any], conn_or_pool: Union[aiomysql.Connection, aiomysql.Pool]):
+    async with get_connection(conn_or_pool) as conn:
+        await conn.begin()
+        try:
+            result = await operations(conn)
+            await conn.commit()
+            return result
+        except Exception as e:
+            await conn.rollback()
+            raise e
 
 
 if __name__ == "__main__":
@@ -128,13 +132,13 @@ if __name__ == "__main__":
     async def printMysqlVersion():        
         pool = await db_mysql.create_pool()
 
-        res = await db_mysql.select("select version()", to=dict, pool=pool)
+        res = await db_mysql.select("select version()", (), conn_or_pool=pool)
         print(res)
 
-        async def my_operation(cur: aiomysql.DictCursor):
-            await cur.execute("select 1", ())
-            await cur.execute("select 2", ())
-            return await cur.fetchall()
+        async def my_operation(conn: aiomysql.Connection):
+            row1 = await db_mysql.select_one("select 1", (), conn_or_pool=conn)
+            row2 = await db_mysql.select_one("select 2", (), conn_or_pool=conn)
+            return [row1, row2]
 
         result = await db_mysql.transaction(my_operation, pool)
         print("Transaction successful, result:", result)

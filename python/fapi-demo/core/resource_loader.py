@@ -53,7 +53,7 @@ if __name__ == "__main__":
         print(resource_loader.mysql_resources)
 
         pool = resourceLoader.getMysqlPool('DB');
-        res = await db_mysql.select("select version()", to=dict, pool=pool)
+        res = await db_mysql.select("select version()", (), pool)
         print(res)
 
         await resourceLoader.closeAll()
