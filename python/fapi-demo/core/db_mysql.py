@@ -126,24 +126,22 @@ async def transaction(operations: Callable[[aiomysql.Connection], Any], conn_or_
 
 if __name__ == "__main__":
     import asyncio
-    from core import db_mysql
-
 
     async def printMysqlVersion():        
-        pool = await db_mysql.create_pool()
+        pool = await create_pool()
 
-        res = await db_mysql.select("select version()", (), conn_or_pool=pool)
+        res = await select("select version()", (), conn_or_pool=pool)
         print(res)
 
         async def my_operation(conn: aiomysql.Connection):
-            row1 = await db_mysql.select_one("select 1", (), conn_or_pool=conn)
-            row2 = await db_mysql.select_one("select 2", (), conn_or_pool=conn)
+            row1 = await select_one("select 1", (), conn_or_pool=conn)
+            row2 = await select_one("select 2", (), conn_or_pool=conn)
             return [row1, row2]
 
-        result = await db_mysql.transaction(my_operation, pool)
+        result = await transaction(my_operation, pool)
         print("Transaction successful, result:", result)
 
-        await db_mysql.release_pool(pool)
+        await release_pool(pool)
 
 
     asyncio.run(printMysqlVersion())

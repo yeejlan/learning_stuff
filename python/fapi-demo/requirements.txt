@@ -4,4 +4,4 @@ pydantic
 python-dotenv
 uvicorn
 gunicorn
-
+redis
