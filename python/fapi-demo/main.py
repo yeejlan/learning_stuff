@@ -1,12 +1,7 @@
 from dotenv import load_dotenv
-
 from fastapi.staticfiles import StaticFiles
-
 from controllers import router
-
-from app import app
-from models import user_model
-
+from bootstrap import app
 
 # Load env file
 load_dotenv()

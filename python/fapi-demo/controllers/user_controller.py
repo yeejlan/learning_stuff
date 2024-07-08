@@ -1,12 +1,10 @@
 from typing import List
 from fastapi import APIRouter, Depends, Path
 from pydantic import BaseModel, Field
-from exception import UserException
-from reply import Reply
+from core.exception import UserException
+from core.reply import Reply
 from models import user_model
 from datetime import datetime
-
-import deps
 
 router = APIRouter()
 
@@ -58,14 +56,3 @@ async def delete_user(p: DeleteUserRequest):
     res = await user_model.deleteUser(p.user_id)
     return Reply.success(res)
 
-class GetAuthorizedUserResponse(BaseModel):
-    authorized_user: user_model.UserModel
-
-@router.get("/get-authorized-user", response_model=GetAuthorizedUserResponse)
-async def get_authorized_user(user = Depends(deps.getAuthorizedUser)):
-
-    authorized = {
-        'authorized_user': user,
-    }
-    out = GetAuthorizedUserResponse(**authorized)
-    return Reply.success(out)

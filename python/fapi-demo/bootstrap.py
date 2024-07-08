@@ -1,46 +1,26 @@
 from logging import Logger
-import os
-from fastapi import FastAPI, Request
+from fastapi import Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.staticfiles import StaticFiles
-from dotenv import load_dotenv
+from core import logger
 from core.app import getApp
-import log
-import uuid
-import db
+from core.request_context import RequestContextMiddleware
 
-from reply import Reply
-from exception import UserException
+from core.resource_loader import getResourceLoader
+from core.reply import Reply
+from core.exception import UserException
 
 app = getApp()
-
-@app.middleware("http")
-async def add_request_id(request: Request, call_next):
-    uuid_str = str(uuid.uuid4())
-    log.request_id.set(uuid_str)
-    response = await call_next(request)
-    # response.headers['request-id'] = uuid_str
-    return response
-
-# @app.middleware("commonparams")
-# class CommonParamsMiddleware(request: Request, call_next):
-#     async def dispatch(self, request: Request, call_next):
-#         _unique_id = request.query_params.get("_unique_id")
-#         _skip_auth = request.query_params.get("_skip_auth", "false").lower() == "true"
-        
-#         request.state._unique_id = _unique_id
-#         request.state._skip_auth = _skip_auth
-        
-#         response = await call_next(request)
-#         return response
+logger.buildInitialLoggers(['app', 'err500'])
+app.add_middleware(RequestContextMiddleware)
 
 @app.on_event("startup")
 async def startup():
-    db.pool = await db.create_pool()
+    await getResourceLoader().createMysqlPool('DB')
 
 @app.on_event("shutdown")
 async def shutdown():
-    await db.release_pool()
+    await getResourceLoader().closeMysqlPool('DB')
 
 @app.exception_handler(UserException)
 async def user_exception_handler(request: Request, ex: UserException):
@@ -82,4 +62,4 @@ async def default_exception_handler(request: Request, ex: Exception):
     })
 
 def getLogger() -> Logger: 
-    return log.get_logger('err500')
+    return logger.getLogger('err500')

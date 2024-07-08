@@ -3,9 +3,10 @@ from typing import Generator
 from fastapi import APIRouter, Depends
 from fastapi.params import Body
 from pydantic import BaseModel, Field
-from reply import Reply
-from exception import ModelException, UserException
-from log import get_logger
+from core import logger
+from core.reply import Reply
+from core.exception import ModelException, UserException
+from core.logger import get_logger
 
 router = APIRouter()
 
@@ -142,7 +143,7 @@ async def log_test():
     return "check log files please."  
 
 def getLogger():
-    return get_logger(__name__)
+    return logger.get_logger(__name__)
 
 from fastapi import BackgroundTasks, Depends
 

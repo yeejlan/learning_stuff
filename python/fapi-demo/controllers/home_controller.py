@@ -1,6 +1,6 @@
 from fastapi import APIRouter
-from reply import Reply,reply_map,reply_map_reversed
-from app import app
+from core.reply import Reply,reply_map,reply_map_reversed
+from core.app import app
 
 @app.get("/", tags=["home"])
 def homepage():

@@ -1,6 +1,5 @@
 import sys
 from collections import namedtuple
-from typing import Any
 
 FrameInfo = namedtuple('FrameInfo', ['file', 'line', 'func'])
 

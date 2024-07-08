@@ -1,10 +1,10 @@
 from enum import IntEnum, StrEnum
-import db
 from pydantic import BaseModel, computed_field
 from datetime import datetime
 from typing import List
 
-from querybuilder import QueryBuilder
+from core.querybuilder import QueryBuilder
+from core.resource_loader import getResourceLoader
 
 class UserStatus(IntEnum):
     normal = 1
@@ -44,10 +44,11 @@ class UserModel(BaseModel):
 
 
 def make_query_builder() -> QueryBuilder:
+    pool = getResourceLoader().getMysqlPool('DB')
     return (QueryBuilder.new()
         .table('users')
         .map_query_to_model(UserModel)
-        .use_pool_function(db.get_pool)
+        .use_pool(pool)
     )
 
 async def getUserById(user_id: int) -> UserModel:

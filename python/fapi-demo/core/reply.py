@@ -1,7 +1,6 @@
 from datetime import datetime
 from enum import IntEnum
 import json
-from logging import Logger
 from datetime import timezone
 from typing import Any
 from fastapi import Response
@@ -9,7 +8,8 @@ from fastapi import Response
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 
-import log
+from core.request_context import getRequestContext
+
 class Reply(IntEnum):
     SUCCESS = 0
     UNAUTHORIZED = 401
@@ -65,11 +65,12 @@ class Reply(IntEnum):
     def json_response(cls, code:int, message:str, reason:str, data:Any, extra: dict[str, Any] = {}):
 
         status_code = cls.status_code(code)
+        ctx = getRequestContext();
         content = {
             'code': code,
             'message': message,
             'reason': cls.code_to_str(code),
-            'request-id': log.request_id.get(),
+            'request-id': ctx.get('request_id'),
             'data': data,
         }
         if extra:
@@ -97,3 +98,4 @@ class MyJsonEncoder(json.JSONEncoder):
             return o.model_dump()
 
         return super().default(o)
+    

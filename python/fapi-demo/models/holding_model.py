@@ -1,10 +1,9 @@
 from enum import Enum, IntEnum
-import db
 from pydantic import BaseModel, computed_field, Field
 from datetime import datetime
 from typing import List, Optional
 
-from querybuilder import QueryBuilder
+from core.querybuilder import QueryBuilder
 
 class Redeem(BaseModel):
     asset: str

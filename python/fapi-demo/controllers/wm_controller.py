@@ -1,12 +1,11 @@
 from typing import List
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
-from exception import UserException
-from reply import Reply
+from core.exception import UserException
+from core.reply import Reply
 from models import holding_model
 from datetime import datetime
 
-import deps
 
 router = APIRouter()
 

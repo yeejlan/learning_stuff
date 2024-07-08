@@ -1,10 +1,12 @@
+import sys, os
+sys.path.append(os.getcwd())
 from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import Any, Tuple
 import re
 from datetime import datetime, timezone
 
-import db
+from core import db_mysql
 
 class QueryKind(StrEnum):
     select = "select"
@@ -19,7 +21,8 @@ class QueryBuilder:
     _bindings: list = field(default_factory=list)  #statement bindings
 
     _table_parts: str = ''
-    _select_parts: list = field(default_factory=list) 
+    _select_for_update = False
+    _select_parts: list = field(default_factory=list)
     _update_parts: list = field(default_factory=list)
     _insert_parts: list = field(default_factory=list)
     _join_parts: list = field(default_factory=list)
@@ -30,15 +33,15 @@ class QueryBuilder:
     _extra_parts: list = field(default_factory=list)
     _union_parts: list = field(default_factory=list)
 
-    _pool_fn: Any = db.get_pool
+    _pool: Any = None
     _map_to_model: Any = None
 
     @classmethod
     def new(cls):
         return cls()
     
-    def use_pool_function(self, pool_fn:Any):
-        self._pool_fn = pool_fn
+    def use_pool(self, pool:Any):
+        self._pool = pool
         return self
 
     def map_query_to_model(self, model:Any):
@@ -49,6 +52,10 @@ class QueryBuilder:
         self._table_parts = table
         return self
     
+    def lock_for_update(self):
+        self._select_for_update = True
+        return self
+
     def select(self, columns: str|list):
         self._kind = QueryKind.select
         t = type(columns)
@@ -210,7 +217,10 @@ class QueryBuilder:
         if self._kind != QueryKind.select:
             return self      
         fields = ', '.join(self._select_parts) if self._select_parts else '*'
-        query = f'SELECT {fields} FROM {self._table_parts}'
+        for_update_parts = ''
+        if self._select_for_update:
+            for_update_parts = ' FOR UPDATE'
+        query = f'SELECT {fields} FROM {self._table_parts}{for_update_parts}'
         self._parts.append(query)
         return self
 
@@ -397,23 +407,23 @@ class QueryBuilder:
 
     async def exec_select_one(self):
         query, values = self.build()
-        res = await db.select_one(query, *values, pool_fn=self._pool_fn, to=self._map_to_model)
+        res = await db_mysql.select_one(query, *values, pool=self._pool, to=self._map_to_model)
         return res
 
     async def exec_select(self):
         query, values = self.build()
-        res = await db.select(query, *values, pool_fn=self._pool_fn, to=self._map_to_model)
+        res = await db_mysql.select(query, *values, pool=self._pool, to=self._map_to_model)
         return res
 
     async def exec_update(self) -> int:
         query, values = self.build()
-        res = await db.update(query, *values, pool_fn=self._pool_fn)
+        res = await db_mysql.update(query, *values, pool=self._pool)
         return res
 
     async def exec_insert(self) -> int:
         res = 0
         for query, values in self._insert_parts:
-            res = await db.insert(query, *values, pool_fn=self._pool_fn)
+            res = await db_mysql.insert(query, *values, pool=self._pool)
         return res
 
     async def exec_insert_and_retrieve(self, primary_key='id') -> Any:

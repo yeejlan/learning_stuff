@@ -2,26 +2,35 @@ from contextvars import ContextVar
 from typing import Any
 from uuid import uuid4
 from fastapi import Request
-
+from starlette.middleware.base import BaseHTTPMiddleware
 
 #request scoped storage
 request_context_var: ContextVar[dict] = ContextVar("request_context", default={})
 
 #middleware
-async def requestContextMiddleware(request: Request, call_next):
-    context = {
-        "request_id": str(uuid4()),
-    }
-    token = request_context_var.set(context)
-    try:
-        response = await call_next(request)
-        return response
-    finally:
-        request_context_var.reset(token)
+class RequestContextMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request, call_next):
+        context = {
+            "request_id": str(uuid4()),
+        }
+        token = request_context_var.set(context)
+        try:
+            response = await call_next(request)
+            return response
+        finally:
+            request_context_var.reset(token)
 
 
 def getRequestContext() -> dict[str, Any]:
     return request_context_var.get()
+
+def getPublicRequestContext() -> dict[str, Any]:
+    request_context = getRequestContext()  
+    public_context = {}
+    for key, value in request_context.items():
+        if not key.startswith("_"):
+            public_context[key] = value
+    return public_context
 
 def getContext(key: str, default=None):
     ctx = request_context_var.get()

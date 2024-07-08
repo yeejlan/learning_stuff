@@ -32,13 +32,15 @@ class CustomLogger(logging.Logger):
 
     def _log(self, level, msg, args, exc_info=None, extra=None):
         if extra is None:
-            ctx = getRequestContext
             extra = {
-                'request_id': ctx.get('request_id'),
-                'uid': ctx.get('uid'),
                 'channel': channel.get(),
                 'iso8601': now_as_iso8601(),
             }
+            request_context = getRequestContext()
+            for key, value in request_context.items():
+                if not key.startswith("_"):
+                    extra[key] = value
+        
         super(CustomLogger, self)._log(level, msg, args, exc_info, extra)
 
 logger_dict: dict[str, logging.Logger] = {}
@@ -47,7 +49,7 @@ logger_dict: dict[str, logging.Logger] = {}
 def makeCustomeLogger(channel = 'app'):
     logger_name = channel
     logger= logging.getLogger(logger_name)
-    logger.setLevel(logging.DEBUG)    
+    logger.setLevel(logging.DEBUG)
     return logger
 
 def buildInitialLoggers(logger_channels: list[str] = ['app', 'err500']):
@@ -60,6 +62,9 @@ def buildInitialLoggers(logger_channels: list[str] = ['app', 'err500']):
     logging.setLoggerClass(old_logger_clazz)
 
 def getLogger(channel_name: str = 'app') -> logging.Logger:
+    return get_logger(channel_name)
+
+def get_logger(channel_name: str = 'app') -> logging.Logger:
     channel.set(channel_name)
     if channel_name in logger_dict:
         return logger_dict[channel_name]
