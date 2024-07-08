@@ -10,10 +10,9 @@ request_context_var: ContextVar[dict] = ContextVar("request_context", default={}
 #middleware
 class RequestContextMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
-        context = {
-            "request_id": str(uuid4()),
-        }
-        token = request_context_var.set(context)
+        ctx = request_context_var.get()
+        ctx['request_id'] = str(uuid4())
+        token = request_context_var.set(ctx)
         try:
             response = await call_next(request)
             return response

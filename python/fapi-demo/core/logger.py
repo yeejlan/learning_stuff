@@ -7,7 +7,7 @@ from core.util import now_as_iso8601, now_with_timezone
 
 channel = ContextVar('channel', default='app')
 
-CUSTOM_FORMAT = '%(iso8601)s [%(channel)s] [%(levelname)s] %(message)s {uid=%(uid)s, request_id=%(request_id)s}'
+CUSTOM_FORMAT = '%(iso8601)s [%(channel)s] [%(levelname)s] %(message)s %(context)s'
 
 def getDailyLogName(channel:str = 'app', path:str = 'storage/logs'):
     today = now_with_timezone()
@@ -32,15 +32,18 @@ class CustomLogger(logging.Logger):
 
     def _log(self, level, msg, args, exc_info=None, extra=None):
         if extra is None:
+            request_context = getRequestContext()
+            context = {}
+            for key, value in request_context.items():
+                if not key.startswith("_"):
+                    context[key] = value
+         
             extra = {
                 'channel': channel.get(),
                 'iso8601': now_as_iso8601(),
+                'context': context,
             }
-            request_context = getRequestContext()
-            for key, value in request_context.items():
-                if not key.startswith("_"):
-                    extra[key] = value
-        
+
         super(CustomLogger, self)._log(level, msg, args, exc_info, extra)
 
 logger_dict: dict[str, logging.Logger] = {}
