@@ -29,6 +29,7 @@ async def create_pool(prefix :str = 'DB') -> aiomysql.Pool:
         minsize=minsize,
         maxsize=maxsize,
         autocommit=True,
+        pool_recycle=3600,
     )
     return pool
 
