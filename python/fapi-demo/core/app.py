@@ -3,7 +3,7 @@ sys.path.append(os.getcwd())
 from fastapi import FastAPI
 from core.app_context import AppContext
 
-AppContext.init('.env')
+AppContext.init()
 config = AppContext.getConfig()
 isDebug = AppContext.isDebugMode()
 
