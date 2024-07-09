@@ -484,6 +484,7 @@ if __name__ == "__main__":
         .table('users')
         .update('notes', 'my notes')
         .update('score', 50)
+        .update_raw('score=score+1')
         .update_raw('age = %s', 22)
         .update_timestamp()
         .where('id', 123)
