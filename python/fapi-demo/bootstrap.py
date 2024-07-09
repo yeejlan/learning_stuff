@@ -10,10 +10,12 @@ from core.request_context import RequestContextMiddleware
 from core.resource_loader import getResourceLoader
 from core.reply import Reply
 from core.exception import FluxException, ModelException, UserException
+from core.user_session import UserSessionMiddleware
 
 app = getApp()
 logger.buildInitialLoggers(['app', 'err500'])
 app.add_middleware(RequestContextMiddleware)
+app.add_middleware(UserSessionMiddleware)
 
 @app.on_event("startup")
 async def startup():

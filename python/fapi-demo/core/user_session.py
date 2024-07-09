@@ -1,5 +1,7 @@
 import sys, os
 import time
+
+from fastapi import Request
 sys.path.append(os.getcwd())
 from core import async_redis, resource_loader
 from contextvars import ContextVar
@@ -25,9 +27,8 @@ class SessionManager:
 
 session_manager = SessionManager()
 
-class Session:
+class UserSession:
     _var = ContextVar("session_data", default={})
-    _changed = ContextVar("session_changed", default=False)
 
     @classmethod
     def get(cls, key: str, default: str = '') -> str:
@@ -43,14 +44,12 @@ class Session:
 
     @classmethod
     def set(cls, key: str, value: Any) -> None:
-        cls._changed.set(True)
         data = cls._var.get()
         data[key] = value
         cls._var.set(data)
 
     @classmethod
     def setDict(cls, data: Dict = {}) -> None:
-        cls._changed.set(True)
         session_data = cls._var.get()
         for key in data:
             session_data[key] = data[key]
@@ -68,8 +67,6 @@ class Session:
 
     @classmethod
     async def save(cls, sid: str):
-        if not cls._changed.get():
-            return
         data = cls._var.get()
         await session_manager.aredis.set(sid, data, SESSION_LIFETIME)
     
@@ -84,7 +81,6 @@ class Session:
 
     @classmethod
     async def destroy(cls, sid):
-        cls._changed.set(True)
         cls._var.set({})
         await session_manager.aredis.set(sid, {})
     
@@ -93,26 +89,32 @@ class Session:
         current_time = time.time()
         cls.set(SESSION_REFRESH_KEY, current_time)
 
+    @classmethod
+    def getSessionId(cls, req: Request):
+        sid = req.cookies.get(SESSION_NAME)
+        return sid
 
-class SessionMiddleware(BaseHTTPMiddleware):
+
+class UserSessionMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
         refreshCookie = False
         sid = request.cookies.get(SESSION_NAME)
         if not sid:
             refreshCookie = True
-            sid = Session.newSessionId()
+            sid = UserSession.newSessionId()
 
-        data = await Session.load(sid) #load session
+        data = await UserSession.load(sid) #load session
+
         if data:
             last_update = data.get(SESSION_REFRESH_KEY)
             current_time = time.time()
             if not last_update or (current_time - last_update) > SESSION_REFRESH_INTERVAL:
-                Session.set(SESSION_REFRESH_KEY, current_time)
+                UserSession.set(SESSION_REFRESH_KEY, current_time)
                 refreshCookie = True
 
         response = await call_next(request)
         #save session
-        await Session.save(sid)
+        await UserSession.save(sid)
 
         if refreshCookie: #setcookie
             response.set_cookie(SESSION_NAME, sid, SESSION_LIFETIME, httponly=True)
@@ -128,16 +130,16 @@ if __name__ == "__main__":
         await loader.loadAll()
 
         sid = '12345'
-        data = await Session.load(sid) #load session
-        count = Session.getInt('count')
+        data = await UserSession.load(sid) #load session
+        count = UserSession.getInt('count')
         print(data)
-        Session.touch()
-        Session.setDict({
+        UserSession.touch()
+        UserSession.setDict({
             "count": count+1,
             "uid": 123,
         })
-        print(Session.get_all())
-        await Session.save(sid) #save session
+        print(UserSession.get_all())
+        await UserSession.save(sid) #save session
         await loader.releaseAll()
 
     asyncio.run(my_opeartion())

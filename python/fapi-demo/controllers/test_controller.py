@@ -1,6 +1,6 @@
 import asyncio
 from typing import Generator
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from fastapi.params import Body
 from pydantic import BaseModel, Field
 from core import logger
@@ -8,6 +8,7 @@ from core.reply import Reply
 from core.exception import ModelException, UserException
 from core.logger import get_logger
 from core.request_context import getRequestContext, setRequestContext
+from core.user_session import UserSession
 
 router = APIRouter()
 
@@ -179,3 +180,14 @@ async def get_user_id():
 async def test_generator_with_exception(id=Depends(get_user_id)):
     print("id=" + str(id))
     raise Exception("Error!")
+
+@router.get("/session")
+async def session(req: Request):
+    count = UserSession.getInt('count')
+    UserSession.set('count', count + 1)
+    data = UserSession.get_all()
+    return {
+        'session_id': UserSession.getSessionId(req),
+        'count': count,
+        'session_data': data,
+    }
