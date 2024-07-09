@@ -76,6 +76,11 @@ class QueryBuilder:
         self.update_raw(query, value)
         return self
 
+    def update_timestamp(self):
+        now = datetime.now(timezone.utc).isoformat()
+        self.update('updated_at', now)
+        return self
+
     def update_raw(self, query: str, value:Any = []):
         self._kind = QueryKind.update
         if type(value) != list:
@@ -476,6 +481,7 @@ if __name__ == "__main__":
         .update('notes', 'my notes')
         .update('score', 50)
         .update_raw('age = %s', 22)
+        .update_timestamp()
         .where('id', 123)
         .limit(1)
         .dump_build()
