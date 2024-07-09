@@ -21,12 +21,13 @@ async def release_pool(pool: redis_aio.ConnectionPool):
 
 
 class AsyncRedis:
-    def __init__(self, pool: redis_aio.ConnectionPool):
+    def __init__(self, pool: redis_aio.ConnectionPool, prefix: str = ''):
         self.pool = pool
+        self.prefix = prefix
 
     async def get(self, key: str, default: str = '') -> str:
         async with redis_aio.Redis(connection_pool=self.pool) as client:
-            value = await client.get(key)
+            value = await client.get(f'{self.prefix}{key}')
             return value.decode('utf-8') if value is not None else default
 
     async def getInt(self, key: str, default: int = 0) -> int:
@@ -43,15 +44,15 @@ class AsyncRedis:
         except json.JSONDecodeError:
             return default
 
-    async def set(self, key: str, value: Any) -> None:
+    async def set(self, key: str, value: Any, ex = None) -> None:
         async with redis_aio.Redis(connection_pool=self.pool) as client:
             if isinstance(value, dict):
                 value = json.dumps(value)
-            await client.set(key, value)
+            await client.set(f'{self.prefix}{key}', value, ex)
 
     async def delete(self, key: str) -> None:
         async with redis_aio.Redis(connection_pool=self.pool) as client:
-            await client.delete(key)
+            await client.delete(f'{self.prefix}{key}')
 
 
 if __name__ == "__main__":
@@ -59,9 +60,10 @@ if __name__ == "__main__":
 
     async def my_opeartion():        
         pool = create_pool()
-        aredis = AsyncRedis(pool)
-        await aredis.set('abc', 12345)
-        await aredis.set('def', 67890)
+        print(pool)
+        aredis = AsyncRedis(pool, 'MY_')
+        await aredis.set('abc', 12345, 3600)
+        await aredis.set('def', 67890, 3600)
         res1 = await aredis.get('def')
         await aredis.delete('def')
         res2 = await aredis.get('abc')
