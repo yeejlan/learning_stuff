@@ -4,7 +4,7 @@ import aiomysql
 sys.path.append(os.getcwd())
 from dataclasses import dataclass, field
 from enum import StrEnum
-from typing import Any, Tuple, Union
+from typing import Any, Callable, Tuple, Union
 import re
 from datetime import datetime, timezone
 
@@ -446,6 +446,10 @@ class QueryBuilder:
     async def exec_delete(self) -> int:
         res = await self.exec_update()
         return res
+    
+    async def transaction(self, operations: Callable[[aiomysql.Connection], Any]) -> Any:
+        return await db_mysql.transaction(operations, conn_or_pool=self._conn_or_pool)
+
 
 if __name__ == "__main__":
     (QueryBuilder().new()

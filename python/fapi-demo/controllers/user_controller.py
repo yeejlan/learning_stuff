@@ -56,3 +56,12 @@ async def delete_user(p: DeleteUserRequest):
     res = await user_model.deleteUser(p.user_id)
     return Reply.success(res)
 
+@router.post("/update-using-transaction-failed", response_model=int)
+async def update_using_transaction_failed():
+    res = await user_model.updateFailed()
+    return Reply.success(res)
+
+@router.post("/update-using-transaction-success", response_model=int)
+async def update_using_transaction_success():
+    res = await user_model.updateSuccess()
+    return Reply.success(res)

@@ -113,7 +113,7 @@ async def update(query, args: tuple, conn_or_pool: Union[aiomysql.Connection, ai
             await cur.execute(query, args)
             return cur.rowcount
         
-async def transaction(operations: Callable[[aiomysql.Connection], Any], conn_or_pool: Union[aiomysql.Connection, aiomysql.Pool]):
+async def transaction(operations: Callable[[aiomysql.Connection], Any], conn_or_pool: Union[aiomysql.Connection, aiomysql.Pool]) -> Any:
     async with get_connection(conn_or_pool) as conn:
         await conn.begin()
         try:

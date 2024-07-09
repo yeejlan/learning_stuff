@@ -1,8 +1,10 @@
 from enum import IntEnum, StrEnum
+import aiomysql
 from pydantic import BaseModel, computed_field
 from datetime import datetime
 from typing import List
 
+from core.exception import ModelException
 from core.querybuilder import QueryBuilder
 from core.resource_loader import getResourceLoader
 
@@ -87,3 +89,47 @@ async def deleteUser(user_id: int):
         .exec_delete()
     )
     return res
+
+async def updateFailed():
+    uid1 = 1
+    uid2 = 11
+    async def freeze2Users(conn: aiomysql.Connection):
+        res1 = await (make_query_builder().set_conn_or_pool(conn)
+                      .update('status', UserStatus.frozen)
+                      .where('id', uid1)
+                      .exec_update()
+                      )
+        raise ModelException('freeze2Users failed on purpose')
+        res2 = await (make_query_builder().set_conn_or_pool(conn)
+                      .update('status', UserStatus.frozen)
+                      .where('id', uid2)
+                      .exec_update()
+                      )
+        return [res1, res2]
+
+
+    result = await make_query_builder().transaction(freeze2Users)
+    return result
+
+        
+
+
+async def updateSuccess():
+    uid1 = 1
+    uid2 = 11
+    async def freeze2Users(conn: aiomysql.Connection):
+        res1 = await (make_query_builder().set_conn_or_pool(conn)
+                      .update('status', UserStatus.frozen)
+                      .where('id', uid1)
+                      .exec_update()
+                      )
+        res2 = await (make_query_builder().set_conn_or_pool(conn)
+                      .update('status', UserStatus.frozen)
+                      .where('id', uid2)
+                      .exec_update()
+                      )
+        return [res1, res2]
+
+
+    result = await make_query_builder().transaction(freeze2Users)
+    return result
