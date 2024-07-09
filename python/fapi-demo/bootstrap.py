@@ -9,7 +9,7 @@ from core.request_context import RequestContextMiddleware
 
 from core.resource_loader import getResourceLoader
 from core.reply import Reply
-from core.exception import FluxException, ModelException, UserException
+from core.exception import FluxException, ModelException, ServiceException, UserException
 from core.user_session import UserSessionMiddleware
 
 app = getApp()
@@ -52,13 +52,15 @@ async def validation_exception_handler(request, ex):
 @app.exception_handler(Exception)
 @app.exception_handler(ModelException)
 @app.exception_handler(FluxException)
+@app.exception_handler(ServiceException)
 async def default_exception_handler(request: Request, ex: Exception):
     message = f"{type(ex).__name__}: {str(ex)}"
     code = 500
     at = getattr(ex, 'at', '')
 
-    stack_trace = traceback.format_exc().strip()
-    error_log = f"{message} @{at}\n{stack_trace}"
+    # stack_trace = traceback.format_exc().strip()
+    # error_log = f"{message} @{at}\n{stack_trace}"
+    error_log = f"{message} @{at}"
 
     #log error
     getLogger().error(error_log)
