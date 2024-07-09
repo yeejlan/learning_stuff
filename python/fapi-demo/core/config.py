@@ -43,8 +43,23 @@ class Config:
     def refresh(self):
         self._cache.clear()
 
+class ConfigManager:
+    def __init__(self):
+        self._config = None
+
+    @property
+    def config(self) -> Config:
+        if self._config is None:
+            self._config = Config()
+        return self._config
+
+config_manager = ConfigManager()
+
+def getConfig() -> Config:
+    return config_manager.config
+
 if __name__ == "__main__":
-    config = Config('.env')
+    config = getConfig()
 
     db_host = config.get('DB_HOST', 'localhost')
     db_port = config.getInt('DB_PORT', 3306)

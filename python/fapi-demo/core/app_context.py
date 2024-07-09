@@ -1,7 +1,7 @@
 from enum import IntEnum
 import sys, os
 sys.path.append(os.getcwd())
-from core.config import Config
+from core.config import Config, getConfig
 from typing import Dict, Any, Optional
 
 class AppException(Exception):
@@ -19,7 +19,7 @@ class AppContext:
     def __init__(self):
         self._setting: Dict[str, Any] = {}
         self._isInit: bool = False
-        self._config: Optional[Config] = None
+        self._config: Config = getConfig()
         self._isDebug: bool = False
 
     @classmethod
@@ -29,17 +29,14 @@ class AppContext:
         return cls._instance
 
     @classmethod
-    def init(cls, configFile: str) -> None:
+    def init(cls) -> None:
         instance = cls.getInstance()
-        instance._config = Config(configFile)
         envString = instance._config.get('APP_ENV', 'production')
         env = getattr(Environment, envString.upper())
         instance._setting['envString'] = envString
         instance._setting['env'] = env
         
         isDebug = instance._config.getBool('APP_DEBUG', False)
-        if env == Environment.PRODUCTION:
-            isDebug = False
         instance._setting['debug'] = isDebug
         instance._isDebug = isDebug
 
@@ -63,7 +60,7 @@ class AppContext:
     def getConfig(cls) -> Config:
         instance = cls.getInstance()
         instance._checkInit()
-        return instance._config # type: ignore
+        return instance._config
 
     @classmethod
     def getSetting(cls) -> Dict[str, Any]:
@@ -81,7 +78,7 @@ class AppContext:
             raise AppException(f'Please call {self.__class__.__name__}.init first')
 
 if __name__ == "__main__":
-    AppContext.init('.env')
+    AppContext.init()
 
     env = AppContext.getEnv()
     envString = AppContext.getEnvString()

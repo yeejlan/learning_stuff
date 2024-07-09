@@ -1,12 +1,12 @@
 from contextlib import asynccontextmanager
 import sys, os
 sys.path.append(os.getcwd())
-from core import app
+from core.config import getConfig
 from typing import Any, Callable, Union
 import aiomysql
 import os
 
-config = app.config
+config = getConfig()
 
 async def create_pool(prefix :str = 'DB') -> aiomysql.Pool:
     host = config.get(f'{prefix}_HOST', '127.0.0.1')
