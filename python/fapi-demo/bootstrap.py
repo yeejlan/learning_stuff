@@ -17,11 +17,11 @@ app.add_middleware(RequestContextMiddleware)
 
 @app.on_event("startup")
 async def startup():
-    await getResourceLoader().createMysqlPool('DB')
+    await getResourceLoader().loadAll()
 
 @app.on_event("shutdown")
 async def shutdown():
-    await getResourceLoader().closeMysqlPool('DB')
+    await getResourceLoader().releaseAll()
 
 @app.exception_handler(UserException)
 async def user_exception_handler(request: Request, ex: UserException):
