@@ -498,8 +498,8 @@ if __name__ == "__main__":
     }    
     (QueryBuilder().new()
         .table('users')
-        .insert(user1)
-        .insert_with_timestamp([user2, user3])
+        .insert(user1) #insert one record
+        .insert_with_timestamp([user2, user3]) #insert multi records
         .dump_build()
         .print_separator()
         .dump_fake_sql()
