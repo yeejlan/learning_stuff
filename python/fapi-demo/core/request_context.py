@@ -1,5 +1,5 @@
 from contextvars import ContextVar
-from typing import Any
+from typing import Any, Dict
 from uuid import uuid4
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -39,6 +39,13 @@ def setRequestContext(key: str, value: Any):
     ctx = request_context_var.get()
     ctx[key] = value
     request_context_var.set(ctx)
+
+def setRequestContextViaDict(data: Dict = {}):
+    ctx = request_context_var.get()
+    for key in data:
+        ctx[key] = data[key]
+    request_context_var.set(ctx)    
+
 
 if __name__ == "__main__":
     ctx = getRequestContextDict()
