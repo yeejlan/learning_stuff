@@ -13,7 +13,7 @@ from core.user_session import UserSession
 router = APIRouter()
 
 @router.get("/user-err")
-def test_user_exception(name: str, price: int):
+def test_user_exception():
     """
     Test UserException.
 
@@ -34,7 +34,7 @@ def test_user_exception(name: str, price: int):
     }  
     ```
     """    
-    raise UserException("this is testing error", Reply.OPERATION_FAILED)
+    raise UserException("this is testing error", Reply.OPERATION_FAILED, {"a":1, "b":2})
 
 
 @router.get("/err")

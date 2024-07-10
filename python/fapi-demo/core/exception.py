@@ -1,5 +1,6 @@
 import sys
 from collections import namedtuple
+from typing import Any
 
 FrameInfo = namedtuple('FrameInfo', ['file', 'line', 'func'])
 
@@ -16,9 +17,10 @@ def get_frame_info(look_back =2) -> FrameInfo:
     return FrameInfo(file, line, func)
 
 class UserException(Exception):
-    def __init__(self, message: str, code: int = 1000, at: FrameInfo|None=None): 
+    def __init__(self, message: str, code: int = 1000, extra: dict[str, Any] = {}, at: FrameInfo|None=None): 
         self.code = code
         self.message = message
+        self.extra = extra
         self.at = at
         if at is None:
             self.at = get_frame_info()

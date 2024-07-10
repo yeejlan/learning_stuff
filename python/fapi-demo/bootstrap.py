@@ -30,9 +30,11 @@ async def user_exception_handler(request: Request, ex: UserException):
     code = ex.code
     message = ex.message
     at = ex.at
-    return Reply.json_response(code, message, Reply.code_to_str(code), None, {
-        'at': str(at),
-    })
+    extra = ex.extra
+    if extra is None:
+        extra = {}
+    extra['at'] = str(at)
+    return Reply.json_response(code, message, Reply.code_to_str(code), None, extra)
 
 
 @app.exception_handler(RequestValidationError)

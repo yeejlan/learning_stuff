@@ -38,11 +38,6 @@ class Reply(IntEnum):
     def success(cls, resp: Any):
         return cls.json_response(0, 'success', 'success', resp)
 
-
-    @classmethod
-    def failed(cls, message: str, code: int): 
-        return cls.json_response(code, message, Reply.code_to_str(code), None)
-
     @staticmethod
     def redirect(url: str, status_code: int = 307):
         return RedirectResponse(url=url, status_code=status_code)
