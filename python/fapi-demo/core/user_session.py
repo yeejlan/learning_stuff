@@ -41,6 +41,12 @@ class UserSession:
             return int(value)
         except ValueError:
             return default
+        
+    @classmethod
+    def delete(cls, key: str, value: Any) -> None:
+        data = cls._var.get()
+        del data[key]
+        cls._var.set(data)
 
     @classmethod
     def set(cls, key: str, value: Any) -> None:
