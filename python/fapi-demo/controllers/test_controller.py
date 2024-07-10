@@ -150,7 +150,21 @@ def getLogger():
 
 from fastapi import BackgroundTasks, Depends
 
+class JobManager:
+    def __init__(self):
+        self.error = None
 
+    async def __aenter__(self):
+        getLogger().debug(f"Starting job")
+        return self
+
+    async def __aexit__(self, exc_type, exc_value, traceback):
+        if exc_type is not None:
+            getLogger().error(f"Job failed: {exc_value}")
+            self.error = exc_value
+        else:
+            getLogger().debug(f"Job completed successfully")
+        return False
 
 @router.get("/bg-task")
 async def send_notification(
@@ -158,12 +172,17 @@ async def send_notification(
     background_tasks: BackgroundTasks
 ):
     getLogger().debug("before send_notification")
+    setRequestContext('task_id', 1001)
     background_tasks.add_task(send_message, message)
     getLogger().debug("after send_notification")
     return {"message": "Message sent"}
 
-def send_message(msg: str):
-    getLogger().info("message sent: " + msg)
+async def send_message(msg: str):
+    async with JobManager() as manager:
+        await asyncio.sleep(3)
+        getLogger().info("bg_jobs: message sent: " + msg)
+        raise FluxException('bg_jobs: jobs not done!')
+        getLogger().info("bg_jobs: reach here")
 
 @router.get("/sleep-10-seconds")
 async def sleep_10_seconds():
