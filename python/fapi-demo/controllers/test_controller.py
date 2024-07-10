@@ -5,7 +5,7 @@ from fastapi.params import Body
 from pydantic import BaseModel, Field
 from core import logger
 from core.reply import Reply
-from core.exception import ModelException, UserException
+from core.exception import FluxException, ModelException, UserException
 from core.logger import get_logger
 from core.request_context import getRequestContext, setRequestContext
 from core.user_session import UserSession
@@ -191,3 +191,10 @@ async def session(req: Request):
         'count': count,
         'session_data': data,
     }
+
+class MyCustomeException(FluxException):
+    pass
+
+@router.get("/custom-flux-exception")
+async def custom_flux_exception():
+    raise MyCustomeException('This exception should have "at" info')
