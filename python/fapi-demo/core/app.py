@@ -25,7 +25,7 @@ appOptions = {
     "servers": servers,
 }
 if not isDebug:
-    appOptions['docs_url'] = None
+    appOptions['openapi_url'] = None
 
 app = FastAPI(**appOptions)
 
