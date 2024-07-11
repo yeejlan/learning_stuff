@@ -20,7 +20,13 @@ appOptions = {
 if not isDebug:
     appOptions['docs_url'] = None
 
-app = FastAPI(**appOptions)
+app = FastAPI(
+servers=[
+            {"url": "/", "description": "Local"},
+            {"url": "https://stag.example.com", "description": "Staging environment"},
+            {"url": "https://prod.example.com", "description": "Production environment"},
+        ],
+    **appOptions)
 
 def getApp() -> FastAPI:
     return app
