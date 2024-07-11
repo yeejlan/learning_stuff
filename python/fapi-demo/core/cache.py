@@ -1,16 +1,15 @@
 from contextvars import ContextVar
 import functools
 import inspect
+import json
 import sys, os
-
-from sympy import Union, false
 
 working_path = os.getcwd()
 if working_path not in sys.path:
     sys.path.append(working_path)
 
 
-from typing import Any, Awaitable, Callable, Coroutine, TypeVar
+from typing import Any, Callable, Coroutine, Dict, List, Optional, TypeVar, Union
 from core.config import getConfig
 from core import async_redis, resource_loader
 
@@ -68,7 +67,33 @@ class Cache:
 
     @classmethod
     async def set(cls, key: str, value: Any, ex: int = CACHE_LIFETIME) -> None:
-        return await cache_manager.aredis.set(key, value, ex)
+        await cache_manager.aredis.set(key, value, ex)
+    
+    @classmethod
+    async def mget(cls, keys: List[str]) -> List[Any]:
+        return await cache_manager.aredis.mget(keys)
+    
+    @classmethod
+    async def mgetDict(cls, keys: List[str]) -> List[Optional[Dict[str, Any]]]:
+        byte_values = await cls.mget(keys)
+        result_list = []
+        for byte_value in byte_values:
+            if byte_value is None:
+                value = None
+            else:
+                try:
+                    value = json.loads(byte_value)
+                except json.JSONDecodeError:
+                    value = None
+
+            result_list.append(value)
+        
+        return result_list
+
+
+    @classmethod
+    async def mset(cls, key_values: dict[str, Any], ex: int = CACHE_LIFETIME) -> None:
+        await cache_manager.aredis.mset(key_values, ex=ex)    
 
     @classmethod
     def cache_result(cls, key: str, ex: int = CACHE_LIFETIME):
@@ -170,6 +195,78 @@ class Cache:
         loop = asyncio.get_event_loop()
         return await loop.run_in_executor(None, lambda: func(*args, **kwargs))
 
+    @classmethod
+    def cache_list_result(cls, key_prefix: str, id_field: str = 'id', ex: int = CACHE_LIFETIME):
+        def decorator(func: Callable[..., Coroutine[Any, Any, List[T]]]) -> Callable[..., Coroutine[Any, Any, List[T]]]:
+            @functools.wraps(func)
+            async def wrapper(*args: Any, **kwargs: Any) -> List[T]:
+                # Get function signature
+                sig = inspect.signature(func)
+                bound_args = sig.bind(*args, **kwargs)
+                bound_args.apply_defaults()
+
+                # Check if the function has only one parameter and it's a list
+                if len(bound_args.arguments) != 1 or not isinstance(next(iter(bound_args.arguments.values())), list):
+                    raise ValueError("Function must have exactly one parameter of type list")
+
+                # Get the list of ids
+                ids = next(iter(bound_args.arguments.values()))
+                
+                # Check return type annotation
+                return_type = sig.return_annotation
+                if not (hasattr(return_type, '__origin__') and return_type.__origin__ is list):
+                    raise ValueError("Function must return a list")
+                
+                item_type = return_type.__args__[0]
+                if not (inspect.isclass(item_type) and (issubclass(item_type, dict) or hasattr(item_type, '__dict__'))):
+                    raise ValueError("Function must return a list of dictionaries or objects with __dict__ attribute")
+
+                # Build cache keys
+                cache_keys = [f"{key_prefix}_{id}" for id in ids]
+
+                # Retrieve data from cache
+                cached_data = await cls.mgetDict(cache_keys)
+
+                # Find ids missing from cache
+                missing_ids = [id for id, data in zip(ids, cached_data) if data is None]
+
+                # If there's missing data, call the original function
+                if missing_ids:
+                    missing_data = await func(missing_ids)
+                    
+                    # Ensure missing_data is a list of Dict or XxxModel
+                    if not isinstance(missing_data, list) or not missing_data or not hasattr(missing_data[0], id_field):
+                        raise ValueError(f"Function must return a list of objects with '{id_field}' attribute")
+
+                    # Prepare data for caching
+                    cache_update = {}
+                    for item in missing_data:
+                        item_id = getattr(item, id_field)
+                        cache_update[f"{key_prefix}_{item_id}"] = item.__dict__ if hasattr(item, '__dict__') else item
+
+                    # Update cache
+                    await cls.mset(cache_update, ex)
+
+                    # Update cached_data with new data
+                    id_to_data = {getattr(item, id_field): item for item in missing_data}
+                    for i, (id, data) in enumerate(zip(ids, cached_data)):
+                        if data is None:
+                            cached_data[i] = id_to_data[id].__dict__ if hasattr(id_to_data[id], '__dict__') else id_to_data[id] # type: ignore
+
+                # Prepare final result
+                result = []
+                for data in cached_data:
+                    if data is not None:
+                        if issubclass(item_type, dict):
+                            result.append(item_type(data))
+                        else:
+                            result.append(item_type(**data))
+
+                return result
+
+            return wrapper
+        return decorator
+
 
 if __name__ == "__main__":
     import asyncio
@@ -191,6 +288,10 @@ if __name__ == "__main__":
         print(user)
         #await update_user_info(101, "user is deleted from cache!")
         
+        rows = await getUserByIds([102,12,13,14,15])
+        for row in rows:
+            print(row)
+
         await loader.releaseAll()
 
 
@@ -211,5 +312,13 @@ if __name__ == "__main__":
     async def update_user_info(user_id: int, new_name: str) -> None:
         # Update user info logic
         pass
+
+    @Cache.cache_list_result(key_prefix='getUserInfo')
+    async def getUserByIds(user_ids: list[int]) ->list[UserModel]:
+        # Simulate fetching user info
+        rows = []
+        for id in user_ids:
+            rows.append(UserModel(id=id, name=f'User#{id}'))
+        return rows
 
     asyncio.run(my_opeartion())
