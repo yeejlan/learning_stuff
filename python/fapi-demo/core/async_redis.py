@@ -57,11 +57,27 @@ class AsyncRedis:
         async with redis_aio.Redis(connection_pool=self.pool) as client:
             await client.delete(f'{self.prefix}{key}')
 
+    async def mget(self, keys: list[str], default: list[Any] = []) -> list[Any]:
+        prefixed_keys = [f"{self.prefix}{key}" for key in keys]
+        async with redis_aio.Redis(connection_pool=self.pool) as client:
+            value = await client.mget(prefixed_keys)
+            return value
+        
+    async def mset(self, key_values: dict[str, Any], ex = None) -> None:
+        prefixed_key_values = {f"{self.prefix}{key}": value for key, value in key_values.items()}
+        async with redis_aio.Redis(connection_pool=self.pool) as client:
+            pipeline = client.pipeline()
+            for key, value in prefixed_key_values.items():
+                if isinstance(value, dict):
+                    value = json.dumps(value)
+                pipeline.set(key, value, ex)
+            await pipeline.execute()
+
 
 if __name__ == "__main__":
     import asyncio
 
-    async def my_opeartion():        
+    async def my_opeartion():
         pool = create_pool()
         print(pool)
         aredis = AsyncRedis(pool, 'MY_')
@@ -72,6 +88,12 @@ if __name__ == "__main__":
         res2 = await aredis.get('abc')
         res3 = await aredis.get('def')
         print([res1, res2, res3])
+
+        key_values = {f"key{i}": f"value{i}" for i in range(1, 6)}
+        await aredis.mset(key_values, 3600)
+        keys = [f"key{i}" for i in range(1, 6)]
+        res4 = await aredis.mget(keys)
+        print(res4)
 
         await release_pool(pool)
 
