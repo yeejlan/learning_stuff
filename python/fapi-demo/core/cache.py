@@ -2,6 +2,7 @@ from contextvars import ContextVar
 import functools
 import inspect
 import json
+import re
 import sys, os
 
 working_path = os.getcwd()
@@ -196,8 +197,14 @@ class Cache:
         return await loop.run_in_executor(None, lambda: func(*args, **kwargs))
 
     @classmethod
-    def cache_list_result(cls, key_prefix: str, id_field: str = 'id', ex: int = CACHE_LIFETIME):
+    def cache_batch_result(cls, key: str, id_field: str = 'id', ex: int = CACHE_LIFETIME):
         def decorator(func: Callable[..., Coroutine[Any, Any, List[T]]]) -> Callable[..., Coroutine[Any, Any, List[T]]]:
+            match = re.match(r'^([a-zA-Z]+)_\{([a-zA-Z_]+)\}$', key)
+            if not match:
+                raise ValueError("Key must be in the format 'prefix_{variable}', e.g., 'getUserInfo_{user_id}'")
+
+            key_prefix, variable = match.groups()
+        
             @functools.wraps(func)
             async def wrapper(*args: Any, **kwargs: Any) -> List[T]:
                 # Get function signature
@@ -288,7 +295,7 @@ if __name__ == "__main__":
         print(user)
         #await update_user_info(101, "user is deleted from cache!")
         
-        rows = await getUserByIds([102,12,13,14,15])
+        rows = await getUserByIds([105,12,13,14,15])
         for row in rows:
             print(row)
 
@@ -313,11 +320,11 @@ if __name__ == "__main__":
         # Update user info logic
         pass
 
-    @Cache.cache_list_result(key_prefix='getUserInfo')
-    async def getUserByIds(user_ids: list[int]) ->list[UserModel]:
+    @Cache.cache_batch_result(key="getUserInfo_{user_id}")
+    async def getUserByIds(ids: list[int]) ->list[UserModel]:
         # Simulate fetching user info
         rows = []
-        for id in user_ids:
+        for id in ids:
             rows.append(UserModel(id=id, name=f'User#{id}'))
         return rows
 
