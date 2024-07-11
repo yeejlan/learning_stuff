@@ -1,5 +1,10 @@
 FROM python:3.11
 
+RUN apt-get update
+RUN apt-get install -y net-tools
+RUN apt-get install -y telnet
+RUN apt-get install -y iputils-ping
+
 WORKDIR /app
 
 COPY ./requirements.txt /app/requirements.txt
