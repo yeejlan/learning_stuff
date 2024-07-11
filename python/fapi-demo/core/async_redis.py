@@ -2,7 +2,10 @@ import json
 import sys, os
 from typing import Any
 
-sys.path.append(os.getcwd())
+working_path = os.getcwd()
+if working_path not in sys.path:
+    sys.path.append(working_path)
+
 from core import app
 
 import redis.asyncio as redis_aio

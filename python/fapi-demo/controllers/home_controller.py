@@ -1,3 +1,4 @@
+import sys
 from fastapi import APIRouter
 from core.reply import Reply,reply_map,reply_map_reversed
 from core.app import app
@@ -24,5 +25,5 @@ def homepage():
 def list_all_response_code():
     return Reply.success({
         'map': reply_map,
-        'map_reversed': reply_map_reversed,
+        'sys.path': sys.path,
     })

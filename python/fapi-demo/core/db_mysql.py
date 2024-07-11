@@ -1,6 +1,9 @@
 from contextlib import asynccontextmanager
 import sys, os
-sys.path.append(os.getcwd())
+working_path = os.getcwd()
+if working_path not in sys.path:
+    sys.path.append(working_path)
+
 from core.config import getConfig
 from typing import Any, Callable, Union
 import aiomysql

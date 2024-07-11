@@ -1,6 +1,8 @@
 from enum import IntEnum
 import sys, os
-sys.path.append(os.getcwd())
+working_path = os.getcwd()
+if working_path not in sys.path:
+    sys.path.append(working_path)
 from core.config import Config, getConfig
 from typing import Dict, Any, Optional
 

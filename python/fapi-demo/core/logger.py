@@ -1,5 +1,8 @@
 import sys, os
-sys.path.append(os.getcwd())
+working_path = os.getcwd()
+if working_path not in sys.path:
+    sys.path.append(working_path)
+
 import logging
 from contextvars import ContextVar
 from core.request_context import getRequestContextDict

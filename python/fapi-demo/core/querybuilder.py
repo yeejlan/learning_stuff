@@ -1,7 +1,10 @@
 import sys, os
 
 import aiomysql
-sys.path.append(os.getcwd())
+working_path = os.getcwd()
+if working_path not in sys.path:
+    sys.path.append(working_path)
+
 from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import Any, Callable, Tuple, Union

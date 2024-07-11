@@ -1,8 +1,10 @@
 import sys, os
-import time
+working_path = os.getcwd()
+if working_path not in sys.path:
+    sys.path.append(working_path)
 
+import time
 from fastapi import Request
-sys.path.append(os.getcwd())
 from core import async_redis, resource_loader
 from contextvars import ContextVar
 from typing import Any, Dict
