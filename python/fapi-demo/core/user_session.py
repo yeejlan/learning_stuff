@@ -45,7 +45,7 @@ class UserSession:
             return default
         
     @classmethod
-    def delete(cls, key: str, value: Any) -> None:
+    def delete(cls, key: str) -> None:
         data = cls._var.get()
         del data[key]
         cls._var.set(data)
