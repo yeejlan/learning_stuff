@@ -118,14 +118,16 @@ class Cache:
                 # Build cache key
                 cache_key = key.format(**bound_args.arguments)
 
+                # Call the original function
+                res = None
+                if inspect.iscoroutinefunction(func):
+                    res = await func(*args, **kwargs)
+                else:
+                    res = await cls.run_sync(func, *args, **kwargs)
+
                 # Delete cache
                 await cls.delete(cache_key)
-
-                # Call the original function
-                if inspect.iscoroutinefunction(func):
-                    return await func(*args, **kwargs)
-                else:
-                    return await cls.run_sync(func, *args, **kwargs)
+                return res
 
             return wrapper
         return decorator
