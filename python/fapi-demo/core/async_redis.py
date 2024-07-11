@@ -57,7 +57,7 @@ class AsyncRedis:
         async with redis_aio.Redis(connection_pool=self.pool) as client:
             await client.delete(f'{self.prefix}{key}')
 
-    async def mget(self, keys: list[str], default: list[Any] = []) -> list[Any]:
+    async def mget(self, keys: list[str]) -> list[Any]:
         prefixed_keys = [f"{self.prefix}{key}" for key in keys]
         async with redis_aio.Redis(connection_pool=self.pool) as client:
             value = await client.mget(prefixed_keys)
