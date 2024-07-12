@@ -23,7 +23,7 @@ async def run_sync(func: Callable[..., T], *args: Any, **kwargs: Any) -> T:
     loop = asyncio.get_event_loop()
     return await loop.run_in_executor(None, lambda: func(*args, **kwargs))
 
-def format_exception(e: Exception, full_stack: bool = False, skip_lib_stack: bool = True) -> str:
+def format_exception(e: Exception, full_stack: bool = False, skip_external_stacks: bool = True) -> str:
     """
     Format exception with type, message, file, line number and function name.
     
@@ -46,7 +46,7 @@ def format_exception(e: Exception, full_stack: bool = False, skip_lib_stack: boo
         
         for frame in traceback.extract_tb(exc_traceback):
             filename, line_number, func_name, _ = frame
-            if skip_lib_stack and not filename.startswith(working_path):
+            if skip_external_stacks and not filename.startswith(working_path):
                 continue            
             stack.append(f"  at {filename}:{line_number} in {func_name}()")
         return "\n".join(stack)
