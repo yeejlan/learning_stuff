@@ -11,6 +11,7 @@ from core.resource_loader import getResourceLoader
 from core.reply import Reply
 from core.exception import FluxException, ModelException, ServiceException, UserException
 from core.user_session import UserSessionMiddleware
+from core.util import format_exception
 
 app = getApp()
 logger.buildInitialLoggers(['app', 'err500'])
@@ -57,12 +58,12 @@ async def default_exception_handler(request: Request, ex: Exception):
     code = 500
     at = getattr(ex, 'at', '')
 
-    # stack_trace = traceback.format_exc().strip()
-    # error_log = f"{message} @{at}\n{stack_trace}"
-    error_log = f"{message} @{at}"
-
+    stack_trace = format_exception(ex, full_stack=True)
+    #error_log = f"{message} @{at}\n{stack_trace}"
+    #error_log = f"{message} @{at}"
+    
     #log error
-    getLogger().error(error_log)
+    getLogger().error(stack_trace)
 
     return Reply.json_response(code, message, Reply.code_to_str(code), None, {
         'at': at,
