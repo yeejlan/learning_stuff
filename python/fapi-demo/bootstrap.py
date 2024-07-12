@@ -58,12 +58,10 @@ async def default_exception_handler(request: Request, ex: Exception):
     code = 500
     at = getattr(ex, 'at', '')
 
-    stack_trace = format_exception(ex, full_stack=True)
-    #error_log = f"{message} @{at}\n{stack_trace}"
-    #error_log = f"{message} @{at}"
-    
+    error_log = format_exception(ex, full_stack=True)
+
     #log error
-    getLogger().error(stack_trace)
+    getLogger().error(error_log)
 
     return Reply.json_response(code, message, Reply.code_to_str(code), None, {
         'at': at,
