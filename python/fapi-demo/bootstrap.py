@@ -41,9 +41,7 @@ async def validation_exception_handler(request, ex):
     err = ex.errors()[0]
     message = err['msg']
     
-    del err['msg']
-    del err['input']
-    del err['url']
+    err = {k: v for k, v in err.items() if k not in ('msg', 'input', 'url')}
 
     return Reply.json_response(code, message, Reply.code_to_str(code), None, {
         'error': err,
