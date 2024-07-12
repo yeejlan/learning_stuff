@@ -1,6 +1,15 @@
-import sys
+import sys, os
+
+working_path = os.getcwd()
+if working_path not in sys.path:
+    sys.path.append(working_path)
+
+from core.config import getConfig
 from collections import namedtuple
 from typing import Any
+
+config = getConfig()    
+is_debug = config.getBool('APP_DEBUG', False)
 
 FrameInfo = namedtuple('FrameInfo', ['file', 'line', 'func'])
 
@@ -22,6 +31,8 @@ class UserException(Exception):
         self.message = message
         self.extra = extra
         self.at = at
+        if not is_debug:
+            return
         if at is None:
             self.at = get_frame_info()
 
@@ -29,6 +40,8 @@ class ServiceException(Exception):
     def __init__(self, message: str, at: FrameInfo|None=None):
         self.message = message
         self.at = at
+        if not is_debug:
+            return        
         if at is None:
             self.at = get_frame_info()
 
@@ -36,6 +49,8 @@ class ModelException(Exception):
     def __init__(self, message: str, at: FrameInfo|None=None):
         self.message = message
         self.at = at
+        if not is_debug:
+            return        
         if at is None:
             self.at = get_frame_info()
 
@@ -43,5 +58,7 @@ class FluxException(Exception):
     def __init__(self, message: str, at: FrameInfo|None=None):
         self.message = message
         self.at = at
+        if not is_debug:
+            return        
         if at is None:
             self.at = get_frame_info()
