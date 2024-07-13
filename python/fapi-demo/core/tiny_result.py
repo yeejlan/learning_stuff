@@ -1,18 +1,13 @@
 import functools
 import sys
 import traceback
-from typing import Any, Callable, Coroutine, Generic, TypeVar, cast
+from typing import Any, Callable, Coroutine, cast
 
-T = TypeVar('T')
+from pydantic import BaseModel
 
-class AsyncResult(Generic[T]):
-    def __init__(self, data: T = None, error: str = ''):
-        self.data = data
-        self.error = error
-
-    def __iter__(self):
-        yield self.error
-        yield self.data
+class TinyResult(BaseModel):
+    error: str = ''
+    data: Any = None
 
 def format_exception(e: Exception) -> str:
     """Format exception with type, message, file, line number and function name."""
@@ -21,7 +16,7 @@ def format_exception(e: Exception) -> str:
     filename, line_number, func_name, _ = tb[-1]
     return f"{type(e).__name__}(\"{str(e)}\") @ {filename}:{line_number} {func_name}()"
 
-def return_as_async_result() -> Callable:
+def return_as_tiny_result() -> Callable:
     """
     A decorator that wraps an asynchronous function to return an AsyncResult object.
 
@@ -33,26 +28,26 @@ def return_as_async_result() -> Callable:
         Callable: A decorator function that can be applied to an asynchronous function.
 
     Usage:
-        @return_as_async_result()
+        @return_as_tiny_result()
         async def my_async_function():
             # function implementation
 
     The decorated function will return an AsyncResult object, which can be used as follows:
-        result = cast(AsyncResult[XxxType], await await my_async_function())
+        result = cast(TinyResult, await await my_async_function())
         if result.error:
             # handle error string
         else:
             # use result.data
     """
-    def decorator(func: Callable[..., Coroutine]) -> Callable[..., Coroutine[Any, Any, AsyncResult[Any]]]:
+    def decorator(func: Callable[..., Coroutine]) -> Callable[..., Coroutine[Any, Any, TinyResult]]:
         @functools.wraps(func)
-        async def wrapper(*args, **kwargs) -> AsyncResult:
+        async def wrapper(*args, **kwargs) -> TinyResult:
             try:
                 result = await func(*args, **kwargs)
-                return AsyncResult(data=result)
+                return TinyResult(data=result)
             except Exception as e:
                 error_message = format_exception(e)
-                return AsyncResult(error=error_message)
+                return TinyResult(error=error_message)
         return wrapper
     return decorator
 
@@ -60,7 +55,7 @@ def return_as_async_result() -> Callable:
 if __name__ == "__main__":
     import asyncio
 
-    @return_as_async_result()
+    @return_as_tiny_result()
     async def example_function(x: int, y: int) -> int:
         await asyncio.sleep(0.01)
         if y == 0:
@@ -68,13 +63,13 @@ if __name__ == "__main__":
         return x // y
 
     async def main():
-        result = cast(AsyncResult[int], await example_function(10, 2))
+        result = cast(TinyResult, await example_function(10, 2))
         if result.error:
             print(f"Error occurred: {result.error}")
         else:
             print(f"Result: {result.data}")
 
-        result = cast(AsyncResult[int], await example_function(10, 0))
+        result = cast(TinyResult, await example_function(10, 0))
         if result.error:
             print(f"Error occurred: {result.error}")
         else:
