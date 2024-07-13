@@ -12,16 +12,14 @@ request_context_var: ContextVar[dict] = ContextVar("request_context")
 #middleware
 class RequestContextMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
-        token = request_context_var.set({})
-        ctx = request_context_var.get()
+        ctx = {}
         ctx['request_id'] = uuid_to_base58(uuid4())
-        request_context_var.set(ctx)
+        token = request_context_var.set(ctx)
         try:
             response = await call_next(request)
-            return response
         finally:
             request_context_var.reset(token)
-
+        return response
 
 def getRequestContextDict() -> dict[str, Any]:
     return request_context_var.get()
