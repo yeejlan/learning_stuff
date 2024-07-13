@@ -57,14 +57,22 @@ class UserSession:
     def set(cls, key: str, value: Any) -> None:
         data = session_context.get()
         data[key] = value
+        data['_changed'] = True
         session_context.set(data)
 
     @classmethod
-    def setDict(cls, data: Dict = {}) -> None:
-        session_data = session_context.get()
-        for key in data:
-            session_data[key] = data[key]
-        session_context.set(session_data)
+    def setDict(cls, session_data: Dict = {}) -> None:
+        data = session_context.get()
+        for key in session_data:
+            data[key] = session_data[key]
+        data['_changed'] = True
+        session_context.set(data)
+
+    @classmethod
+    def touch(cls) -> None:
+        data = session_context.get()
+        data['_changed'] = True
+        session_context.set(data)
 
     @classmethod
     def get_all(cls) -> Dict[str, Any]:
@@ -104,11 +112,6 @@ class UserSession:
     async def destroy(cls, sid):
         session_context.set({})
         await session_manager.aredis.set(sid, {})
-    
-    @classmethod
-    def touch(cls):
-        current_time = time.time()
-        cls.set(SESSION_REFRESH_KEY, current_time)
 
 
 class UserSessionMiddleware(BaseHTTPMiddleware):
@@ -137,7 +140,10 @@ class UserSessionMiddleware(BaseHTTPMiddleware):
                 UserSession.set(SESSION_REFRESH_KEY, current_time)
                 refreshCookie = True
 
-            await UserSession.save(sid)
+            changed = data.get('_changed')
+            if changed:
+                UserSession.delete('_changed')
+                await UserSession.save(sid)
 
         session_context.reset(token)
         session_id.reset(token_sid)
