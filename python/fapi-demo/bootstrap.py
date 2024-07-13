@@ -6,6 +6,7 @@ from fastapi.staticfiles import StaticFiles
 from core import logger
 from core.app import getApp
 from core.auth import AuthContextMiddleware
+from core.cache import CacheRefreshMiddleware
 from core.request_context import RequestContextMiddleware
 
 from core.resource_loader import getResourceLoader
@@ -19,6 +20,7 @@ logger.buildInitialLoggers(['app', 'err500'])
 app.add_middleware(RequestContextMiddleware)
 app.add_middleware(AuthContextMiddleware)
 app.add_middleware(UserSessionMiddleware)
+app.add_middleware(CacheRefreshMiddleware)
 
 @app.on_event("startup")
 async def startup():

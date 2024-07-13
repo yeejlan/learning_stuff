@@ -13,10 +13,22 @@ if working_path not in sys.path:
 from typing import Any, Callable, Coroutine, Dict, List, Optional, TypeVar, Union
 from core.config import getConfig
 from core import async_redis, resource_loader
+from starlette.middleware.base import BaseHTTPMiddleware
 
 CACHE_LIFETIME = 3600
 
 cache_enabled: ContextVar[bool] = ContextVar("cache_enabled", default=True)
+
+#middleware
+class CacheRefreshMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request, call_next):
+        cache_refresh = request.query_params.get('cache_refresh', None)
+        h_cache_refresh = request.headers.get('cache_refresh', None)
+        if cache_refresh or h_cache_refresh:
+            cache_enabled.set(False)
+
+        response = await call_next(request)
+        return response
 
 class CacheManager:
     def __init__(self):
