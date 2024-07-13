@@ -48,9 +48,7 @@ async def validation_exception_handler(request, ex):
     })
 
 @app.exception_handler(Exception)
-@app.exception_handler(ModelException)
 @app.exception_handler(FluxException)
-@app.exception_handler(ServiceException)
 async def default_exception_handler(request: Request, ex: Exception):
     message = f"{type(ex).__name__}: {str(ex)}"
     code = 500
