@@ -5,6 +5,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.staticfiles import StaticFiles
 from core import logger
 from core.app import getApp
+from core.auth import AuthContextMiddleware
 from core.request_context import RequestContextMiddleware
 
 from core.resource_loader import getResourceLoader
@@ -16,6 +17,7 @@ from core.util import format_exception
 app = getApp()
 logger.buildInitialLoggers(['app', 'err500'])
 app.add_middleware(RequestContextMiddleware)
+app.add_middleware(AuthContextMiddleware)
 app.add_middleware(UserSessionMiddleware)
 
 @app.on_event("startup")
