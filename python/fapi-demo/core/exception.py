@@ -33,17 +33,15 @@ class UserException(Exception):
         self.at = at
         if not is_debug:
             return
-        if at is None:
-            self.at = get_frame_info()
+        self.at = get_frame_info() if at is None else at
 
 class FluxException(Exception):
     def __init__(self, message: str, at: FrameInfo|None=None):
         self.message = message
         self.at = at
         if not is_debug:
-            return        
-        if at is None:
-            self.at = get_frame_info()
+            return 
+        self.at = get_frame_info() if at is None else at
 
 class ServiceException(FluxException):
     pass
