@@ -9,6 +9,7 @@ class GoResult(BaseModel):
     error: str = ''
     data: Any = None
 
+
 def format_exception(e: Exception) -> str:
     """Format exception with type, message, file, line number and function name."""
     exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -33,7 +34,7 @@ def catch_error_as_goresult() -> Callable:
             # function implementation
 
     The decorated function will return an AsyncResult object, which can be used as follows:
-        result = cast(TinyResult, await await my_async_function())
+        result = cast(GoResult, await await my_async_function())
         if result.error:
             # handle error string
         else:
