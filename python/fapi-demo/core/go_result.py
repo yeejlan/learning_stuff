@@ -5,7 +5,7 @@ from typing import Any, Callable, Coroutine, cast
 
 from pydantic import BaseModel
 
-class TinyResult(BaseModel):
+class GoResult(BaseModel):
     error: str = ''
     data: Any = None
 
@@ -16,7 +16,7 @@ def format_exception(e: Exception) -> str:
     filename, line_number, func_name, _ = tb[-1]
     return f"{type(e).__name__}(\"{str(e)}\") @ {filename}:{line_number} {func_name}()"
 
-def return_as_tiny_result() -> Callable:
+def catch_error_as_goresult() -> Callable:
     """
     A decorator that wraps an asynchronous function to return an AsyncResult object.
 
@@ -28,7 +28,7 @@ def return_as_tiny_result() -> Callable:
         Callable: A decorator function that can be applied to an asynchronous function.
 
     Usage:
-        @return_as_tiny_result()
+        @catch_error_as_goresult()
         async def my_async_function():
             # function implementation
 
@@ -39,15 +39,15 @@ def return_as_tiny_result() -> Callable:
         else:
             # use result.data
     """
-    def decorator(func: Callable[..., Coroutine]) -> Callable[..., Coroutine[Any, Any, TinyResult]]:
+    def decorator(func: Callable[..., Coroutine]) -> Callable[..., Coroutine[Any, Any, GoResult]]:
         @functools.wraps(func)
-        async def wrapper(*args, **kwargs) -> TinyResult:
+        async def wrapper(*args, **kwargs) -> GoResult:
             try:
                 result = await func(*args, **kwargs)
-                return TinyResult(data=result)
+                return GoResult(data=result)
             except Exception as e:
                 error_message = format_exception(e)
-                return TinyResult(error=error_message)
+                return GoResult(error=error_message)
         return wrapper
     return decorator
 
@@ -55,7 +55,7 @@ def return_as_tiny_result() -> Callable:
 if __name__ == "__main__":
     import asyncio
 
-    @return_as_tiny_result()
+    @catch_error_as_goresult()
     async def example_function(x: int, y: int) -> int:
         await asyncio.sleep(0.01)
         if y == 0:
@@ -63,16 +63,17 @@ if __name__ == "__main__":
         return x // y
 
     async def main():
-        result = cast(TinyResult, await example_function(10, 2))
+        result = cast(GoResult, await example_function(10, 2))
         if result.error:
             print(f"Error occurred: {result.error}")
         else:
             print(f"Result: {result.data}")
 
-        result = cast(TinyResult, await example_function(10, 0))
+        result = cast(GoResult, await example_function(10, 0))
         if result.error:
             print(f"Error occurred: {result.error}")
         else:
             print(f"Result: {result.data}")
+            
 
     asyncio.run(main())

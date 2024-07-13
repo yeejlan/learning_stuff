@@ -4,7 +4,7 @@ from pydantic import BaseModel, computed_field
 from datetime import datetime
 from typing import List
 
-from core.tiny_result import TinyResult, return_as_tiny_result
+from core.go_result import GoResult, catch_error_as_goresult
 from core.exception import ModelException
 from core.querybuilder import QueryBuilder
 from core.resource_loader import getResourceLoader
@@ -91,10 +91,10 @@ async def deleteUser(user_id: int):
     )
     return res
 
-async def updateFailed() -> TinyResult:
+@catch_error_as_goresult()
+async def updateFailed() -> GoResult:
     uid1 = 1
     uid2 = 11
-    @return_as_tiny_result()
     async def freeze2Users(conn: aiomysql.Connection):
         res1 = await (make_query_builder().set_conn_or_pool(conn)
                       .update('status', UserStatus.frozen)
@@ -116,10 +116,10 @@ async def updateFailed() -> TinyResult:
         
 
 
-async def updateSuccess() -> TinyResult:
+@catch_error_as_goresult()
+async def updateSuccess() -> GoResult:
     uid1 = 1
     uid2 = 11
-    @return_as_tiny_result()
     async def freeze2Users(conn: aiomysql.Connection):
         res1 = await (make_query_builder().set_conn_or_pool(conn)
                       .update('status', UserStatus.frozen)
