@@ -11,7 +11,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 from core.request_context import setRequestContext
 
-auth_context: ContextVar[dict] = ContextVar("auth_context", default={})
+auth_context: ContextVar[dict] = ContextVar("auth_context")
 
 config = getConfig()
 is_debug = config.getBool('APP_DEBUG', False)
@@ -19,14 +19,14 @@ is_debug = config.getBool('APP_DEBUG', False)
 #middleware
 class AuthContextMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
+        token = auth_context.set({})
         user_id = request.query_params.get('_user_id', None)
         skip_auth = request.query_params.get('_skip_auth', None)
-        ctx = auth_context.get()
+        ctx = {}
         if is_debug and user_id and skip_auth:
             ctx['user_id'] = user_id
             setRequestContext('user_id', user_id)
-
-        token = auth_context.set(ctx)
+            auth_context.set(ctx)
         try:
             response = await call_next(request)
             return response

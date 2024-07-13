@@ -17,17 +17,19 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 CACHE_LIFETIME = 3600
 
-cache_enabled: ContextVar[bool] = ContextVar("cache_enabled", default=True)
+cache_enabled: ContextVar[bool] = ContextVar("cache_enabled")
 
 #middleware
 class CacheRefreshMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
+        token = cache_enabled.set(True)
         cache_refresh = request.query_params.get('cache_refresh', None)
         h_cache_refresh = request.headers.get('cache_refresh', None)
         if cache_refresh or h_cache_refresh:
             cache_enabled.set(False)
 
         response = await call_next(request)
+        cache_enabled.reset(token)
         return response
 
 class CacheManager:

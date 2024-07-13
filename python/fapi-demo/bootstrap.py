@@ -17,8 +17,8 @@ from core.util import format_exception
 
 app = getApp()
 logger.buildInitialLoggers(['app', 'err500'])
-app.add_middleware(RequestContextMiddleware)
 app.add_middleware(AuthContextMiddleware)
+app.add_middleware(RequestContextMiddleware)
 app.add_middleware(UserSessionMiddleware)
 app.add_middleware(CacheRefreshMiddleware)
 

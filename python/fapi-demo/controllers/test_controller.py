@@ -206,7 +206,7 @@ async def session(req: Request):
     UserSession.set('count', count + 1)
     data = UserSession.get_all()
     return {
-        'session_id': UserSession.getSessionId(req),
+        'session_id': UserSession.getSessionId(),
         'count': count,
         'session_data': data,
     }

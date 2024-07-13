@@ -7,14 +7,15 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from core.uuid_helper import uuid_to_base58
 
 #request scoped storage
-request_context_var: ContextVar[dict] = ContextVar("request_context", default={})
+request_context_var: ContextVar[dict] = ContextVar("request_context")
 
 #middleware
 class RequestContextMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
+        token = request_context_var.set({})
         ctx = request_context_var.get()
         ctx['request_id'] = uuid_to_base58(uuid4())
-        token = request_context_var.set(ctx)
+        request_context_var.set(ctx)
         try:
             response = await call_next(request)
             return response
