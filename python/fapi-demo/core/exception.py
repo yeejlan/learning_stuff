@@ -35,6 +35,7 @@ class UserException(Exception):
             return
         if at is None:
             self.at = get_frame_info()
+
 class FluxException(Exception):
     def __init__(self, message: str, at: FrameInfo|None=None):
         self.message = message
