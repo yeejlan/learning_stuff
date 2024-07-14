@@ -4,7 +4,6 @@ working_path = os.getcwd()
 if working_path not in sys.path:
     sys.path.append(working_path)
 
-from core import request_context
 from core.config import getConfig
 from contextvars import ContextVar
 from typing import Any, Dict
@@ -12,7 +11,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 from core.request_context import setRequestContext
 
-auth_context: ContextVar[dict] = ContextVar("auth_context")
+auth_context: ContextVar[dict] = ContextVar("auth_context", default={})
 
 config = getConfig()
 is_debug = config.getBool('APP_DEBUG', False)
@@ -62,7 +61,6 @@ def setAuthContextViaDict(data: Dict = {}):
 
 
 if __name__ == "__main__":
-    request_context.request_context_var.set({})
     auth_context.set({})
 
     setLoggedinUserId(100123)

@@ -7,7 +7,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from core.uuid_helper import uuid_to_base58
 
 #request scoped storage
-request_context_var: ContextVar[dict] = ContextVar("request_context")
+request_context_var: ContextVar[dict] = ContextVar("request_context", default={})
 
 #middleware
 class RequestContextMiddleware(BaseHTTPMiddleware):
