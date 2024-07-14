@@ -32,6 +32,13 @@ def getPublicRequestContext() -> dict[str, Any]:
             public_context[key] = value
     return public_context
 
+def getRequestId() -> str:
+    ctx = request_context_var.get()
+    return ctx.get('request_id', '0000')
+
+def setRequestId(request_id: str):
+    setRequestContext('request_id', request_id)
+
 def getRequestContext(key: str, default=None):
     ctx = request_context_var.get()
     return ctx.get(key, default)
