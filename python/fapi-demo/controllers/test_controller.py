@@ -180,8 +180,11 @@ async def send_notification(
 async def send_message(msg: str):
     async with JobManager() as manager:
         await asyncio.sleep(3)
-        getLogger().info("bg_jobs: message sent: " + msg)
-        raise FluxException('bg_jobs: jobs not done!')
+        for i in range(10):
+            getLogger().info(f"bg_jobs: job doing: #{i}" )
+            await asyncio.sleep(5)
+        
+        raise FluxException('bg_jobs: jobs not done!')  
         getLogger().info("bg_jobs: reach here")
 
 @router.get("/sleep-10-seconds")
