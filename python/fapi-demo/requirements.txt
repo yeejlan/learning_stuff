@@ -7,3 +7,5 @@ gunicorn
 redis
 base58
 pynacl
+httpx
+pydash
