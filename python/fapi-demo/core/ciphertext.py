@@ -16,7 +16,6 @@ class CiphertextException(Exception):
     pass
 
 class Ciphertext:
-    NONCE_LENGTH = 24
 
     def getKey(self) -> bytes:
         return self._get_config_value('CIPHERTEXT_SECRET')
@@ -31,18 +30,15 @@ class Ciphertext:
         return bytes.fromhex(value)
 
     def encrypt(self, key, message):
-        nonce = random(self.NONCE_LENGTH)
         secret_box = Aead(key)
-        encrypted_message = secret_box.encrypt(message.encode(), nonce)
-        return nonce.hex() + encrypted_message.hex()
+        encrypted_message = secret_box.encrypt(message.encode())
+        return encrypted_message.hex()
 
     def decrypt(self, key, encrypted_message):
         try:
-            nonce_hex, encrypted_message_hex = encrypted_message[:self.NONCE_LENGTH*2], encrypted_message[self.NONCE_LENGTH*2:]
-            nonce = bytes.fromhex(nonce_hex)
-            encrypted_message = bytes.fromhex(encrypted_message_hex)
+            encrypted_message = bytes.fromhex(encrypted_message)
             secret_box = Aead(key)
-            decrypted_message = secret_box.decrypt(encrypted_message, nonce)
+            decrypted_message = secret_box.decrypt(encrypted_message)
             return decrypted_message.decode()
         except (CryptoError, ValueError):
             return ''
