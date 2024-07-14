@@ -4,6 +4,7 @@ working_path = os.getcwd()
 if working_path not in sys.path:
     sys.path.append(working_path)
 
+from core.config import getConfig
 from core.uuid_helper import uuid_to_base58
 import time
 from fastapi import Request
@@ -23,12 +24,14 @@ session_id: ContextVar[str] = ContextVar("session_id")
 class SessionManager:
     def __init__(self):
         self._aredis = None
+        config = getConfig()
+        self._prefix = config.get('CACHE_PREFIX')
 
     @property
     def aredis(self):
         if self._aredis is None:
             loader = resource_loader.getResourceLoader()
-            self._aredis = async_redis.AsyncRedis(loader.getRedisPool("REDIS"), 'SID_')
+            self._aredis = async_redis.AsyncRedis(loader.getRedisPool("REDIS"), f'{self._prefix}SID_')
         return self._aredis
 
 session_manager = SessionManager()
