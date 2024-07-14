@@ -94,30 +94,34 @@ class KingfisherClient:
         try:
             async with self.client as client:
                 response = await client.request(http_method, url, headers=headers, json=payload)
-                result = await self.handle_response(response)
+                result = self.handle_response(response)
                 return None, result
         except httpx.HTTPError as ex:
             msg = self.ex_to_string(ex)
             logger.error(msg)
             return KingfisherClientException(msg, -1), None
 
-    async def call_multi(self, method_and_payload: List[Tuple[str, Dict[str, Any]]]) -> List[Tuple[List[Optional[KingfisherClientException]], List[Optional[Dict[str, Any]]]]]:
-        responses = []
+    async def call_multi(self, method_and_payload: List[Tuple[str, Dict[str, Any]]]) -> List[Tuple[Optional[KingfisherClientException], Optional[Dict[str, Any]]]]:
+        tasks = []
         for endpoint, payload in method_and_payload:
-            url = f"{self.host}{endpoint}"
-            headers = self.build_header(payload)
-            try:
-                async with self.client as client:
-                    response = await client.post(url, headers=headers, json=payload)
-                    result = await self.handle_response(response)
-                    responses.append(result)
-            except httpx.HTTPError as ex:
-                msg = self.ex_to_string(ex)
+            tasks.append(self.call(endpoint, payload))
+
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+
+        responses = []
+        for result in results:
+            if isinstance(result, tuple):
+                responses.append(result)
+            elif isinstance(result, Exception):
+                msg = self.ex_to_string(result)
                 logger.error(msg)
-                responses.append(KingfisherClientException(msg, -1))
+                responses.append((KingfisherClientException(msg, -1), None))
+            else:
+                responses.append((None, None))
+
         return responses
 
-    async def handle_response(self, response: httpx.Response) -> Optional[Dict[str, Any]]:
+    def handle_response(self, response: httpx.Response) -> Optional[Dict[str, Any]]:
         body = response.text
         print(response)
         try:
