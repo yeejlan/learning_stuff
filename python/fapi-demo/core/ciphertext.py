@@ -1,4 +1,3 @@
-import binascii
 import sys, os
 
 working_path = os.getcwd()
