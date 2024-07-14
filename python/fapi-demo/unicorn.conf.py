@@ -6,5 +6,6 @@ workers = multiprocessing.cpu_count() * 2 + 1
 reload = False
 loglevel = 'info'
 errorlog = getDailyLogName('gunicorn')
+timeout = 60
 
 pidfile = 'storage/gunicorn_pid'
