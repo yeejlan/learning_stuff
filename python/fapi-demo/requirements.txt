@@ -6,3 +6,4 @@ uvicorn
 gunicorn
 redis
 base58
+pynacl
