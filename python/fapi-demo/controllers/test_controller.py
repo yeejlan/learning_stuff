@@ -172,7 +172,7 @@ async def send_notification(
     background_tasks: BackgroundTasks
 ):
     getLogger().debug("before send_notification")
-    setRequestContext('task_id', 1001)
+    getRequestContext()['task_id'] = 1001
     background_tasks.add_task(send_message, message)
     getLogger().debug("after send_notification")
     return {"message": "Message sent"}
