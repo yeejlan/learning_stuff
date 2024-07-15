@@ -1,25 +1,21 @@
 from logging import Logger
-import traceback
 from fastapi import Request
 from fastapi.exceptions import RequestValidationError
-from fastapi.staticfiles import StaticFiles
 from core import logger
 from core.app import getApp
-from core.auth import AuthContextAsgiMiddleware
+from core.auth_context import AuthContextAsgiMiddleware
 from core.cache import CacheRefreshAsgiMiddleware
 from core.request_context import RequestContextAsgiMiddleware
 
 from core.resource_loader import getResourceLoader
 from core.reply import Reply
-from core.exception import FluxException, ModelException, ServiceException, UserException
-from core.user_session import UserSessionMiddleware
+from core.exception import FluxException, UserException
 from core.util import format_exception
 
 app = getApp()
 logger.buildInitialLoggers(['app', 'err500'])
 app.add_middleware(AuthContextAsgiMiddleware)
 app.add_middleware(RequestContextAsgiMiddleware)
-#app.add_middleware(UserSessionMiddleware)
 app.add_middleware(CacheRefreshAsgiMiddleware)
 
 @app.on_event("startup")

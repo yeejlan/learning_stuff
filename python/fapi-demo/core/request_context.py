@@ -12,7 +12,7 @@ from uuid import uuid4
 from core.uuid_helper import uuid_to_base58
 
 #request scoped storage
-request_context_var: ContextVar[dict] = ContextVar("request_context")
+request_context_var: ContextVar[dict] = ContextVar("request_context", default={})
 
 class RequestContextException(Exception):
     pass
