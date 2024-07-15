@@ -10,6 +10,7 @@ from typing import Any, Dict
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from core.request_context import setRequestContext
+from starlette.requests import Request as StarRequest
 
 auth_context: ContextVar[dict] = ContextVar("auth_context", default={})
 
@@ -17,6 +18,32 @@ config = getConfig()
 is_debug = config.getBool('APP_DEBUG', False)
 
 #middleware
+class AuthContextAsgiMiddleware:
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+        
+        ctx = {}
+
+        
+        if is_debug:
+            request = StarRequest(scope)
+            user_id = request.query_params.get('_user_id', None)
+            skip_auth = request.query_params.get('_skip_auth', None)
+            if user_id and skip_auth:
+                ctx['user_id'] = user_id
+                setRequestContext('user_id', user_id)
+
+        token = auth_context.set(ctx)
+        try:
+            await self.app(scope, receive, send)
+        finally:
+            auth_context.reset(token)
+
 class AuthContextMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
         token = auth_context.set({})

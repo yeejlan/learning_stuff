@@ -10,16 +10,24 @@ from core.uuid_helper import uuid_to_base58
 request_context_var: ContextVar[dict] = ContextVar("request_context", default={})
 
 #middleware
-class RequestContextMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request, call_next):
+
+class RequestContextAsgiMiddleware:
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+        
         ctx = {}
         ctx['request_id'] = uuid_to_base58(uuid4())
         token = request_context_var.set(ctx)
         try:
-            response = await call_next(request)
+            await self.app(scope, receive, send)
         finally:
             request_context_var.reset(token)
-        return response
+
 
 def getRequestContextDict() -> dict[str, Any]:
     return request_context_var.get()

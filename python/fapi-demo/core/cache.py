@@ -14,23 +14,36 @@ from typing import Any, Callable, Coroutine, Dict, List, Optional, TypeVar, Unio
 from core.config import getConfig
 from core import async_redis, resource_loader
 from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request as StarRequest
 
 CACHE_LIFETIME = 3600
 
 cache_enabled: ContextVar[bool] = ContextVar("cache_enabled")
 
 #middleware
-class CacheRefreshMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request, call_next):
-        token = cache_enabled.set(True)
+class CacheRefreshAsgiMiddleware:
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+        
+        ctx = True
+        
+        request = StarRequest(scope)
         cache_refresh = request.query_params.get('cache_refresh', None)
         h_cache_refresh = request.headers.get('cache_refresh', None)
         if cache_refresh or h_cache_refresh:
-            cache_enabled.set(False)
+            ctx = False
 
-        response = await call_next(request)
-        cache_enabled.reset(token)
-        return response
+        token = cache_enabled.set(ctx)
+        try:
+            await self.app(scope, receive, send)
+        finally:
+            cache_enabled.reset(token)
+
 
 class CacheManager:
     def __init__(self):
