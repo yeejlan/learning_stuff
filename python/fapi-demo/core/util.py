@@ -47,7 +47,8 @@ def format_exception(e: Exception, full_stack: bool = False, skip_external_stack
         for frame in traceback.extract_tb(exc_traceback):
             filename, line_number, func_name, _ = frame
             if skip_external_stacks and not filename.startswith(working_path):
-                continue            
+                continue
+            filename = filename.lstrip(working_path)
             stack.append(f"  at {filename}:{line_number} in {func_name}()")
         return "\n".join(stack)
     else:

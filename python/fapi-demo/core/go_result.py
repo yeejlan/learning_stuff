@@ -1,5 +1,6 @@
 import functools
 import sys
+import os
 import traceback
 from typing import Any, Callable, Coroutine, cast
 
@@ -15,6 +16,8 @@ def format_exception(e: Exception) -> str:
     exc_type, exc_value, exc_traceback = sys.exc_info()
     tb = traceback.extract_tb(exc_traceback)
     filename, line_number, func_name, _ = tb[-1]
+    working_path = os.getcwd()
+    filename = filename.lstrip(working_path)
     return f"{type(e).__name__}(\"{str(e)}\") @ {filename}:{line_number} {func_name}()"
 
 def catch_error_as_goresult() -> Callable:

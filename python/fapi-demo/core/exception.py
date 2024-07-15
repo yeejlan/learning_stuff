@@ -22,6 +22,7 @@ def get_frame_info(look_back =2) -> FrameInfo:
     frame = sys._getframe(look_back)
     line = frame.f_lineno
     file = frame.f_code.co_filename
+    file = file.lstrip(working_path)
     func = frame.f_code.co_name
     return FrameInfo(file, line, func)
 
