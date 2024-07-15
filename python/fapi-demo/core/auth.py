@@ -9,7 +9,7 @@ from contextvars import ContextVar
 from typing import Any, Dict
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from core.request_context import setRequestContext
+from core.request_context import getRequestContext
 from starlette.requests import Request as StarRequest
 
 auth_context: ContextVar[dict] = ContextVar("auth_context", default={})
@@ -34,7 +34,7 @@ class AuthContextAsgiMiddleware:
             skip_auth = request.query_params.get('_skip_auth', None)
             if user_id and skip_auth:
                 ctx['user_id'] = user_id
-                setRequestContext('user_id', user_id)
+                getRequestContext()['user_id'] = user_id
 
         token = auth_context.set(ctx)
         try:

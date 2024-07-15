@@ -7,7 +7,7 @@ from core import logger
 from core.reply import Reply
 from core.exception import FluxException, ModelException, UserException
 from core.logger import get_logger
-from core.request_context import getRequestContext, setRequestContext
+from core.request_context import getRequestContext
 from core.user_session import UserSession
 
 router = APIRouter()
@@ -140,7 +140,7 @@ async def log_test():
     
     get_logger('err500').error('my app has an error')
     get_logger('my').warning('something dose not work')
-    setRequestContext('uid', 1234)
+    getRequestContext()['uid'] = 1234
     getLogger().info('log_test() is done')
 
     return "check log files please."  

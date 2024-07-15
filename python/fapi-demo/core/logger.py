@@ -5,7 +5,7 @@ if working_path not in sys.path:
 
 import logging
 from contextvars import ContextVar
-from core.request_context import getRequestContextDict
+from core.request_context import getRequestContext
 from core.util import now_as_iso8601, now_with_timezone
 
 channel = ContextVar('channel', default='app')
@@ -35,7 +35,7 @@ class CustomLogger(logging.Logger):
 
     def _log(self, level, msg, args, exc_info=None, extra=None):
         if extra is None:
-            request_context = getRequestContextDict()
+            request_context = getRequestContext()
             context = {}
             for key, value in request_context.items():
                 if not key.startswith("_"):

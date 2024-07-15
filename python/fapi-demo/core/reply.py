@@ -8,7 +8,7 @@ from fastapi import Response
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 
-from core.request_context import getRequestContextDict
+from core.request_context import getRequestContext
 
 class Reply(IntEnum):
     SUCCESS = 0
@@ -60,7 +60,7 @@ class Reply(IntEnum):
     def json_response(cls, code:int, message:str, reason:str, data:Any, extra: dict[str, Any] = {}):
 
         status_code = cls.status_code(code)
-        ctx = getRequestContextDict();
+        ctx = getRequestContext();
         content = {
             'code': code,
             'message': message,

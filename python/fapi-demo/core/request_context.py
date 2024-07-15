@@ -1,16 +1,61 @@
+import sys, os
+
+working_path = os.getcwd()
+if working_path not in sys.path:
+    sys.path.append(working_path)
+
+from collections import UserDict
 from contextvars import ContextVar
-from typing import Any, Dict
+from typing import Any
 from uuid import uuid4
-from fastapi import Request
-from starlette.middleware.base import BaseHTTPMiddleware
 
 from core.uuid_helper import uuid_to_base58
 
 #request scoped storage
-request_context_var: ContextVar[dict] = ContextVar("request_context", default={})
+request_context_var: ContextVar[dict] = ContextVar("request_context")
+
+class ContextManagerException(Exception):
+    pass
+
+class ContextManager(UserDict):
+    def __init__(self, *args: Any, **kwargs: Any):
+        # not calling super on purpose
+        if args or kwargs:
+            raise ContextManagerException("Please use middleware to initial request_context")
+
+    @property
+    def data(self) -> dict:
+        try:
+            return request_context_var.get()
+        except LookupError:
+            raise ContextManagerException('request_context not exist')
+
+    def __repr__(self) -> str:
+        try:
+            return f"<{__name__}.{self.__class__.__name__} {self.data}>"
+        except ContextManagerException:
+            return f"<{__name__}.{self.__class__.__name__} {dict()}>"
+
+    def __str__(self):
+        try:
+            return str(self.data)
+        except ContextManagerException:
+            return str({})
+
+
+request_context = ContextManager()
+
+def getRequestContext():
+    return request_context
+
+def getRequestId() -> str:
+    return request_context.get('request_id', '0000')
+
+def setRequestId(request_id: str):
+    request_context['request_id'] = request_id
+
 
 #middleware
-
 class RequestContextAsgiMiddleware:
     def __init__(self, app):
         self.app = app
@@ -29,49 +74,21 @@ class RequestContextAsgiMiddleware:
             request_context_var.reset(token)
 
 
-def getRequestContextDict() -> dict[str, Any]:
-    return request_context_var.get()
 
-def getPublicRequestContext() -> dict[str, Any]:
-    request_context = getRequestContextDict()  
-    public_context = {}
-    for key, value in request_context.items():
-        if not key.startswith("_"):
-            public_context[key] = value
-    return public_context
 
-def getRequestId() -> str:
-    ctx = request_context_var.get()
-    return ctx.get('request_id', '0000')
 
-def setRequestId(request_id: str):
-    setRequestContext('request_id', request_id)
-
-def getRequestContext(key: str, default=None):
-    ctx = request_context_var.get()
-    return ctx.get(key, default)
-
-def setRequestContext(key: str, value: Any):
-    ctx = request_context_var.get()
-    ctx[key] = value
-    request_context_var.set(ctx)
-
-def setRequestContextViaDict(data: Dict = {}):
-    ctx = request_context_var.get()
-    for key in data:
-        ctx[key] = data[key]
-    request_context_var.set(ctx)    
 
 
 if __name__ == "__main__":
-    ctx = getRequestContextDict()
+    request_context_var.set({"a":1})
+
+    ctx = getRequestContext()
     print(ctx)
 
-    setRequestContext('uid', 101)
-    setRequestContext('req_id', 9001)
-    ctx = getRequestContextDict()
-    print(ctx)
+    ctx['uid'] = 101
+    ctx['req_id'] = 9001
 
-    setRequestContext('orderId', 123)
-    ctx = getRequestContextDict()
-    print(ctx)
+    print(getRequestContext())
+
+    ctx['orderId'] = 123
+    print(getRequestContext())
