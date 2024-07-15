@@ -35,11 +35,14 @@ class CustomLogger(logging.Logger):
 
     def _log(self, level, msg, args, exc_info=None, extra=None):
         if extra is None:
-            request_context = getRequestContext()
             context = {}
-            for key, value in request_context.items():
-                if not key.startswith("_"):
-                    context[key] = value
+            try:
+                request_context = getRequestContext()
+                for key, value in request_context.items():
+                    if not key.startswith("_"):
+                        context[key] = value                
+            except Exception:
+                pass
          
             extra = {
                 'channel': channel.get(),

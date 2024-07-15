@@ -60,12 +60,16 @@ class Reply(IntEnum):
     def json_response(cls, code:int, message:str, reason:str, data:Any, extra: dict[str, Any] = {}):
 
         status_code = cls.status_code(code)
-        ctx = getRequestContext()
+        request_id = None
+        try:
+            request_id = getRequestContext()['request_id']
+        except Exception:
+            pass
         content = {
             'code': code,
             'message': message,
             'reason': cls.code_to_str(code),
-            'request-id': ctx.get('request_id'),
+            'request-id': request_id,
             'data': data,
         }
         if extra:
