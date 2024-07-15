@@ -75,10 +75,6 @@ class RequestContextAsgiMiddleware:
 
 
 
-
-
-
-
 if __name__ == "__main__":
     request_context_var.set({"a":1})
 
@@ -88,7 +84,7 @@ if __name__ == "__main__":
     ctx['uid'] = 101
     ctx['req_id'] = 9001
 
-    print(getRequestContext())
+    print(request_context)
 
     ctx['orderId'] = 123
-    print(getRequestContext())
+    print(request_context)
