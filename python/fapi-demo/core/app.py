@@ -8,7 +8,7 @@ from core.app_context import AppContext
 
 AppContext.init()
 config = AppContext.getConfig()
-isDebug = AppContext.isDebugMode()
+openapi_enabled = config.getBool('OPENAPI_ENABLED', False)
 
 servers=[
             {"url": "/", "description": "Local"},
@@ -24,7 +24,7 @@ appOptions = {
     "redoc_url": None,  # disable ReDoc
     "servers": servers,
 }
-if not isDebug:
+if not openapi_enabled:
     appOptions['openapi_url'] = None
 
 app = FastAPI(**appOptions)
