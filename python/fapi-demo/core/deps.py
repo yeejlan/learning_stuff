@@ -20,7 +20,6 @@ async def ensure_debug_enabled():
 ensureDebugEnabled = Depends(ensure_debug_enabled)
 
 async def ensure_user_loggedin() -> int:
-
     uid = auth.getLoggedinUserId()
     user_id = int(uid) if uid else 0
     if user_id < 1:
