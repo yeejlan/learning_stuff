@@ -7,7 +7,7 @@ if working_path not in sys.path:
 
 from core.config import getConfig
 from contextvars import ContextVar
-from typing import Any, Dict
+from typing import Any
 
 from core.request_context import getRequestContext
 from starlette.requests import Request as StarRequest
@@ -84,6 +84,7 @@ def getUserId() -> int:
 def setUserId(user_id: int):
     auth_context['user_id'] = user_id
 
+
 if __name__ == "__main__":
     auth_context_var.set({'role': 'admin'})
 
@@ -94,4 +95,3 @@ if __name__ == "__main__":
 
     userid = getUserId()
     print(userid)
-
