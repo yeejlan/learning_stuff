@@ -31,7 +31,6 @@ async def user_exception_handler(request: Request, ex: UserException):
     code = ex.code
     message = ex.message
     extra = {} if ex.extra is None else ex.extra
-    extra['at'] = str(ex.at)
     return Reply.json_response(code, message, Reply.code_to_str(code), None, extra)
 
 
