@@ -14,36 +14,36 @@ from core.uuid_helper import uuid_to_base58
 #request scoped storage
 request_context_var: ContextVar[dict] = ContextVar("request_context")
 
-class ContextManagerException(Exception):
+class RequestContextException(Exception):
     pass
 
-class ContextManager(UserDict):
+class RequestContext(UserDict):
     def __init__(self, *args: Any, **kwargs: Any):
         # not calling super on purpose
         if args or kwargs:
-            raise ContextManagerException("Please use middleware to initial request_context")
+            raise RequestContextException("Please use middleware to initial request_context")
 
     @property
     def data(self) -> dict:
         try:
             return request_context_var.get()
         except LookupError:
-            raise ContextManagerException('request_context not exist')
+            raise RequestContextException('request_context not exist')
 
     def __repr__(self) -> str:
         try:
             return f"<{__name__}.{self.__class__.__name__} {self.data}>"
-        except ContextManagerException:
+        except RequestContextException:
             return f"<{__name__}.{self.__class__.__name__} {dict()}>"
 
     def __str__(self):
         try:
             return str(self.data)
-        except ContextManagerException:
+        except RequestContextException:
             return str({})
 
 
-request_context = ContextManager()
+request_context = RequestContext()
 
 def getRequestContext():
     return request_context
