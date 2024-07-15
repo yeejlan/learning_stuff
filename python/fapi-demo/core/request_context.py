@@ -28,7 +28,7 @@ class RequestContext(UserDict):
         try:
             return request_context_var.get()
         except LookupError:
-            raise RequestContextException('request_context not exist')
+            raise RequestContextException('Please use middleware to initial request_context')
 
     def __repr__(self) -> str:
         try:
