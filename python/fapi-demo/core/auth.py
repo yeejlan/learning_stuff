@@ -28,8 +28,6 @@ class AuthContextAsgiMiddleware:
             return
         
         ctx = {}
-
-        
         if is_debug:
             request = StarRequest(scope)
             user_id = request.query_params.get('_user_id', None)
@@ -43,22 +41,6 @@ class AuthContextAsgiMiddleware:
             await self.app(scope, receive, send)
         finally:
             auth_context.reset(token)
-
-class AuthContextMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request, call_next):
-        token = auth_context.set({})
-        user_id = request.query_params.get('_user_id', None)
-        skip_auth = request.query_params.get('_skip_auth', None)
-        ctx = {}
-        if is_debug and user_id and skip_auth:
-            ctx['user_id'] = user_id
-            setRequestContext('user_id', user_id)
-            auth_context.set(ctx)
-        try:
-            response = await call_next(request)
-        finally:
-            auth_context.reset(token)
-        return response
 
 
 def getLoggedinUserId() -> Any:
