@@ -17,8 +17,9 @@ def format_exception(e: Exception) -> str:
     tb = traceback.extract_tb(exc_traceback)
     filename, line_number, func_name, _ = tb[-1]
     working_path = os.getcwd()
-    filename = filename.lstrip(working_path)
-    return f"{type(e).__name__}(\"{str(e)}\") @ {filename}:{line_number} {func_name}()"
+    working_path_len = len(working_path)
+    fname = filename[working_path_len+1:]
+    return f"{type(e).__name__}(\"{str(e)}\") @ {fname}:{line_number} {func_name}()"
 
 def catch_error_as_goresult() -> Callable:
     """

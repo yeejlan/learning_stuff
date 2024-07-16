@@ -30,9 +30,9 @@ def get_frame_info(look_back =2) -> FrameInfo:
     frame = sys._getframe(look_back)
     line = frame.f_lineno
     file = frame.f_code.co_filename
-    file = file.lstrip(working_path)
+    fname = file[len(working_path)+1:]
     func = frame.f_code.co_name
-    return FrameInfo(file, line, func)
+    return FrameInfo(fname, line, func)
 
 class UserException(Exception):
     def __init__(self, message: str, code: int = 1000, extra: dict[str, Any] = {}, at: FrameInfo|None=None): 
@@ -102,7 +102,7 @@ def validation_exception_handler(ex: RequestValidationError) -> Response:
 def default_exception_handler(ex: Exception) -> Response:
     message = f"{type(ex).__name__}: {str(ex)}"
     code = 500
-    at = getattr(ex, 'at', '')
+    at = getattr(ex, 'at', '') if is_debug else ''
 
     error_log = format_exception(ex, full_stack=True)
 

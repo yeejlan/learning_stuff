@@ -5,6 +5,9 @@ import sys
 import traceback
 from typing import Any, Callable, List, TypeVar
 
+working_path = os.getcwd()
+working_path_len = len(working_path)
+
 T = TypeVar('T')
 
 def now_with_timezone(tz: timezone = timezone.utc) -> datetime:
@@ -35,8 +38,6 @@ def format_exception(e: Exception, full_stack: bool = False, skip_external_stack
         str: Formatted exception string.
     """
     exc_type, exc_value, exc_traceback = sys.exc_info()
-    working_path = os.getcwd()
-    
     if full_stack:
         stack: List[str] = []
         if exc_type is not None:
@@ -48,8 +49,8 @@ def format_exception(e: Exception, full_stack: bool = False, skip_external_stack
             filename, line_number, func_name, _ = frame
             if skip_external_stacks and not filename.startswith(working_path):
                 continue
-            filename = filename.lstrip(working_path)
-            stack.append(f"  at {filename}:{line_number} in {func_name}()")
+            fname = filename[working_path_len+1:]
+            stack.append(f"  at {fname}:{line_number} in {func_name}()")
         return "\n".join(stack)
     else:
         tb = traceback.extract_tb(exc_traceback)
