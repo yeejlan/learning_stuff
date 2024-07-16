@@ -67,7 +67,7 @@ async def getUserById(user_id: int) -> UserModel:
 async def listUserByIds(ids: list[int]) -> list[UserModel]:
     rows = await (make_query_builder()
         .where_in('id', ids)
-        .exec_select_one()
+        .exec_select()
     )
     return rows
 
