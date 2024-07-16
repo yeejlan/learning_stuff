@@ -63,6 +63,14 @@ async def getUserById(user_id: int) -> UserModel:
     )
     return row
 
+@Cache.cache_batch_result('UserInfo_{user_id}')
+async def listUserByIds(ids: list[int]) -> list[UserModel]:
+    rows = await (make_query_builder()
+        .where_in('id', ids)
+        .exec_select_one()
+    )
+    return rows
+
 @Cache.cache_result('list10Users')
 async def listUsers() -> List[UserModel]:
     rows = await (make_query_builder()

@@ -152,7 +152,7 @@ class QueryBuilder:
         self.where(query, 'raw', value, bool_op)
         return self
 
-    def where_in(self, field: str, values, bool_op = 'and'):
+    def where_in(self, field: str, values: list[Any], bool_op = 'and'):
         query = f'{field} IN ('
         query += ', '.join(['%s'] * len(values))
         query += ')'
