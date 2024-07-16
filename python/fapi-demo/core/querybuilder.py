@@ -418,25 +418,40 @@ class QueryBuilder:
         self.dump_fake_sql()
         return None
 
-    async def exec_select_one(self):
-        query, values = self.build()
+    async def exec_select_one(self, query_: str = "", values_: list[Any] = []):
+        if query_:
+            query = query_
+            values = values_
+        else:
+            query, values = self.build()
         res = await db_mysql.select_one(query, tuple(values), conn_or_pool=self._conn_or_pool, to=self._map_to_model)
         return res
 
-    async def exec_select(self):
-        query, values = self.build()
+    async def exec_select(self, query_: str = "", values_: list[Any] = []):
+        if query_:
+            query = query_
+            values = values_
+        else:
+            query, values = self.build()
         res = await db_mysql.select(query, tuple(values), conn_or_pool=self._conn_or_pool, to=self._map_to_model)
         return res
 
-    async def exec_update(self) -> int:
-        query, values = self.build()
+    async def exec_update(self, query_: str = "", values_: list[Any] = []) -> int:
+        if query_:
+            query = query_
+            values = values_
+        else:
+            query, values = self.build()
         res = await db_mysql.update(query, tuple(values), conn_or_pool=self._conn_or_pool)
         return res
 
-    async def exec_insert(self) -> int:
-        res = 0
-        for query, values in self._insert_parts:
-            res = await db_mysql.insert(query, tuple(values), conn_or_pool=self._conn_or_pool)
+    async def exec_insert(self, query_: str = "", values_: list[Any] = []) -> int:
+        if query_:
+            res = await db_mysql.insert(query_, tuple(values_), conn_or_pool=self._conn_or_pool)
+        else:
+            res = 0
+            for query, values in self._insert_parts:
+                res = await db_mysql.insert(query, tuple(values), conn_or_pool=self._conn_or_pool)
         return res
 
     async def exec_insert_and_retrieve(self, primary_key='id') -> Any:
@@ -446,8 +461,11 @@ class QueryBuilder:
         one = await self.select('*').where(primary_key, insert_id).exec_select_one()
         return one
 
-    async def exec_delete(self) -> int:
-        res = await self.exec_update()
+    async def exec_delete(self, query_: str = "", values_: list[Any] = []) -> int:
+        if query_:
+            res = await db_mysql.update(query_, tuple(values_), conn_or_pool=self._conn_or_pool)
+        else:
+            res = await self.exec_update()
         return res
     
     async def transaction(self, operations: Callable[[aiomysql.Connection], Any]) -> Any:
