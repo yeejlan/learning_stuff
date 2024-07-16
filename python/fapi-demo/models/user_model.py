@@ -128,7 +128,8 @@ async def updateFailed() -> GoResult:
                       )
         return [res1, res2]
 
-
+    await clearCache(uid1)
+    await clearCache(uid2)
     result = await make_query_builder().transaction(freeze2Users)
     return result
 
@@ -152,6 +153,7 @@ async def updateSuccess() -> GoResult:
                       )
         return [res1, res2]
 
-
+    await clearCache(uid1)
+    await clearCache(uid2)
     result = await make_query_builder().transaction(freeze2Users)
     return result
