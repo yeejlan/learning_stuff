@@ -31,8 +31,8 @@ class CacheRefreshAsgiMiddleware:
         
         ctx = True
         request = StarRequest(scope)
-        cache_refresh = request.query_params.get('cache_refresh', None)
-        h_cache_refresh = request.headers.get('cache_refresh', None)
+        cache_refresh = request.query_params.get('refresh_cache', None)
+        h_cache_refresh = request.headers.get('refresh_cache', None)
         if cache_refresh or h_cache_refresh:
             ctx = False
 
