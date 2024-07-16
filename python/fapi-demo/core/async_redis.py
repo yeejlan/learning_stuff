@@ -54,8 +54,10 @@ class AsyncRedis:
             return [self.unserialize_value(value) if value is not None else None for value in values]
 
     async def mset(self, key_values: dict[str, Any], ex = None) -> None:
-        prefixed_key_values = {f"{self.prefix}{key}": self.serialize_value(value) 
-                               for key, value in key_values.items()}
+        prefixed_key_values = {
+            f"{self.prefix}{key}": self.serialize_value(value) 
+            for key, value in key_values.items()
+        }
         async with redis_aio.Redis(connection_pool=self.pool) as client:
             pipeline = client.pipeline()
             for key, value in prefixed_key_values.items():
