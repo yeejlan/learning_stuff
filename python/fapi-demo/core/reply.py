@@ -90,7 +90,7 @@ class MyJsonEncoder(json.JSONEncoder):
 
     def default(self, o):
         if isinstance(o, datetime):
-            return o.now(timezone.utc).isoformat()
+            return o.isoformat()
         elif isinstance(o, BaseModel):
             if hasattr(o, 'api_dump'):
                 return o.api_dump() # type: ignore
