@@ -1,4 +1,7 @@
+from contextlib import asynccontextmanager
 import sys, os
+
+from core.resource_loader import getResourceLoader
 working_path = os.getcwd()
 if working_path not in sys.path:
     sys.path.append(working_path)
@@ -27,7 +30,15 @@ appOptions = {
 if not openapi_enabled:
     appOptions['openapi_url'] = None
 
-app = FastAPI(**appOptions)
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await getResourceLoader().loadAll()
+    yield
+    await getResourceLoader().releaseAll()
+
+
+app = FastAPI(lifespan=lifespan, **appOptions)
 
 def getApp() -> FastAPI:
     return app

@@ -7,7 +7,6 @@ from core.auth_context import AuthContextAsgiMiddleware
 from core.cache import CacheRefreshAsgiMiddleware
 from core.request_context import RequestContextAsgiMiddleware
 
-from core.resource_loader import getResourceLoader
 from core.reply import Reply
 from core.exception import FluxException, UserException
 from core.util import format_exception
@@ -18,13 +17,6 @@ app.add_middleware(AuthContextAsgiMiddleware)
 app.add_middleware(RequestContextAsgiMiddleware)
 app.add_middleware(CacheRefreshAsgiMiddleware)
 
-@app.on_event("startup")
-async def startup():
-    await getResourceLoader().loadAll()
-
-@app.on_event("shutdown")
-async def shutdown():
-    await getResourceLoader().releaseAll()
 
 @app.exception_handler(UserException)
 async def user_exception_handler(request: Request, ex: UserException):

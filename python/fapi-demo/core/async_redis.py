@@ -6,12 +6,11 @@ working_path = os.getcwd()
 if working_path not in sys.path:
     sys.path.append(working_path)
 
-from core import app
-
+from core.config import getConfig
 import redis.asyncio as redis_aio
 import os
 
-config = app.config
+config = getConfig()
 
 def create_pool(prefix :str = 'REDIS') -> redis_aio.ConnectionPool:
     host = config.get(f'{prefix}_URL', "redis://localhost:6379")
