@@ -100,9 +100,9 @@ def validation_exception_handler(ex: RequestValidationError) -> Response:
 
 
 def default_exception_handler(ex: Exception) -> Response:
-    message = f"{type(ex).__name__}: {str(ex)}"
+    message = f"{type(ex).__name__}: {str(ex)}" if is_debug else 'Internal Server Error'
     code = 500
-    at = getattr(ex, 'at', '') if is_debug else ''
+    at = getattr(ex, 'at', None) if is_debug else None
 
     error_log = format_exception(ex, full_stack=True)
 
