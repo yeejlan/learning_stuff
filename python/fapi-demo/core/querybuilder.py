@@ -360,6 +360,37 @@ class QueryBuilder:
 
         return ' '.join(self._parts), self._bindings
 
+    @staticmethod
+    def build_from_list(query_list):
+        """
+        Builds a SQL query from a list.
+
+        Example:
+            q = [
+                ['SELECT * FROM users'],
+                ['WHERE id = ? AND name = ?', (1, 'nana')],
+            ]
+
+            sql, args = QueryBuilder.build_from_list(q)
+
+            print(sql)   # Output: SELECT * FROM users WHERE id = ? AND name = ?
+            print(args)  # Output: (1, 'nana')
+
+        """
+        sql_parts = []
+        args = []
+        
+        for part in query_list:
+            sql_parts.append(part[0].strip())
+            if len(part) > 1:
+                if isinstance(part[1], (list, tuple)):
+                    args.extend(part[1])
+                else:
+                    args.extend(part[1:])
+        
+        sql = ' '.join(sql_parts)
+        return sql, tuple(args)
+
     def dump_build(self):
         if self._kind == QueryKind.insert:
             for sql, values in self._insert_parts:
