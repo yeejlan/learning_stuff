@@ -1,6 +1,6 @@
 from enum import IntEnum, StrEnum
 import aiomysql
-from pydantic import BaseModel, computed_field
+from pydantic import BaseModel, Field, computed_field
 from datetime import datetime
 from typing import Any, List
 
@@ -32,7 +32,7 @@ class UserModel(CoreModel):
     id: int
     name: str
     email: str|None
-    password: str
+    password: str = Field(exclude=True)
     status: UserStatus
     note: str|None
     created_at: datetime|None
@@ -43,9 +43,6 @@ class UserModel(CoreModel):
     def status_str(self) -> UserStatusStr: 
         return UserStatusStr.from_int(self.status)
 
-    def api_dump(self):
-        out = self.model_dump(exclude={'password'})
-        return out
 
 
 def make_query_builder() -> QueryBuilder:

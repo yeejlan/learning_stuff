@@ -1,13 +1,16 @@
 
-from core.querybuilder import QueryBuilder
+from pydantic import Field
+from core.core_model import CoreModel
 
 
-q = [
-    ['SELECT * FROM users'],
-    ['WHERE id = ? AND name = ?', (1, 'nana')],
-]
+class UserModel(CoreModel):
+    id: int
+    name: str
+    email: str|None
+    password: str = Field(exclude=True)
 
-sql, args = QueryBuilder.build_from_list(q)
 
-print(sql)   # Output: SELECT * FROM users WHERE id = ? AND name = ?
-print(args)  # Output: (1, 'nana')
+u = UserModel(id=1, name='nana', password = '1111', email='cc@dd')
+
+print(u)
+print(u.password)
