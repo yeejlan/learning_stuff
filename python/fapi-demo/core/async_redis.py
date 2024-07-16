@@ -1,4 +1,5 @@
 import json
+import pickle
 import sys, os
 from typing import Any
 
@@ -27,35 +28,21 @@ class AsyncRedis:
         self.pool = pool
         self.prefix = prefix
 
+    def serialize_value(self, value: Any) -> bytes:
+        return pickle.dumps(value)
+
+    def unserialize_value(self, data: bytes) -> Any:
+        return pickle.loads(data)
+
     async def get(self, key: str, default: Any = None) -> Any:
         async with redis_aio.Redis(connection_pool=self.pool) as client:
             value = await client.get(f'{self.prefix}{key}')
-            return value.decode('utf-8') if value is not None else default
-
-    async def getStr(self, key: str, default: str = '') -> str:
-        value = await self.get(key)
-        try:
-            return str(value)
-        except ValueError:
-            return default
-
-    async def getInt(self, key: str, default: int = 0) -> int:
-        value = await self.get(key)
-        try:
-            return int(value)
-        except ValueError:
-            return default
-
-    async def getDict(self, key: str, default: dict = {}) -> dict:
-        value = await self.get(key)
-        try:
-            return dict(value)
-        except ValueError:
-            return default
+            return self.unserialize_value(value) if value is not None else default
 
     async def set(self, key: str, value: Any, ex = None) -> None:
         async with redis_aio.Redis(connection_pool=self.pool) as client:
-            await client.set(f'{self.prefix}{key}', value, ex)
+            serialized_value = self.serialize_value(value)
+            await client.set(f'{self.prefix}{key}', serialized_value, ex=ex)
 
     async def delete(self, key: str) -> None:
         async with redis_aio.Redis(connection_pool=self.pool) as client:
@@ -64,11 +51,12 @@ class AsyncRedis:
     async def mget(self, keys: list[str]) -> list[Any]:
         prefixed_keys = [f"{self.prefix}{key}" for key in keys]
         async with redis_aio.Redis(connection_pool=self.pool) as client:
-            value = await client.mget(prefixed_keys)
-            return value
-        
+            values = await client.mget(prefixed_keys)
+            return [self.unserialize_value(value) if value is not None else None for value in values]
+
     async def mset(self, key_values: dict[str, Any], ex = None) -> None:
-        prefixed_key_values = {f"{self.prefix}{key}": value for key, value in key_values.items()}
+        prefixed_key_values = {f"{self.prefix}{key}": self.serialize_value(value) 
+                               for key, value in key_values.items()}
         async with redis_aio.Redis(connection_pool=self.pool) as client:
             pipeline = client.pipeline()
             for key, value in prefixed_key_values.items():
@@ -84,7 +72,7 @@ if __name__ == "__main__":
         print(pool)
         aredis = AsyncRedis(pool, 'MY_')
         await aredis.set('abc', 12345, 3600)
-        await aredis.set('def', "my value", 3600)
+        await aredis.set('def', {"a":1}, 3600)
         res1 = await aredis.get('def')
         await aredis.delete('def')
         res2 = await aredis.get('abc')
