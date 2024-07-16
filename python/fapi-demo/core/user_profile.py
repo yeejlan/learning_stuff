@@ -35,7 +35,7 @@ class UserProfile:
         self._user_id = str(user_id)
 
     async def _load(self) -> dict[str, Any]:
-        data = await storage_manager.aredis.getDict(self._user_id, {})
+        data = await storage_manager.aredis.get(self._user_id, {})
         data['_loaded'] = True
         self._profile = data
         return data
