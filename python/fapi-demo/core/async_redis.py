@@ -27,10 +27,17 @@ class AsyncRedis:
         self.pool = pool
         self.prefix = prefix
 
-    async def get(self, key: str, default: str = '') -> str:
+    async def get(self, key: str, default: Any = None) -> Any:
         async with redis_aio.Redis(connection_pool=self.pool) as client:
             value = await client.get(f'{self.prefix}{key}')
             return value.decode('utf-8') if value is not None else default
+
+    async def getStr(self, key: str, default: str = '') -> str:
+        value = await self.get(key)
+        try:
+            return str(value)
+        except ValueError:
+            return default
 
     async def getInt(self, key: str, default: int = 0) -> int:
         value = await self.get(key)
@@ -42,14 +49,12 @@ class AsyncRedis:
     async def getDict(self, key: str, default: dict = {}) -> dict:
         value = await self.get(key)
         try:
-            return json.loads(value)
-        except json.JSONDecodeError:
+            return dict(value)
+        except ValueError:
             return default
 
     async def set(self, key: str, value: Any, ex = None) -> None:
         async with redis_aio.Redis(connection_pool=self.pool) as client:
-            if isinstance(value, dict):
-                value = json.dumps(value)
             await client.set(f'{self.prefix}{key}', value, ex)
 
     async def delete(self, key: str) -> None:
@@ -67,8 +72,6 @@ class AsyncRedis:
         async with redis_aio.Redis(connection_pool=self.pool) as client:
             pipeline = client.pipeline()
             for key, value in prefixed_key_values.items():
-                if isinstance(value, dict):
-                    value = json.dumps(value)
                 pipeline.set(key, value, ex)
             await pipeline.execute()
 
@@ -81,7 +84,7 @@ if __name__ == "__main__":
         print(pool)
         aredis = AsyncRedis(pool, 'MY_')
         await aredis.set('abc', 12345, 3600)
-        await aredis.set('def', 67890, 3600)
+        await aredis.set('def', "my value", 3600)
         res1 = await aredis.get('def')
         await aredis.delete('def')
         res2 = await aredis.get('abc')
