@@ -19,11 +19,11 @@ async def ensure_debug_enabled():
 
 ensureDebugEnabled = Depends(ensure_debug_enabled)
 
-async def ensure_user_loggedin() -> int:
+async def loggedin_userid() -> int:
     user_id = auth_context.getUserId()
     if user_id < 1:
         raise UserException('not authorized', 401)
 
     return user_id
 
-ensureUserLoggedin = Depends(ensure_user_loggedin)
+loggedinUserId = Depends(loggedin_userid)
