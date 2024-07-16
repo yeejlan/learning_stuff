@@ -233,17 +233,17 @@ if __name__ == "__main__":
         def __str__(self):
             return f"UserModel(id={self.id}, name='{self.name}')"            
 
-    @Cache.cache_result(key="getUserInfo_{user_id}")
+    @Cache.memorize(key="getUserInfo_{user_id}")
     async def get_user_info(user_id: int, name: str) -> UserModel:
         # Simulate fetching user info
         return UserModel(id=user_id, name=name)
 
-    @Cache.cache_delete(key="getUserInfo_{user_id}")
+    @Cache.forget(key="getUserInfo_{user_id}")
     async def update_user_info(user_id: int, new_name: str) -> None:
         # Update user info logic
         pass
 
-    @Cache.cache_batch_result(key="getUserInfo_{user_id}")
+    @Cache.memorize_many(key="getUserInfo_{user_id}")
     async def getUserByIds(ids: list[int]) ->list[UserModel]:
         # Simulate fetching user info
         rows = []
