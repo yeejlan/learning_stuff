@@ -1,4 +1,12 @@
+from logging import Logger
 import sys, os
+
+from fastapi import Response
+from fastapi.exceptions import RequestValidationError
+
+from core import logger
+from core.reply import Reply
+from core.util import format_exception
 
 working_path = os.getcwd()
 if working_path not in sys.path:
@@ -49,3 +57,61 @@ class ServiceException(FluxException):
 
 class ModelException(FluxException):
     pass
+
+class ExceptionHandlerAsgiMiddleware:
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
+        try:
+            await self.app(scope, receive, send)
+        except UserException as ex:
+            response = user_exception_handler(ex)
+            await response(scope, receive, send)
+        except RequestValidationError as ex:
+            response = validation_exception_handler(ex)
+            await response(scope, receive, send)
+        except Exception as ex:
+            response = default_exception_handler(ex)
+            await response(scope, receive, send)
+
+
+def user_exception_handler(ex: UserException) -> Response:
+    code = ex.code
+    message = ex.message
+    extra = {} if ex.extra is None else ex.extra
+    return Reply.json_response(code, message, Reply.code_to_str(code), None, extra)
+
+
+def validation_exception_handler(ex: RequestValidationError) -> Response:
+    code = Reply.BAD_PARAM
+    err = ex.errors()[0]
+    message = err['msg']
+    
+    err = {k: v for k, v in err.items() if k not in ('msg', 'input', 'url')}
+
+    return Reply.json_response(code, message, Reply.code_to_str(code), None, {
+        'error': err,
+    })
+
+
+def default_exception_handler(ex: Exception) -> Response:
+    message = f"{type(ex).__name__}: {str(ex)}"
+    code = 500
+    at = getattr(ex, 'at', '')
+
+    error_log = format_exception(ex, full_stack=True)
+
+    #log error
+    getLogger().error(error_log)
+
+    return Reply.json_response(code, message, Reply.code_to_str(code), None, {
+        'at': at,
+    })
+
+def getLogger() -> Logger: 
+    return logger.getLogger('err500')
