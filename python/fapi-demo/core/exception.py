@@ -1,20 +1,15 @@
 from logging import Logger
-import sys, os
-
+import os
+import sys
 from fastapi import Response
 from fastapi.exceptions import RequestValidationError
-
 from core import logger
 from core.reply import Reply
 from core.util import format_exception
-
-working_path = os.getcwd()
-if working_path not in sys.path:
-    sys.path.append(working_path)
-
 from core.config import getConfig
 from collections import namedtuple
 from typing import Any
+
 
 config = getConfig()    
 is_debug = config.getBool('APP_DEBUG', False)
@@ -30,6 +25,7 @@ def get_frame_info(look_back =2) -> FrameInfo:
     frame = sys._getframe(look_back)
     line = frame.f_lineno
     file = frame.f_code.co_filename
+    working_path = os.getcwd()
     fname = file[len(working_path)+1:]
     func = frame.f_code.co_name
     return FrameInfo(fname, line, func)

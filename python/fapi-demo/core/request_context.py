@@ -1,9 +1,3 @@
-import sys, os
-
-working_path = os.getcwd()
-if working_path not in sys.path:
-    sys.path.append(working_path)
-
 from collections import UserDict
 from contextvars import ContextVar
 from typing import Any

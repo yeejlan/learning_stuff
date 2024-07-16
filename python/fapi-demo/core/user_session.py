@@ -1,9 +1,3 @@
-import sys, os
-
-working_path = os.getcwd()
-if working_path not in sys.path:
-    sys.path.append(working_path)
-
 from core.config import getConfig
 from core.uuid_helper import uuid_to_base58
 import time
@@ -83,7 +77,7 @@ class UserSession:
     
     @classmethod
     async def load(cls):
-        data = await session_manager.aredis.getDict(session_id.get(), {})
+        data = await session_manager.aredis.get(session_id.get(), {})
         session_context.set(data)
         return data
 

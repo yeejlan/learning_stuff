@@ -1,9 +1,3 @@
-import sys, os
-
-working_path = os.getcwd()
-if working_path not in sys.path:
-    sys.path.append(working_path)
-
 from nacl.exceptions import CryptoError
 from nacl.secret import Aead
 from nacl.utils import random

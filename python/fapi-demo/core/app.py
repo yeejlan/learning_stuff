@@ -1,16 +1,11 @@
 from contextlib import asynccontextmanager
-import sys, os
 from typing import Optional
 
 from pydantic import BaseModel
 
-from core.resource_loader import getResourceLoader
-working_path = os.getcwd()
-if working_path not in sys.path:
-    sys.path.append(working_path)
-
 from fastapi import Depends, FastAPI, Query
 from core.app_context import AppContext
+from core.resource_loader import getResourceLoader
 
 AppContext.init()
 config = AppContext.getConfig()

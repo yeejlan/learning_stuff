@@ -5,8 +5,7 @@ import sys
 import traceback
 from typing import Any, Callable, List, TypeVar
 
-working_path = os.getcwd()
-working_path_len = len(working_path)
+
 
 T = TypeVar('T')
 
@@ -38,6 +37,8 @@ def format_exception(e: Exception, full_stack: bool = False, skip_external_stack
         str: Formatted exception string.
     """
     exc_type, exc_value, exc_traceback = sys.exc_info()
+    working_path = os.getcwd()
+    working_path_len = len(working_path)
     if full_stack:
         stack: List[str] = []
         if exc_type is not None:

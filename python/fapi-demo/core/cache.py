@@ -1,10 +1,4 @@
 from contextvars import ContextVar
-import sys, os
-
-working_path = os.getcwd()
-if working_path not in sys.path:
-    sys.path.append(working_path)
-
 from typing import Any, Callable, Coroutine, List, TypeVar
 import functools
 import inspect

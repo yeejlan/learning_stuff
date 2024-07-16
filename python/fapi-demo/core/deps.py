@@ -1,11 +1,4 @@
-import sys, os
-
 from core.exception import UserException
-
-working_path = os.getcwd()
-if working_path not in sys.path:
-    sys.path.append(working_path)
-
 from core import auth_context
 from core.config import getConfig
 from fastapi import Depends, HTTPException

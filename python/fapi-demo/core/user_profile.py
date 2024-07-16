@@ -1,9 +1,3 @@
-import sys, os
-
-working_path = os.getcwd()
-if working_path not in sys.path:
-    sys.path.append(working_path)
-
 from typing import Any
 from core.config import getConfig
 from core import async_redis, resource_loader
