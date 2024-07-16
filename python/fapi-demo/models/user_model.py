@@ -55,7 +55,7 @@ def make_query_builder() -> QueryBuilder:
         .set_conn_or_pool(pool)
     )
 
-@Cache.cache_result('UserInfo_{user_id}')
+@Cache.memorize('UserInfo_{user_id}')
 async def getUserById(user_id: int) -> UserModel:
     row = await (make_query_builder()
         .where('id', user_id)
@@ -63,7 +63,7 @@ async def getUserById(user_id: int) -> UserModel:
     )
     return row
 
-@Cache.cache_batch_result('UserInfo_{user_id}')
+@Cache.memorize_many('UserInfo_{user_id}')
 async def listUserByIds(ids: list[int]) -> list[UserModel]:
     rows = await (make_query_builder()
         .where_in('id', ids)
@@ -71,7 +71,7 @@ async def listUserByIds(ids: list[int]) -> list[UserModel]:
     )
     return rows
 
-@Cache.cache_result('list10Users')
+@Cache.memorize('list10Users')
 async def listUsers() -> List[UserModel]:
     rows = await (make_query_builder()
         .limit(10)
@@ -79,8 +79,8 @@ async def listUsers() -> List[UserModel]:
     )
     return rows
 
-@Cache.cache_delete('list10Users')
-@Cache.cache_delete('UserInfo_{user_id}')
+@Cache.forget('list10Users')
+@Cache.forget('UserInfo_{user_id}')
 async def clearCache(user_id: int):
     pass
 

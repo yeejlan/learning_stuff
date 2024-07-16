@@ -95,7 +95,7 @@ class Cache:
         await cache_manager.aredis.mset(key_values, ex=ex)    
 
     @classmethod
-    def cache_result(cls, key: str, ex: int = CACHE_LIFETIME):
+    def memorize(cls, key: str, ex: int = CACHE_LIFETIME):
         def decorator(func: Callable[..., Coroutine[Any, Any, T]]) -> Callable[..., Coroutine[Any, Any, T]]:
             @functools.wraps(func)
             async def wrapper(*args: Any, **kwargs: Any) -> T:
@@ -122,7 +122,7 @@ class Cache:
         return decorator
 
     @classmethod
-    def cache_delete(cls, key: str):
+    def forget(cls, key: str):
         def decorator(func: Callable[..., Coroutine[Any, Any, T]]) -> Callable[..., Coroutine[Any, Any, T]]:
             @functools.wraps(func)
             async def wrapper(*args: Any, **kwargs: Any) -> T:
@@ -149,7 +149,7 @@ class Cache:
         return await loop.run_in_executor(None, lambda: func(*args, **kwargs))
 
     @classmethod
-    def cache_batch_result(cls, key: str, id_field: str = 'id', ex: int = CACHE_LIFETIME):
+    def memorize_many(cls, key: str, id_field: str = 'id', ex: int = CACHE_LIFETIME):
         def decorator(func: Callable[..., Coroutine[Any, Any, List[T]]]) -> Callable[..., Coroutine[Any, Any, List[T]]]:
             match = re.match(r'^([a-zA-Z]+)_\{([a-zA-Z_]+)\}$', key)
             if not match:
