@@ -20,7 +20,7 @@ CACHE_LIFETIME = 3600
 cache_enabled: ContextVar[bool] = ContextVar("cache_enabled")
 
 #middleware
-class CacheRefreshAsgiMiddleware:
+class RefreshCacheAsgiMiddleware:
     def __init__(self, app):
         self.app = app
 
@@ -31,9 +31,9 @@ class CacheRefreshAsgiMiddleware:
         
         ctx = True
         request = StarRequest(scope)
-        cache_refresh = request.query_params.get('refresh_cache', None)
-        h_cache_refresh = request.headers.get('refresh_cache', None)
-        if cache_refresh or h_cache_refresh:
+        refresh_cache = request.query_params.get('refresh_cache', None)
+        h_refresh_cache = request.headers.get('refresh-cache', None)
+        if refresh_cache or h_refresh_cache:
             ctx = False
 
         token = cache_enabled.set(ctx)
