@@ -95,7 +95,7 @@ def validation_exception_handler(ex: RequestValidationError) -> Response:
     err = {k: v for k, v in err.items() if k not in ('msg', 'input', 'url')}
 
     return Reply.json_response(code, message, Reply.code_to_str(code), None, {
-        'error': err,
+        'detail': err,
     })
 
 
