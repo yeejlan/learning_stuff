@@ -3,7 +3,7 @@ from typing import Generator
 from fastapi import APIRouter, Depends, Request
 from fastapi.params import Body
 from pydantic import BaseModel, Field
-from core import logger
+from core import deps, logger
 from core.reply import Reply
 from core.exception import FluxException, ModelException, UserException
 from core.logger import get_logger
@@ -203,7 +203,7 @@ async def test_generator_with_exception(id=Depends(get_user_id)):
     print("id=" + str(id))
     raise Exception("Error!")
 
-@router.get("/session")
+@router.get("/session", dependencies=[deps.launchUserSession])
 async def session(req: Request):
     count = UserSession.getInt('count')
     UserSession.set('count', count + 1)

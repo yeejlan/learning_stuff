@@ -1,7 +1,7 @@
 from typing import Annotated, List
 from fastapi import APIRouter, Depends, Path
 from pydantic import BaseModel, Field
-from core import dependency
+from core import deps
 from core.go_result import GoResult
 from core.exception import UserException
 from core.reply import Reply
@@ -69,7 +69,7 @@ async def update_using_transaction_success():
     return Reply.success(res)
 
 @router.get("/loggedin-userid", response_model=int)
-async def loggedin_userid(user_id: Annotated[int, dependency.loggedinUserId]):
+async def loggedin_userid(user_id: Annotated[int, deps.loggedinUserId]):
     return Reply.success({
         'user_id': user_id,
     })

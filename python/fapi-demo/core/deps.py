@@ -27,3 +27,10 @@ async def loggedin_userid() -> int:
     return user_id
 
 loggedinUserId = Depends(loggedin_userid)
+
+async def launch_usersession():
+    print('before launch user session')
+    yield
+    print('after launch user session')
+
+launchUserSession = Depends(launch_usersession)
