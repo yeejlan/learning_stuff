@@ -5,7 +5,7 @@ working_path = os.getcwd()
 if working_path not in sys.path:
     sys.path.append(working_path)
 
-from typing import Any, Callable, Coroutine, List
+from typing import Any, Callable, Coroutine, List, TypeVar
 import functools
 import inspect
 import asyncio
@@ -67,6 +67,9 @@ cache_manager = CacheManager()
 def getCacheManager() -> CacheManager:
     return cache_manager
 
+
+T = TypeVar('T')
+
 class Cache:
 
     @classmethod
@@ -93,9 +96,9 @@ class Cache:
 
     @classmethod
     def cache_result(cls, key: str, ex: int = CACHE_LIFETIME):
-        def decorator(func: Callable[..., Any]) -> Callable[..., Coroutine[Any, Any, Any]]:
+        def decorator(func: Callable[..., Coroutine[Any, Any, T]]) -> Callable[..., Coroutine[Any, Any, T]]:
             @functools.wraps(func)
-            async def wrapper(*args: Any, **kwargs: Any) -> Any:
+            async def wrapper(*args: Any, **kwargs: Any) -> T:
                 sig = inspect.signature(func)
                 bound_args = sig.bind(*args, **kwargs)
                 bound_args.apply_defaults()
@@ -120,9 +123,9 @@ class Cache:
 
     @classmethod
     def cache_delete(cls, key: str):
-        def decorator(func: Callable[..., Any]) -> Callable[..., Coroutine[Any, Any, Any]]:
+        def decorator(func: Callable[..., Coroutine[Any, Any, T]]) -> Callable[..., Coroutine[Any, Any, T]]:
             @functools.wraps(func)
-            async def wrapper(*args: Any, **kwargs: Any) -> Any:
+            async def wrapper(*args: Any, **kwargs: Any) -> T:
                 sig = inspect.signature(func)
                 bound_args = sig.bind(*args, **kwargs)
                 bound_args.apply_defaults()
@@ -147,7 +150,7 @@ class Cache:
 
     @classmethod
     def cache_batch_result(cls, key: str, id_field: str = 'id', ex: int = CACHE_LIFETIME):
-        def decorator(func: Callable[..., Coroutine[Any, Any, List[Any]]]) -> Callable[..., Coroutine[Any, Any, List[Any]]]:
+        def decorator(func: Callable[..., Coroutine[Any, Any, List[T]]]) -> Callable[..., Coroutine[Any, Any, List[T]]]:
             match = re.match(r'^([a-zA-Z]+)_\{([a-zA-Z_]+)\}$', key)
             if not match:
                 raise ValueError("Key must be in the format 'prefix_{variable}', e.g., 'getUserInfo_{user_id}'")
@@ -155,7 +158,7 @@ class Cache:
             key_prefix, variable = match.groups()
         
             @functools.wraps(func)
-            async def wrapper(*args: Any, **kwargs: Any) -> List[Any]:
+            async def wrapper(*args: Any, **kwargs: Any) -> List[T]:
                 sig = inspect.signature(func)
                 bound_args = sig.bind(*args, **kwargs)
                 bound_args.apply_defaults()

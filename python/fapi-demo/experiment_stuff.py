@@ -1,21 +1,31 @@
+import pickle
+from typing import Any
 
-from datetime import datetime
-from typing import Tuple
+def serialize_value(cls, value: Any) -> bytes:
+    return pickle.dumps(value)
+
+def unserialize_value(cls, data: bytes) -> Any:
+    return pickle.loads(data)
 
 from pydantic import BaseModel
 
-class Delivery(BaseModel):
-    timestamp: datetime
-    dimensions: Tuple[int, int]
+class User(BaseModel):
+    name: str
+    age: int
 
+# 序列化示例
+data = {
+    "name": "Alice",
+    "age": 30,
+    "user": User(name="Bob", age=25),
+    "tags": ("tag1", "tag2"),
+    "none_value": None
+}
 
-m = Delivery(timestamp='2020-01-02T03:04:05Z', dimensions=['10', '20'])
-print(repr(m.timestamp))
-#> datetime.datetime(2020, 1, 2, 3, 4, 5, tzinfo=TzInfo(UTC))
-print(m.dimensions)
-obj = m.model_dump()
-print(obj)
-print(m.__dict__)
+serialized = serialize_value(None, data)
+print("Serialized:", serialized)
 
-m2 = Delivery(**obj)
-print(m2.timestamp)
+# 反序列化示例
+deserialized = unserialize_value(None, serialized)
+print("Deserialized:", deserialized)
+

@@ -4,6 +4,7 @@ from pydantic import BaseModel, computed_field
 from datetime import datetime
 from typing import List
 
+from core.cache import Cache
 from core.go_result import GoResult, catch_error_as_goresult
 from core.exception import ModelException
 from core.querybuilder import QueryBuilder
@@ -54,6 +55,7 @@ def make_query_builder() -> QueryBuilder:
         .set_conn_or_pool(pool)
     )
 
+@Cache.cache_result('UserInfo_{user_id}')
 async def getUserById(user_id: int) -> UserModel:
     row = await (make_query_builder()
         .where('id', user_id)
@@ -61,19 +63,26 @@ async def getUserById(user_id: int) -> UserModel:
     )
     return row
 
+@Cache.cache_result('list10Users')
 async def listUsers() -> List[UserModel]:
     rows = await (make_query_builder()
         .limit(10)
         .exec_select()
     )
     return rows
- 
+
+@Cache.cache_delete('list10Users')
+@Cache.cache_delete('UserInfo_{user_id}')
+async def clearCache(user_id: int):
+    pass
+
 async def updateUserStatus(user_id: int, user_status: int) -> int:
     res = await (make_query_builder()
         .update('status', user_status)
         .where('id', user_id)
         .exec_update()
     )
+    await clearCache(user_id)
     return res
 
 async def createUser(user_data: dict):
@@ -81,6 +90,7 @@ async def createUser(user_data: dict):
         .insert_with_timestamp(user_data)
         .exec_insert_and_retrieve()
     )
+    await clearCache(one.id)
     return one
 
 async def deleteUser(user_id: int):
@@ -89,6 +99,7 @@ async def deleteUser(user_id: int):
         .where('id', user_id)
         .exec_delete()
     )
+    await clearCache(user_id)
     return res
 
 @catch_error_as_goresult()
