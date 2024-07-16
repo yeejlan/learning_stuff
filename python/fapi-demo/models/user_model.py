@@ -2,9 +2,10 @@ from enum import IntEnum, StrEnum
 import aiomysql
 from pydantic import BaseModel, computed_field
 from datetime import datetime
-from typing import List
+from typing import Any, List
 
 from core.cache import Cache
+from core.core_model import CoreModel
 from core.go_result import GoResult, catch_error_as_goresult
 from core.exception import ModelException
 from core.querybuilder import QueryBuilder
@@ -27,7 +28,7 @@ class UserStatusStr(StrEnum):
     def from_int(cls, value):
         return cls(UserStatus(value).name)
 
-class UserModel(BaseModel):
+class UserModel(CoreModel):
     id: int
     name: str
     email: str|None
