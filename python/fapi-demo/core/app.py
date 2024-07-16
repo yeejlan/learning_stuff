@@ -60,9 +60,13 @@ async def get_debug_query_params(
         refresh_cache=refresh_cache
     )
 
+dependencies = []
+if is_debug:
+    dependencies = [Depends(get_debug_query_params)]
+
 app = FastAPI(
     lifespan=lifespan, 
-    dependencies=[Depends(get_debug_query_params)], 
+    dependencies=dependencies, 
     **appOptions
     )
 
