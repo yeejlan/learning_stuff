@@ -19,14 +19,14 @@ async def ensure_debug_enabled():
 
 ensureDebugEnabled = Depends(ensure_debug_enabled)
 
-async def loggedin_userid() -> int:
+async def authorized_user_id() -> int:
     user_id = auth_context.getUserId()
     if user_id < 1:
         raise UserException('not authorized', 401)
 
     return user_id
 
-loggedinUserId = Depends(loggedin_userid)
+authorizedUserId = Depends(authorized_user_id)
 
 async def launch_usersession():
     print('before launch user session')

@@ -5,6 +5,7 @@ from core import deps
 from core.go_result import GoResult
 from core.exception import UserException
 from core.reply import Reply
+from flux import user_flux
 from models import user_model
 from datetime import datetime
 
@@ -68,8 +69,11 @@ async def update_using_transaction_success():
     res = await user_model.updateSuccess()
     return Reply.success(res)
 
-@router.get("/loggedin-userid", response_model=int)
-async def loggedin_userid(user_id: Annotated[int, deps.loggedinUserId]):
+@router.get("/loggedin-user", response_model=int)
+async def loggedin_user(user_id: Annotated[int, deps.authorizedUserId]):
+
+    user = await user_flux.getAuthorizedUser(user_id)
     return Reply.success({
         'user_id': user_id,
+        'user': user,
     })
