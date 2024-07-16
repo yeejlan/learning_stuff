@@ -1,17 +1,21 @@
 from contextlib import asynccontextmanager
 import sys, os
+from typing import Optional
+
+from pydantic import BaseModel
 
 from core.resource_loader import getResourceLoader
 working_path = os.getcwd()
 if working_path not in sys.path:
     sys.path.append(working_path)
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI, Query
 from core.app_context import AppContext
 
 AppContext.init()
 config = AppContext.getConfig()
 openapi_enabled = config.getBool('OPENAPI_ENABLED', False)
+is_debug = config.getBool('APP_DEBUG', False)
 
 servers=[
             {"url": "/", "description": "Local"},
@@ -38,7 +42,29 @@ async def lifespan(app: FastAPI):
     await getResourceLoader().releaseAll()
 
 
-app = FastAPI(lifespan=lifespan, **appOptions)
+class DebugQueryParams(BaseModel):
+    _user_id: Optional[int] = None
+    _skip_auth: Optional[int] = None
+    refresh_cache: Optional[int] = None
+
+async def get_debug_query_params(
+    _user_id: Optional[int] = Query(None),
+    _skip_auth: Optional[int] = Query(None),
+    refresh_cache: Optional[int] = Query(None)
+) -> Optional[DebugQueryParams]:
+    if not is_debug:
+        return None
+    return DebugQueryParams(
+        _user_id=_user_id,
+        _skip_auth=_skip_auth,
+        refresh_cache=refresh_cache
+    )
+
+app = FastAPI(
+    lifespan=lifespan, 
+    dependencies=[Depends(get_debug_query_params)], 
+    **appOptions
+    )
 
 def getApp() -> FastAPI:
     return app
