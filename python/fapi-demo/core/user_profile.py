@@ -83,13 +83,13 @@ if __name__ == "__main__":
         await loader.loadAll()
 
         uid = 13586
-        user_profile = UserProfile()
-        await user_profile.load(uid)
-        count = user_profile.get('count', 0)
-        user_profile['count'] = count + 1
-        user_profile['device'] = 'ios'
-        await user_profile.save()
-        print(user_profile.data)
+        profile = UserProfile()
+        await profile.load(uid)
+        count = profile.get('count', 0)
+        profile['count'] = count + 1
+        profile['device'] = 'ios'
+        await profile.save()
+        print(profile.data)
 
         await loader.releaseAll()
 
