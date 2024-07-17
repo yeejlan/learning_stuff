@@ -8,6 +8,7 @@ from fastapi import Response
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 
+from core.time_util import ensure_default_timezone
 from core.request_context import getRequestContext
 
 class Reply(IntEnum):
@@ -86,11 +87,12 @@ class Reply(IntEnum):
 reply_map = {member.name.lower(): member.value for member in Reply}
 reply_map_reversed = {v: k for k, v in reply_map.items()}
 
+
 class MyJsonEncoder(json.JSONEncoder):
 
     def default(self, o):
         if isinstance(o, datetime):
-            return o.isoformat()
+            return ensure_default_timezone(o).isoformat()
         elif isinstance(o, BaseModel):
             if hasattr(o, 'api_dump'):
                 return o.api_dump() # type: ignore

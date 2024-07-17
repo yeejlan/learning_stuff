@@ -1,6 +1,7 @@
 
 from pydantic import Field
 from core.core_model import CoreModel
+from core.time_util import now, now_as_iso8601, now_with_timezone
 
 
 class UserModel(CoreModel):
@@ -13,4 +14,5 @@ class UserModel(CoreModel):
 u = UserModel(id=1, name='nana', password = '1111', email='cc@dd')
 
 print(u)
-print(u.password)
+print(now_with_timezone())
+print(now_as_iso8601())

@@ -1,7 +1,7 @@
 import logging
 from contextvars import ContextVar
 from core.request_context import getRequestContext
-from core.util import now_as_iso8601, now_with_timezone
+from core.time_util import now_as_iso8601, now_with_timezone
 
 channel = ContextVar('channel', default='app')
 

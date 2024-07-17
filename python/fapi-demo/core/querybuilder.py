@@ -6,6 +6,7 @@ import re
 from datetime import datetime, timezone
 
 from core import db_mysql
+from core.time_util import now_as_mysql_datetime
 
 class QueryKind(StrEnum):
     select = "select"
@@ -74,7 +75,7 @@ class QueryBuilder:
         return self
 
     def update_timestamp(self):
-        now = datetime.now(timezone.utc).isoformat()
+        now = now_as_mysql_datetime()
         self.update('updated_at', now)
         return self
 
@@ -107,7 +108,7 @@ class QueryBuilder:
             dict_data = [dict_data]
 
         for one in dict_data:
-            now = datetime.now(timezone.utc).isoformat()
+            now = now_as_mysql_datetime()
             one['created_at'] = now
             one['updated_at'] = now
             self.insert(one)
