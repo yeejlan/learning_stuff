@@ -79,6 +79,9 @@ class UserSession(UserDict):
         self._sid = ''
         await session_manager.aredis.set(session_id, {})
 
+    def set_cookie(self, response: Response): # Please call this MANUALLY once renew a session
+        response.set_cookie(SESSION_NAME, self.get_session_id(), SESSION_LIFETIME, httponly=True)
+
 
 #depends
 async def launch_user_session(request: Request, response: Response):
@@ -98,7 +101,7 @@ async def launch_user_session(request: Request, response: Response):
         refresh_cookie = True    
 
     if refresh_cookie: #set cookie
-        response.set_cookie(SESSION_NAME, sid, SESSION_LIFETIME, httponly=True)
+        session.set_cookie(response)
 
     yield session
 
