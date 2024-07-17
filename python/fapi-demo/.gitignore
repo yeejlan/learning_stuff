@@ -1,3 +1,5 @@
 .idea
 .vscode
 storage/gunicorn_pid*
+target
+src/schema.rs
