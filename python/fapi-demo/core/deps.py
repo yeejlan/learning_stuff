@@ -3,6 +3,7 @@ from core import auth_context
 from core.config import getConfig
 from fastapi import Depends, HTTPException
 
+from core.user_profile import launch_user_profile
 from core.user_session import launch_user_session
 
 config = getConfig()
@@ -24,4 +25,4 @@ async def authorized_user_id() -> int:
 ensureDebugEnabled = Depends(ensure_debug_enabled)
 authorizedUserId = Depends(authorized_user_id)
 launchUserSession = Depends(launch_user_session)
-
+launchUserProfile = Depends(launch_user_profile)

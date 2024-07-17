@@ -1,4 +1,6 @@
-from typing import Any
+from collections import UserDict
+from typing import Optional
+from core.auth_context import getUserId
 from core.config import getConfig
 from core import async_redis, resource_loader
 
@@ -23,42 +25,53 @@ storage_manager = StorageManager()
 class UserProfileException(Exception):
     pass
 
-class UserProfile:
-    def __init__(self, user_id: str|int) -> None:
-        self._profile :dict[str, Any] = {}
-        self._user_id = str(user_id)
+#depends
+async def launch_user_profile():
+    profile = UserProfile()
 
-    async def _load(self) -> dict[str, Any]:
-        data = await storage_manager.aredis.get(self._user_id, {})
-        data['_loaded'] = True
-        self._profile = data
-        return data
-    
-    async def load(self) -> dict[str, Any]:
-        if self._profile and '_loaded' in self._profile:
-            return self._profile
-        return await self._load()
+    await profile.load() #load profile
+
+    yield profile
+
+    await profile.save() #save profile
+
+
+class UserProfile(UserDict):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._changed = False
+        self._uid = 0
+
+    def touch(self) -> None:
+        self._changed = True
+
+    def has_changed(self) -> bool:
+        return self._changed
+
+    def __setitem__(self, key, value):
+        self._changed = True
+        super().__setitem__(key, value)
+
+    def __delitem__(self, key):
+        self._changed = True
+        super().__delitem__(key)
+
+    async def load(self, user_id: Optional[int] = None):
+        if not user_id:
+            user_id = getUserId()
+        if user_id < 1:
+            return
+
+        self.data = await storage_manager.aredis.get(str(user_id), {})
+        self._uid = user_id
+        return self.data
 
     async def save(self):
-        data = self._profile
-        if data and '_changed' in data:
-            del data['_changed']
-            del data['_loaded']
-        await storage_manager.aredis.set(self._user_id, data, PROFILE_LIFETIME)
+        if self._uid and self.has_changed():
+            await storage_manager.aredis.set(str(self._uid), self.data, PROFILE_LIFETIME)
 
-    def get_user_id(self) -> str:
-        return self._user_id
-    
-    def get_profile(self) -> dict[str, Any]: 
-        return self._profile
-
-    def set(self, key: str, value: Any) -> None:
-        data = self._profile
-        if not data or '_loaded' not in data:
-            raise UserProfileException('Data not loaded, call load() first')
-        data[key] = value
-        data['_changed'] = True
-        self._profile = data
+    def get_user_id(self) -> int:
+        return self._uid
 
 
 if __name__ == "__main__":
@@ -70,12 +83,13 @@ if __name__ == "__main__":
         await loader.loadAll()
 
         uid = 13586
-        user_profile = UserProfile(uid)
-        await user_profile.load()
-        user_profile.set('device', 'ios')
-        print(user_profile.get_profile())
+        user_profile = UserProfile()
+        await user_profile.load(uid)
+        count = user_profile.get('count', 0)
+        user_profile['count'] = count + 1
+        user_profile['device'] = 'ios'
         await user_profile.save()
-        print(user_profile.get_profile())
+        print(user_profile.data)
 
         await loader.releaseAll()
 
