@@ -5,7 +5,7 @@ from core.auth_context import AuthContextAsgiMiddleware
 from core.cache import RefreshCacheAsgiMiddleware
 from core.request_context import RequestContextAsgiMiddleware
 from core.exception import ExceptionHandlerAsgiMiddleware, validation_exception_handler
-from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.cors import CORSMiddleware
 
 app = getApp()
 
@@ -24,7 +24,8 @@ app.add_middleware(
     allow_headers=["Content-Type", "Authorization", 
         "X-Requested-With", "Accept", "Origin",
         "Access-Control-Request-Headers", "Access-Control-Request-Method",
-        "DNT", "X-CSRF-Token", "X-XSRF-TOKEN", "Cookie", 
+        "DNT", "X-CSRF-Token", "X-XSRF-TOKEN", "Cookie",
+        "refresh-cache", "token", "lang",
     ],
 )
 
