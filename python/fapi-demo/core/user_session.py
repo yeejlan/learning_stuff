@@ -85,9 +85,7 @@ async def launch_user_session(request: Request, response: Response):
     session = UserSession()
     refresh_cookie = False
     sid = request.cookies.get(SESSION_NAME)
-    if sid:
-        session.set_session_id(sid)
-    else:
+    if not sid:
         refresh_cookie = True
         sid = session.new_session_id()
 
