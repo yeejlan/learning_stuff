@@ -2,9 +2,11 @@
 from datetime import datetime, timezone
 
 
+fallback_tz=datetime.now().astimezone().tzinfo
+
 def fallback_to_local_timezone(dt: datetime) -> datetime:
     if dt.tzinfo is None:
-        dt = dt.replace(tzinfo=datetime.now().astimezone().tzinfo)
+        dt = dt.replace(tzinfo=fallback_tz)
     return dt
 
 def now() -> datetime:
