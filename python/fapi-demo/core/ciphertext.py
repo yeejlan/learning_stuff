@@ -1,7 +1,7 @@
 from nacl.exceptions import CryptoError
 from nacl.secret import Aead
 from nacl.utils import random
-from config import getConfig
+from core.config import getConfig
 
 config = getConfig()
 
