@@ -2,7 +2,7 @@
 from datetime import datetime, timezone
 
 
-def ensure_default_timezone(dt: datetime) -> datetime:
+def fallback_to_local_timezone(dt: datetime) -> datetime:
     if dt.tzinfo is None:
         dt = dt.replace(tzinfo=datetime.now().astimezone().tzinfo)
     return dt
@@ -16,7 +16,7 @@ def now_as_iso8601(with_microseconds: bool = True) -> str:
     if not with_microseconds:
         now_ = now.replace(microsecond=0)
 
-    return ensure_default_timezone(now_).isoformat()
+    return fallback_to_local_timezone(now_).isoformat()
 
 
 def now_with_timezone(tz: timezone = timezone.utc) -> datetime:

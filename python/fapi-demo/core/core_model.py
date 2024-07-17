@@ -2,7 +2,7 @@ from datetime import datetime
 from pydantic import BaseModel
 from typing import Any, Dict
 
-from core.time_util import ensure_default_timezone
+from core.time_util import fallback_to_local_timezone
 
 
 class CoreModel(BaseModel):
@@ -15,5 +15,5 @@ class CoreModel(BaseModel):
 
     class Config:
         json_encoders = {
-            datetime: lambda v: ensure_default_timezone(v).isoformat()
+            datetime: lambda v: fallback_to_local_timezone(v).isoformat()
         }
