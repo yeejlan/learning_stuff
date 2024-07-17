@@ -1,5 +1,6 @@
 import asyncio
 from typing import Generator
+from typing_extensions import Annotated
 from fastapi import APIRouter, Depends, Request
 from fastapi.params import Body
 from pydantic import BaseModel, Field
@@ -203,15 +204,15 @@ async def test_generator_with_exception(id=Depends(get_user_id)):
     print("id=" + str(id))
     raise Exception("Error!")
 
-@router.get("/session", dependencies=[deps.launchUserSession])
-async def session(req: Request):
-    count = UserSession.getInt('count')
-    UserSession.set('count', count + 1)
-    data = UserSession.get_all()
+@router.get("/session")
+async def session(req: Request, session: Annotated[UserSession, deps.launchUserSession]):
+    count = session.get('count', 0)
+    session['count'] = count + 1
+
     return {
-        'session_id': UserSession.getSessionId(),
+        'session_id': session.get_session_id(),
         'count': count,
-        'session_data': data,
+        'session_data': session.data,
     }
 
 class MyCustomeException(FluxException):
