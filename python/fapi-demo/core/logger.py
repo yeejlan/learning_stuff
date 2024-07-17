@@ -1,14 +1,15 @@
 import logging
 from contextvars import ContextVar
+
 from core.request_context import getRequestContext
-from core.time_util import now_as_iso8601, now_with_timezone
+from core.time_util import now, now_as_iso8601
 
 channel = ContextVar('channel', default='app')
 
 CUSTOM_FORMAT = '%(iso8601)s [%(channel)s] [%(levelname)s] %(message)s %(context)s'
 
 def getDailyLogName(channel:str = 'app', path:str = 'storage/logs'):
-    today = now_with_timezone()
+    today = now()
     today_str = today.strftime("%Y-%m-%d")
     return f'{path}/{channel}-{today_str}.log'
 
