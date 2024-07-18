@@ -33,6 +33,9 @@ class QueryBuilder:
     _extra_parts: list = field(default_factory=list)
     _union_parts: list = field(default_factory=list)
 
+    _auto_insert_update_predefined_columns = True
+    _predefined_columns_auto_updated = False
+
     _conn_or_pool: Any = None
     _map_to_model: Any = None
 
@@ -46,6 +49,10 @@ class QueryBuilder:
     
     def get_conn_or_pool(self) -> Union[aiomysql.Connection, aiomysql.Pool]:
         return self._conn_or_pool
+    
+    def auto_insert_update_predefined_columns(self, enabled: bool = True):
+        self._auto_insert_update_predefined_columns = enabled
+        return self
 
     def map_query_to_model(self, model:Any):
         self._map_to_model = model
@@ -76,7 +83,9 @@ class QueryBuilder:
 
     def update_timestamp(self):
         now = now_as_mysql_datetime()
-        self.update('updated_at', now)
+        if not self._predefined_columns_auto_updated:
+            self.update('updated_at', now)
+            self._predefined_columns_auto_updated = True
         return self
 
     def update_raw(self, query: str, value:Any = []):
@@ -92,6 +101,15 @@ class QueryBuilder:
         if type(dict_data) == dict:
             dict_data = [dict_data]
 
+        if self._auto_insert_update_predefined_columns:
+            dd = []
+            now = now_as_mysql_datetime()
+            for one in dict_data:
+                one['created_at'] = now
+                one['updated_at'] = now
+                dd.append(one)
+            dict_data = dd
+
         for one in dict_data:
             placeholders = ', '.join(['%s'] * len(one))
             columns = ', '.join(one.keys())
@@ -103,17 +121,7 @@ class QueryBuilder:
         self._kind = QueryKind.delete
         return self
 
-    def insert_with_timestamp(self, dict_data: Any):
-        if type(dict_data) == dict:
-            dict_data = [dict_data]
-
-        for one in dict_data:
-            now = now_as_mysql_datetime()
-            one['created_at'] = now
-            one['updated_at'] = now
-            self.insert(one)
-        return self
-
+ 
     def join(self, table: str, on: str, op='join'):
         self._join_parts.append((table, on, op))
         return self
@@ -237,6 +245,9 @@ class QueryBuilder:
             return self
         if not self._update_parts:
             return self
+        if self._auto_insert_update_predefined_columns:
+                self.update_timestamp()
+
         query = ''
         is_first = True
         for part, values in self._update_parts:
@@ -533,7 +544,6 @@ if __name__ == "__main__":
         .update('score', 50)
         .update_raw('score=score+1')
         .update_raw('age = %s', 22)
-        .update_timestamp()
         .where('id', 123)
         .limit(1)
         .dump_build()
@@ -557,7 +567,7 @@ if __name__ == "__main__":
     (QueryBuilder().new()
         .table('users')
         .insert(user1) #insert one record
-        .insert_with_timestamp([user2, user3]) #insert multi records
+        .insert([user2, user3]) #insert multi records
         .dump_build()
         .print_separator()
         .dump_fake_sql()
