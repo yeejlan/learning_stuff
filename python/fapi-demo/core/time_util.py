@@ -11,16 +11,16 @@ def fallback_to_local_timezone(dt: datetime) -> datetime:
         dt = dt.replace(tzinfo=fallback_tz)
     return dt
 
-def now() -> datetime:
+def now_as_datetime() -> datetime:
     now = arrow.now().datetime
     return now
 
 def now_as_iso8601(with_microseconds: bool = True) -> str:
-    now_ = arrow.now().datetime
+    now = arrow.now().datetime
     if not with_microseconds:
-        now_ = now_.replace(microsecond=0)
+        now = now.replace(microsecond=0)
 
-    return now_.isoformat()
+    return now.isoformat()
 
 
 def now_with_timezone(tz: timezone = timezone.utc) -> datetime:
