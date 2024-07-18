@@ -1,6 +1,8 @@
 
 from datetime import datetime, timezone
 
+import arrow
+
 
 fallback_tz=datetime.now().astimezone().tzinfo
 
@@ -10,15 +12,15 @@ def fallback_to_local_timezone(dt: datetime) -> datetime:
     return dt
 
 def now() -> datetime:
-    now = datetime.now()
+    now = arrow.now().datetime
     return now
 
 def now_as_iso8601(with_microseconds: bool = True) -> str:
-    now_ = now()
+    now_ = arrow.now().datetime
     if not with_microseconds:
-        now_ = now.replace(microsecond=0)
+        now_ = now_.replace(microsecond=0)
 
-    return fallback_to_local_timezone(now_).isoformat()
+    return now_.isoformat()
 
 
 def now_with_timezone(tz: timezone = timezone.utc) -> datetime:
