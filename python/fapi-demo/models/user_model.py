@@ -93,7 +93,7 @@ async def updateUserStatus(user_id: int, user_status: int) -> int:
 
 async def createUser(user_data: dict):
     one = await (make_query_builder()
-        .insert_with_timestamp(user_data)
+        .insert(user_data)
         .exec_insert_and_retrieve()
     )
     await clearCache(one.id)
