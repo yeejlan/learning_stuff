@@ -11,3 +11,6 @@ uvicorn main:app --host 0.0.0.0 --port 8000 --reload --no-access-log
 
 # reload and rotate daily log for gunicorn
 # kill -SIGHUP $(pidof gunicorn_manager_porcess)
+
+#run deisel in docker
+#docker exec -it fapi-demo_fastapi-demo_1 /app/diesel
