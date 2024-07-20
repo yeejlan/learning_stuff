@@ -6,7 +6,11 @@ class TaskManager:
         self.error = None
 
     async def __aenter__(self):
-        request_context.request_context_var.set({})
+        try:
+            request_context.request_context_var.get()
+        except Exception: #initial
+            request_context.request_context_var.set({})
+
         return self
 
     async def __aexit__(self, exc_type, exc_value, traceback):
@@ -16,7 +20,6 @@ class TaskManager:
         else:
             pass
         
-        request_context.request_context_var.set({})
         return False
 
 
