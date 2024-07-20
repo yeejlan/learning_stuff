@@ -12,10 +12,10 @@ def job():
 
 
 def run_command(command):
-    _ = subprocess.Popen(command, shell=True, cwd=working_path)
+    subprocess.Popen(command, shell=True, cwd=working_path)
 
 def run_python_script(command):
-    _ = subprocess.Popen(f"{python} {command}", shell=True, cwd=working_path)    
+    subprocess.Popen(f"{python} {command}", shell=True, cwd=working_path)    
     
 
 schedule.every(1).minutes.do(job)
