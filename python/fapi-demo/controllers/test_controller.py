@@ -10,6 +10,7 @@ from core.exception import FluxException, ModelException, UserException
 from core.logger import get_logger
 from core.request_context import getRequestContext
 from core.user_session import UserSession
+from jobs import send_message
 
 router = APIRouter()
 
@@ -174,19 +175,11 @@ async def send_notification(
 ):
     getLogger().debug("before send_notification")
     getRequestContext()['task_id'] = 1001
-    background_tasks.add_task(send_message, message)
+    background_tasks.add_task(send_message.send_message, 10, 5)
     getLogger().debug("after send_notification")
-    return {"message": "Message sent"}
+    return {"message": f"Message sent: {message}"}
 
-async def send_message(msg: str):
-    async with JobManager() as manager:
-        await asyncio.sleep(3)
-        for i in range(10):
-            getLogger().info(f"bg_jobs: job doing: #{i}" )
-            await asyncio.sleep(5)
-        
-        raise FluxException('bg_jobs: jobs not done!')  
-        getLogger().info("bg_jobs: reach here")
+
 
 @router.get("/sleep-10-seconds")
 async def sleep_10_seconds():
