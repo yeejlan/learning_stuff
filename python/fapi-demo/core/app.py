@@ -3,9 +3,13 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from fastapi import Depends, FastAPI, Query
+from fastapi import Depends, FastAPI, HTTPException, Query
 from core.app_context import AppContext
 from core.resource_loader import getResourceLoader
+from fastapi.openapi.docs import (
+    get_swagger_ui_html,
+    get_swagger_ui_oauth2_redirect_html,
+)
 
 AppContext.init()
 config = AppContext.getConfig()
@@ -24,6 +28,7 @@ appOptions = {
     "title": config.get('APP_NAME', "My FastApi Demo"),
     "version": config.get('APP_VERSION', "1.0.0"),
     "redoc_url": None,  # disable ReDoc
+    "docs_url": None,  # disable docs
     "servers": servers,
 }
 if not openapi_enabled:
@@ -65,5 +70,27 @@ app = FastAPI(
     **appOptions
     )
 
+@app.get("/docs", include_in_schema=False)
+async def custom_swagger_ui_html():
+    if not is_debug:
+        raise HTTPException(404)
+
+    return get_swagger_ui_html(
+        openapi_url=app.openapi_url, # type: ignore
+        title=app.title + " - Swagger UI",
+        oauth2_redirect_url=app.swagger_ui_oauth2_redirect_url,
+        swagger_js_url="/static/swagger-ui/swagger-ui-bundle.js",
+        swagger_css_url="/static/swagger-ui/swagger-ui.css",
+    )
+
+
+@app.get(app.swagger_ui_oauth2_redirect_url, include_in_schema=False) # type: ignore
+async def swagger_ui_redirect():
+    if not is_debug:
+        raise HTTPException(404)
+
+    return get_swagger_ui_oauth2_redirect_html()
+
+ 
 def getApp() -> FastAPI:
     return app
