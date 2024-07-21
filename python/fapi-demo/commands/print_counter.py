@@ -7,18 +7,17 @@ from core.request_context import getRequestContext
 from core.resource_loader import getResourceLoader
 
 
+logger = logbook.get_logger('print_counter')
+
 async def print_counter(count_to: int = 10, count_interval: int = 5):
     async with TaskManager() as _:
         ctx = getRequestContext()
         ctx['order_id'] = 123        
         for i in range(count_to):
             print(f"counting: #{i}")
-            getLogger().info(f"counting: #{i}")
+            logger.info(f"counting: #{i}")
             await asyncio.sleep(count_interval)
 
-
-def getLogger():
-    return logbook.get_logger('print_counter')
 
 if __name__ == "__main__":
     #sh py3.sh commands/print_counter.py value1 value2 --extra value3
