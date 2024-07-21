@@ -1,14 +1,17 @@
 import hashlib
 import random
 import time
+from uuid import uuid4
 import httpx
 from typing import Any, Dict, List, Optional, Tuple
 import json
 
 from core import request_context
 from core.config import getConfig
+from core.logger import getLogger
 from core.exception import FluxException
-from logging import getLogger
+from core.uuid_helper import uuid_to_base58
+
 
 logger = getLogger('kingfisher')
 config = getConfig()
@@ -38,7 +41,10 @@ class KingfisherClient:
         return self.timeout
 
     def getRequestId(self) -> str:
-        request_id = request_context.getRequestId()
+        try:
+            request_id = request_context.getRequestId()
+        except Exception:
+            request_id = uuid_to_base58(uuid4())
         return request_id
     
     def getHttpClient(self) -> httpx.AsyncClient:
@@ -146,13 +152,6 @@ class KingfisherClient:
 
 if __name__ == "__main__":
     import asyncio
-    
-    # import logging
-    # logging.basicConfig(
-    #     format="%(levelname)s [%(asctime)s] %(name)s - %(message)s",
-    #     datefmt="%Y-%m-%d %H:%M:%S",
-    #     level=logging.DEBUG
-    # )
 
     async def main():
         client = KingfisherClient()
