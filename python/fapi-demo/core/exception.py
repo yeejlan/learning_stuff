@@ -3,7 +3,7 @@ import os
 import sys
 from fastapi import Response
 from fastapi.exceptions import RequestValidationError
-from core import logger
+from core import logbook
 from core.reply import Reply
 from core.util import format_exception
 from core.config import getConfig
@@ -110,4 +110,4 @@ def default_exception_handler(ex: Exception) -> Response:
     })
 
 def getLogger() -> Logger: 
-    return logger.getLogger('err500')
+    return logbook.getLogger('err500')

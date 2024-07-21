@@ -1,6 +1,6 @@
 
 import asyncio
-from core import logger
+from core import logbook
 from core.task_manager import TaskManager
 
 
@@ -13,5 +13,5 @@ async def send_message(count_to: int = 10, count_interval: int = 5):
 
 
 def getLogger():
-    return logger.get_logger('send_message')
+    return logbook.get_logger('send_message')
 

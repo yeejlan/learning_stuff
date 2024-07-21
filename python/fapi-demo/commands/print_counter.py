@@ -1,7 +1,7 @@
 
 import argparse
 import asyncio
-from core import logger
+from core import logbook
 from core.task_manager import TaskManager
 from core.request_context import getRequestContext
 from core.resource_loader import getResourceLoader
@@ -18,7 +18,7 @@ async def print_counter(count_to: int = 10, count_interval: int = 5):
 
 
 def getLogger():
-    return logger.get_logger('print_counter')
+    return logbook.get_logger('print_counter')
 
 if __name__ == "__main__":
     #sh py3.sh commands/print_counter.py value1 value2 --extra value3

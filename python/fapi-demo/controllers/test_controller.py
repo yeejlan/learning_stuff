@@ -4,10 +4,10 @@ from typing_extensions import Annotated
 from fastapi import APIRouter, Depends, Request
 from fastapi.params import Body
 from pydantic import BaseModel, Field
-from core import deps, logger
+from core import deps, logbook
 from core.reply import Reply
 from core.exception import FluxException, ModelException, UserException
-from core.logger import get_logger
+from core.logbook import get_logger
 from core.request_context import getRequestContext
 from core.user_session import UserSession
 from jobs import send_message
@@ -148,7 +148,7 @@ async def log_test():
     return "check log files please."  
 
 def getLogger():
-    return logger.get_logger(__name__)
+    return logbook.get_logger(__name__)
 
 from fastapi import BackgroundTasks, Depends
 

@@ -6,14 +6,13 @@ import httpx
 from typing import Any, Dict, List, Optional, Tuple
 import json
 
-from core import request_context
+from core import logbook, request_context
 from core.config import getConfig
-from core.logger import getLogger
 from core.exception import FluxException
 from core.uuid_helper import uuid_to_base58
 
 
-logger = getLogger('kingfisher')
+logger = logbook.getLogger('kingfisher')
 config = getConfig()
 
 class KingfisherClientException(FluxException):

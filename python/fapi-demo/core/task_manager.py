@@ -1,4 +1,4 @@
-from core import logger, request_context
+from core import logbook, request_context
 
 
 class TaskManager:
@@ -24,4 +24,4 @@ class TaskManager:
 
 
 def getLogger():
-    return logger.get_logger('task')
+    return logbook.get_logger('task')

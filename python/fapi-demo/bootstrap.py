@@ -1,5 +1,4 @@
 from fastapi.exceptions import RequestValidationError
-from core import logger
 from core.app import getApp
 from core.auth_context import AuthContextAsgiMiddleware
 from core.cache import RefreshCacheAsgiMiddleware
