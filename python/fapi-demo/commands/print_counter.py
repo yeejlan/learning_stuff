@@ -34,7 +34,6 @@ if __name__ == "__main__":
 
     async def main():
         # initial
-        logger.buildInitialLoggers(['app', 'err500'])
         await getResourceLoader().loadAll()
 
         # task 

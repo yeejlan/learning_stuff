@@ -1,10 +1,7 @@
 import logging
-from contextvars import ContextVar
 
 from core.request_context import getRequestContext
 from core.time_util import now_as_datetime, now_as_iso8601
-
-channel = ContextVar('channel', default='app')
 
 CUSTOM_FORMAT = '%(iso8601)s [%(channel)s] [%(levelname)s] %(message)s %(context)s'
 
@@ -15,7 +12,7 @@ def getDailyLogName(channel:str = 'app', path:str = 'storage/logs'):
 
 class CustomLogger(logging.Logger):
     def __init__(self, name):
-        super().__init__(name) 
+        super().__init__(name)
         custom_formatter = logging.Formatter(CUSTOM_FORMAT)
 
         # add stdout
@@ -24,9 +21,7 @@ class CustomLogger(logging.Logger):
         self.addHandler(handler)
 
         # add file handler
-        log_file = getDailyLogName(channel = name)
-        file_handler = logging.FileHandler(log_file, delay=True)
-        file_handler.setFormatter(custom_formatter)
+        file_handler = makeFilehandler(name)
         self.addHandler(file_handler)
 
     def _log(self, level, msg, args, exc_info=None, extra=None):
@@ -41,44 +36,59 @@ class CustomLogger(logging.Logger):
                 pass
          
             extra = {
-                'channel': channel.get(),
+                'channel': self.name,
                 'iso8601': now_as_iso8601(),
                 'context': context,
             }
 
         super(CustomLogger, self)._log(level, msg, args, exc_info, extra)
 
+logger_channels = ['app', 'err500']
 logger_dict: dict[str, logging.Logger] = {}
+logger_file_handler_dict: dict[str, logging.FileHandler] = {}
 
-
-def makeCustomeLogger(channel = 'app'):
-    logger_name = channel
-    logger= logging.getLogger(logger_name)
+def makeCustomeLogger(name = 'app'):
+    logger= CustomLogger(name)
     logger.setLevel(logging.DEBUG)
     return logger
 
-def buildInitialLoggers(logger_channels: list[str] = ['app', 'err500']):
-    old_logger_clazz = logging.getLoggerClass()
-    logging.setLoggerClass(CustomLogger)
+def makeFilehandler(name = 'app'):
+    if name not in logger_channels:
+        name = 'app'
 
-    for channel in logger_channels:
-        logger_dict[channel] = makeCustomeLogger(channel)
+    if name not in logger_file_handler_dict:
+        log_file = getDailyLogName(channel = name)
+        file_handler = logging.FileHandler(log_file, delay=True)
+        custom_formatter = logging.Formatter(CUSTOM_FORMAT)
+        file_handler.setFormatter(custom_formatter)
+        logger_file_handler_dict[name] = file_handler
 
-    logging.setLoggerClass(old_logger_clazz)
+    return logger_file_handler_dict[name]
+
 
 def getLogger(channel_name: str = 'app') -> logging.Logger:
     return get_logger(channel_name)
 
 def get_logger(channel_name: str = 'app') -> logging.Logger:
-    channel.set(channel_name)
-    if channel_name in logger_dict:
-        return logger_dict[channel_name]
+    if channel_name not in logger_dict:
+        logger_dict[channel_name] = makeCustomeLogger(channel_name)
     
-    return logger_dict['app']
+    return logger_dict[channel_name]
+
 
 
 if __name__ == "__main__":
-    buildInitialLoggers(['app', 'err500'])
     log_name = getDailyLogName('mylog', 'my/log/storage/path')
     print(log_name)
 
+    logger_app = getLogger('app')
+    logger_err500 = getLogger('err500')
+    logger_colamode = getLogger('colamode')
+    logger_app.info('This is a test log message from logger_app.')
+    logger_err500.info('This is a test log message from logger_err500.')
+    logger_colamode.info('This is a test log message from logger_colamode.')
+
+    print()
+    print(logger_dict)
+    print()
+    print(logger_file_handler_dict)

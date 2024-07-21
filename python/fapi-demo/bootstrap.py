@@ -9,9 +9,6 @@ from starlette.middleware.cors import CORSMiddleware
 
 app = getApp()
 
-logger.buildInitialLoggers(['app', 'err500'])
-
-
 app.add_middleware(ExceptionHandlerAsgiMiddleware)
 app.add_middleware(AuthContextAsgiMiddleware)
 app.add_middleware(RequestContextAsgiMiddleware)
