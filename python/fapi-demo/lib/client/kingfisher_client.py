@@ -95,7 +95,9 @@ class KingfisherClient:
                 response = await client.request(http_method, url, headers=headers, json=payload)
                 result = self.handle_response(response)
                 return None, result
-        except httpx.HTTPError as ex:
+        except KingfisherClientException as ex:
+            return ex, None
+        except Exception as ex:
             msg = self.ex_to_string(ex)
             logger.error(msg)
             return KingfisherClientException(msg, -1), None
@@ -122,7 +124,6 @@ class KingfisherClient:
 
     def handle_response(self, response: httpx.Response) -> Optional[Dict[str, Any]]:
         body = response.text
-        print(response)
         try:
             result = json.loads(body)
         except json.JSONDecodeError:
