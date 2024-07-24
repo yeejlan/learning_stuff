@@ -17,3 +17,21 @@ class CoreModel(BaseModel):
         json_encoders = {
             datetime: lambda v: fallback_to_local_timezone(v).isoformat()
         }
+
+
+#read only attribute
+class CoreResult(CoreModel):
+    class Config:
+        frozen = True
+
+
+if __name__ == "__main__":
+    class MyResult(CoreResult):
+        name: str
+
+    res = MyResult(name='nana')
+    print(res.model_config)
+    try:
+        res.name = 'lucy'
+    except ValueError as e:
+        print(e)
