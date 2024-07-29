@@ -184,6 +184,33 @@ class QueryBuilder:
     def where_not_between(self, field: str, value1: Any, value2: Any, bool_op = 'and'):
         self.where_raw(field + ' NOT BETWEEN %s AND %s', [value1, value2], bool_op)
         return self
+    
+    def where_or_group(self, group_callback):
+        return self.where_group(group_callback, bool_op='or')
+
+    def where_group(self, group_callback, bool_op='and', default_inner_bool_op='and'):
+        group = WhereGroup(default_bool_op=default_inner_bool_op)
+        group_callback(group)
+        
+        def process_group(group):
+            conditions = []
+            bindings = []
+            for i, (field, op, value, inner_bool_op) in enumerate(group.conditions):
+                if op == 'raw':
+                    conditions.append(f"{inner_bool_op.upper() if i > 0 else ''} {field}")
+                    bindings.extend(value)
+                elif op == 'group':
+                    sub_conditions, sub_bindings = process_group(field)
+                    conditions.append(f"{inner_bool_op.upper() if i > 0 else ''} ({sub_conditions})")
+                    bindings.extend(sub_bindings)
+                else:
+                    conditions.append(f"{inner_bool_op.upper() if i > 0 else ''} {field} {op} %s")
+                    bindings.append(value)
+            return " ".join(conditions), bindings
+
+        grouped_condition, bindings = process_group(group)
+        self._where_parts.append((f"({grouped_condition})", 'raw', bindings, bool_op))
+        return self
 
     def union(self, query: str, values: list = [], op = 'union'):
         self._union_parts.append((query, values, op))
@@ -509,6 +536,41 @@ class QueryBuilder:
         return await db_mysql.transaction(operations, conn_or_pool=self._conn_or_pool)
 
 
+class WhereGroup:
+    def __init__(self, default_bool_op='and'):
+        self.conditions = []
+        self.default_bool_op = default_bool_op
+    
+    def _add_condition(self, field, op_or_value, value=None, bool_op='and'):
+        if value is None:
+            op, value = '=', op_or_value
+        else:
+            op, value = op_or_value, value
+        self.conditions.append((field, op, value, bool_op))
+        return self
+
+    def where(self, field, op_or_value, value=None):
+        return self._add_condition(field, op_or_value, value, 'and')
+
+    def where_or(self, field, op_or_value, value=None):
+        return self._add_condition(field, op_or_value, value, 'or')
+
+    def where_raw(self, query, value=[], bool_op=None):
+        bool_op = bool_op or self.default_bool_op
+        self.conditions.append((query, 'raw', value, bool_op))
+        return self
+
+    def where_group(self, group_callback, bool_op=None):
+        bool_op = bool_op or self.default_bool_op
+        subgroup = WhereGroup(default_bool_op=self.default_bool_op)
+        group_callback(subgroup)
+        self.conditions.append((subgroup, 'group', None, bool_op))
+        return self
+
+    def where_or_group(self, group_callback):
+        return self.where_group(group_callback, bool_op='or')
+
+
 if __name__ == "__main__":
     (QueryBuilder().new()
         .table('users as u') 
@@ -523,6 +585,20 @@ if __name__ == "__main__":
         .where_in('pet', ['dog', 'cat', 'bird'])
         .where_null('note')
         .where_or('dd', '>=', 15)
+        .where_group(lambda g: g
+            .where('abc', '>', 1)
+            .where('def', 5)
+        )
+        .where_group(lambda g: g
+            .where_group(lambda sg1: sg1
+                .where('b', '>', 1)
+                .where('e', '<', 5)
+            )
+            .where_or_group(lambda sg2: sg2
+                .where('c', 2)
+                .where_or('d', '<', 3)
+            )
+        )        
         .group_by(['age', 'score'])
         .having('avg(age) > %s', 10)
         .having('sum(age) < %s', [10000])
